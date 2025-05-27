@@ -6,11 +6,11 @@ import Error500 from './components/Error500'
 
 export const errorRoutes: RouteObject[] = [
   {
-    path: '/404',
+    path: '404',
     element: <Error404 />,
   },
   {
-    path: '/500',
+    path: '500',
     element: <Error500 />,
   },
   {

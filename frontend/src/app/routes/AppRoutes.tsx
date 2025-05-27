@@ -1,29 +1,40 @@
 // app-router.tsx
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
 import { Logout } from '@/features/auth/Logout'
-// import { useCurrentUserLoader } from '@/utils/AuthHelpers'
 import { errorRoutes } from '@/features/errors/ErrorsPage'
 import { authRoutes } from '@/features/auth/AuthPage'
-import LoginPage from '@/features/auth/pages/login'
+import { privateRoutes } from './PrivateRoutes'
 
 
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: '/',
-      children: [
-        {
-          path: 'logout',
-          element: <Logout />,
-        },
-        {
-          index: true,
-          element: <LoginPage />,
-        },
-        ...errorRoutes,
-        ...authRoutes,
-      ],
-    },
-  ],
-)
+
+const routes: RouteObject[] = [
+  {
+    path: 'error/*',
+    children: errorRoutes,
+  },
+
+  {
+    path: 'logout',
+    element: <Logout />,
+  },
+
+  {
+    path: '/*',
+    children:privateRoutes,
+  },
+
+  {
+    path: '/auth/*',
+    children: authRoutes,
+  },
+  
+  {
+    path: '',
+    index: true,
+    element: <Navigate to='auth/login' replace/>
+  }
+
+];
+
+export const router = createBrowserRouter(routes);

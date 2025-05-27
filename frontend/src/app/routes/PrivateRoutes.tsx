@@ -1,11 +1,18 @@
 // PrivateRoutes.tsx
-import { Outlet, Navigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/auth/Auth'
+import { assistantRoutes } from '@/features/assistant/AssistantsPage'
+import Error404 from '@/features/errors/components/Error404'
+import { type RouteObject } from 'react-router-dom'
 
-export const PrivateRoutes = () => {
-  const { currentUser } = useAuth()
 
-  if (!currentUser) return <Navigate to="/auth/login" replace />
+export const privateRoutes: RouteObject[] = [
+  {
+    path: 'assistant/',
+    children: assistantRoutes,
+  },
 
-  return <Outlet />
-}
+  //Page Not Found
+  {
+    path: '*',
+    element: <Error404 />
+  }
+]

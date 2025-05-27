@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 export default function Error500() {
+    const navigate = useNavigate()
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-300 via-blue-300 to-purple-500">
       <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full mx-4 text-center">
@@ -38,8 +40,11 @@ export default function Error500() {
           </div>
         </div>
 
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link to="/">Retour à l'accueil</Link>
+        <Button  
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => navigate(-1)}
+        >
+          Retour en arrière
         </Button>
       </div>
     </div>

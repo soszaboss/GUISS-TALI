@@ -1,6 +1,4 @@
-// auth-routes.tsx
-// auth-routes.tsx
-import type { RouteObject } from 'react-router-dom'
+import { type RouteObject } from 'react-router-dom'
 import Login from './pages/login'
 import ForgotPassword from './pages/forgot-password'
 import Register from './pages/register'
@@ -10,32 +8,31 @@ import { TwoFactorVerification } from './pages/two-factor-verification'
 
 export const authRoutes: RouteObject[] = [
   {
-    path: '/auth/login',
+    index: true,
     element: <Login />,
   },
   {
-    path: '/auth/registration',
+    path: 'login',
+    element: <Login />,
+  },
+  {
+    path: 'registration',
     element: <Register />,
   },
   {
-    path: '/auth/forgot-password',
+    path: 'forgot-password',
     element: <ForgotPassword />,
   },
   {
-    path: '/auth/reset-password',
+    path: 'reset-password',
     element: <ResetPassword />,
   },
   {
-    path: '/auth/two-factor-verification',
+    path: 'two-factor-verification',
     element: <TwoFactorVerification />,
   },
   {
-    path: '/auth/email-verification',
+    path: 'email-verification',
     element: <EmailVerification />,
   },
-  {
-    path: '/auth',
-    index: true,
-    element:<Login />
-  }
 ]
