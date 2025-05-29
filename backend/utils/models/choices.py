@@ -164,3 +164,15 @@ class HypotonisantValue(models.TextChoices):
     PROSTAGLANDINES = 'PROSTAGLANDINES', _('PROSTAGLANDINES')
     PILOCARPINE = 'PILOCARPINE', _('PILOCARPINE')
     AUTRES = ('AUTRES', _('AUTRES'))
+
+
+class Symptomes(models.TextChoices):
+    AUCUN = 'AUCUN', _('Aucun')
+    BAV = 'BAV', _('BAV')
+    ROUGEUR = 'ROUGEUR', _('ROUGEUR')
+    DOULEUR = 'DOULEUR', _('DOULEUR')
+    DIPLOPIE = 'DIPLOPIE', _('DIPLOPIE')
+    STARBISME = 'STARBISME', _('STARBISME')
+    NYSTAGMUS = 'NYSTAGMUS', _('NYSTAGMUS')
+    PTOSIS = 'PTOSIS', _('PTOSIS')
+    AUTRES = 'AUTRES', _('AUTRES')
