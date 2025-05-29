@@ -25,7 +25,7 @@ export const adminPlatformRoutes: RouteObject[] = [
             {
                 index: true,
                 lazy: async () => {
-                    const module = await import('./components/users/users-list');
+                    const module = await import('./pages/users/list/page');
                     return { Component: module.AdminUsersList };
                 }
             },
@@ -34,6 +34,27 @@ export const adminPlatformRoutes: RouteObject[] = [
                 lazy: async () => {
                     const module = await import('./pages/users/add/page');
                     return { Component: module.default };
+                }
+            },
+            {
+                path:'edit/:userId',
+                lazy: async () => {
+                    const module = await import('./pages/users/edit/[id]/page');
+                    return { Component: module.default };
+                }
+            },
+            {
+                path: 'profile/:userId',
+                lazy: async () => {
+                    const module = await import('./pages/users/profile/[id]/page');
+                    return { Component: module.default };
+                }
+            },
+            {
+                path: 'permissions/:userId',
+                lazy: async () => {
+                    const module = await import('./pages/users/permissions/[id]/page');
+                    return { Component: module.AdminUserPermissions };
                 }
             },
             {

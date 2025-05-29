@@ -235,7 +235,7 @@ export function AdminUsersList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/admin-platform/users/${user.id}`}>
+                            <Link to={`/admin-platform/users/profile/${user.id}`}>
                               <User className="h-4 w-4 mr-2" />
                               Voir le profil
                             </Link>
