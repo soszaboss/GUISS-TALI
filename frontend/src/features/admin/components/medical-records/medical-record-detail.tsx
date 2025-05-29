@@ -6,11 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Calendar, Download, Eye, FileText, Printer, User } from "lucide-react"
 import { Link } from "react-router-dom"
 
-interface AdminMedicalRecordDetailProps {
-  id: string
-}
 
-export default function AdminMedicalRecordDetail({ id }: AdminMedicalRecordDetailProps) {
+export default function AdminMedicalRecordDetail() {
   // Dans une application réelle, ces données seraient récupérées depuis une API
   const medicalRecord = {
     id: "MR12345",
@@ -81,7 +78,7 @@ export default function AdminMedicalRecordDetail({ id }: AdminMedicalRecordDetai
       },
     ],
   }
-
+  const id = medicalRecord.id
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
