@@ -139,7 +139,7 @@ export function AdminRolesPermissions() {
       <div className="space-y-6">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" asChild className="mr-2">
-            <Link to="/admin-platform/users">
+            <Link to="/admin/users">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
@@ -190,7 +190,7 @@ export function AdminRolesPermissions() {
                   ))}
                 </div>
                 <Button variant="link" size="sm" className="mt-2 p-0" asChild>
-                  <Link to={`/admin-platform/users/roles/${role.id}`}>Voir toutes les permissions</Link>
+                  <Link to={`/admin/users/roles/${role.id}`}>Voir toutes les permissions</Link>
                 </Button>
               </CardContent>
             </Card>

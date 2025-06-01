@@ -1,19 +1,15 @@
 import { useState } from "react"
-import { DoctorMedicalLayout } from "../../features/doctor/components/layouts/doctor-medical-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, Printer, AlertTriangle, Plus } from "lucide-react"
-import { DoctorMedicalVisit } from "./medical-visit"
+import { Printer, AlertTriangle } from "lucide-react"
 import { Link } from "react-router-dom"
+import { MedicalVisit } from "./medical-visit"
 
-interface DoctorMedicalPatientRecordProps {
-  patientId: string
-}
 
-export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalPatientRecordProps) {
+export default function MedicalPatientRecord() {
   const [activeTab, setActiveTab] = useState("antecedents")
-
+  const patientId = "101" // ID fictif du patient, à remplacer par l'ID réel
   // Ces données seraient normalement récupérées depuis une API
   const patient = {
     id: patientId,
@@ -183,7 +179,6 @@ export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalP
   }
 
   return (
-    <DoctorMedicalLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Dossier médical</h1>
@@ -191,10 +186,6 @@ export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalP
             <Button variant="outline" className="flex items-center gap-2">
               <Printer className="h-4 w-4" />
               Imprimer
-            </Button>
-            <Button className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Générer rapport
             </Button>
           </div>
         </div>
@@ -358,12 +349,6 @@ export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalP
           </TabsContent>
 
           <TabsContent value="visits">
-            <div className="mb-4 flex justify-end">
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Nouvelle visite
-              </Button>
-            </div>
 
             <div className="space-y-6">
               {patient.visits.map((visit) => (
@@ -435,7 +420,7 @@ export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalP
                       </TabsContent>
 
                       <TabsContent value="details" className="p-0">
-                        <DoctorMedicalVisit visit={visit} />
+                        <MedicalVisit visit={visit} />
                       </TabsContent>
                     </Tabs>
                   </CardContent>
@@ -445,6 +430,5 @@ export default function DoctorMedicalPatientRecord({ patientId }: DoctorMedicalP
           </TabsContent>
         </Tabs>
       </div>
-    </DoctorMedicalLayout>
   )
 }

@@ -65,7 +65,7 @@ export function DoctorMedicalSidebar({ open, onClose }: DoctorMedicalSidebarProp
           </Button>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 ">
           {menuItems.map((item) => (
             <Link
               key={item.href}

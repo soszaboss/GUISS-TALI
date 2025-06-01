@@ -1,5 +1,3 @@
-"use client"
-
 import { useLocation } from "react-router-dom"
 import { Link } from "react-router-dom"
 
@@ -28,7 +26,7 @@ export function AssistantSidebar({ open, onClose }: AssistantSidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`min-h-screen fixed top-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -59,7 +57,10 @@ export function AssistantSidebar({ open, onClose }: AssistantSidebarProps) {
                   <Link
                     to="/assistant"
                     className={`flex items-center space-x-3 p-3 rounded-md transition-colors ${
-                      isActive("/assistant") && !isActive("/assistant/patients") && !isActive("/assistant/appointments")
+                      isActive("/assistant")
+                          && !isActive("/assistant/patients")
+                          && !isActive("/assistant/appointments")
+                          && !isActive("/assistant/notifications")
                         ? "bg-blue-100 text-blue-600"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
@@ -161,39 +162,6 @@ export function AssistantSidebar({ open, onClose }: AssistantSidebarProps) {
             </nav>
           </div>
 
-          {/* Profil utilisateur - maintenant en bas */}
-          <div className="p-4 border-t mt-auto">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                {user?.avatar ? (
-                  <img
-                    src={user.avatar || "/placeholder.svg"}
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <svg
-                    className="w-6 h-6 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                )}
-              </div>
-              <div>
-                <p className="font-medium text-gray-800">{user?.name || "Assistant"}</p>
-                <p className="text-sm text-gray-500">{user?.email || "assistant@doccure.com"}</p>
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
     </>

@@ -1,5 +1,10 @@
-import { DoctorMedicalPatientsList } from "../../components/patients/doctor-medical-patients-list";
+import MedicalPatientsPage from "@/features/medical-record/page";
+import { DoctorMedicalLayout } from "../../components/layouts/doctor-medical-layout";
 
-export default function DoctorMedicalPatientsPage() {
-  return <DoctorMedicalPatientsList />
+export default function PatientsPage() {
+    return (
+        <DoctorMedicalLayout>
+            <MedicalPatientsPage/>
+        </DoctorMedicalLayout>
+    )
 }

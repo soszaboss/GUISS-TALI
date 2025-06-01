@@ -22,28 +22,21 @@ export const doctorRoutes: RouteObject[] = [
   {
     path: "patients",
     lazy: async () => {
-      const module = await import("../medical-record/page");
+      const module = await import("./pages/patients/page");
       return { Component: module.default };
     }
   },
   {
     path: "medical-records/:patientId",
     lazy: async () => {
-      const module = await import("../../components/medical-record/medical-patient-record");
-      return { Component: module.default as React.ComponentType};
+      const module = await import("./pages/medical-record/pages");
+      return { Component: module.default};
     },
   },
   {
     path: "history",
     lazy: async () => {
       const module = await import("./pages/history/page");
-      return { Component: module.default };
-    },
-  },
-  {
-    path: "patients",
-    lazy: async () => {
-      const module = await import("./pages/patients/page");
       return { Component: module.default };
     },
   },

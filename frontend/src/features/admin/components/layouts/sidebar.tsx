@@ -5,7 +5,6 @@ import {
   Users,
   ClipboardList,
   Settings,
-  FileText,
   User,
   FileCheck,
   Home,
@@ -74,10 +73,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
       </div>
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         <SidebarItem
-          href="/admin-platform"
+          href="/admin"
           icon={<Home size={20} />}
           title="Tableau de bord"
-          active={pathname === "/admin-platform"}
+          active={pathname === "/admin"}
         />
 
         <div>
@@ -85,7 +84,7 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
             href="#"
             icon={<Users size={20} />}
             title="Utilisateurs"
-            active={pathname.startsWith("/admin-platform/users")}
+            active={pathname.startsWith("/admin/users")}
             hasSubmenu={true}
             isSubmenuOpen={usersSubmenuOpen}
             onClick={() => setUsersSubmenuOpen(!usersSubmenuOpen)}
@@ -93,22 +92,22 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
           {usersSubmenuOpen && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
               <SidebarItem
-                href="/admin-platform/users"
+                href="/admin/users"
                 icon={<User size={16} />}
                 title="Liste des utilisateurs"
-                active={pathname === "/admin-platform/users"}
+                active={pathname === "/admin/users"}
               />
               <SidebarItem
-                href="/admin-platform/users/add"
+                href="/admin/users/add"
                 icon={<User size={16} />}
                 title="Ajouter un utilisateur"
-                active={pathname === "/admin-platform/users/add"}
+                active={pathname === "/admin/users/add"}
               />
               <SidebarItem
-                href="/admin-platform/users/roles"
+                href="/admin/users/roles"
                 icon={<User size={16} />}
                 title="Rôles et permissions"
-                active={pathname === "/admin-platform/users/roles"}
+                active={pathname === "/admin/users/roles"}
               />
             </div>
           )}
@@ -119,7 +118,7 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
             href="#"
             icon={<FileCheck size={20} />}
             title="Patients"
-            active={pathname.startsWith("/admin-platform/patients")}
+            active={pathname.startsWith("/admin/patients")}
             hasSubmenu={true}
             isSubmenuOpen={patientsSubmenuOpen}
             onClick={() => setPatientsSubmenuOpen(!patientsSubmenuOpen)}
@@ -127,26 +126,20 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
           {patientsSubmenuOpen && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
               <SidebarItem
-                href="/admin-platform/patients"
+                href="/admin/patients"
                 icon={<User size={16} />}
                 title="Liste des patients"
-                active={pathname === "/admin-platform/patients"}
-              />
-              <SidebarItem
-                href="/admin-platform/medical-records"
-                icon={<FileText size={16} />}
-                title="Fiches médicales"
-                active={pathname === "/admin-platform/medical-records"}
+                active={pathname === "/admin/patients"}
               />
             </div>
           )}
         </div>
 
         <SidebarItem
-          href="/admin-platform/logs"
+          href="/admin/logs"
           icon={<ClipboardList size={20} />}
           title="Journal d'activité"
-          active={pathname === "/admin-platform/logs"}
+          active={pathname === "/admin/logs"}
         />
 
         <div>
@@ -154,7 +147,7 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
             href="#"
             icon={<Settings size={20} />}
             title="Paramètres"
-            active={pathname.startsWith("/admin-platform/settings")}
+            active={pathname.startsWith("/admin/settings")}
             hasSubmenu={true}
             isSubmenuOpen={settingsSubmenuOpen}
             onClick={() => setSettingsSubmenuOpen(!settingsSubmenuOpen)}
@@ -162,10 +155,10 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
           {settingsSubmenuOpen && isOpen && (
             <div className="ml-6 mt-1 space-y-1">
               <SidebarItem
-                href="/admin-platform/settings"
+                href="/admin/settings"
                 icon={<Settings size={16} />}
                 title="Paramètres globaux"
-                active={pathname === "/admin-platform/settings/global"}
+                active={pathname === "/admin/settings/global"}
               />
             </div>
           )}

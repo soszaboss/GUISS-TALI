@@ -104,26 +104,10 @@ export const adminPlatformRoutes: RouteObject[] = [
         ]
     },
     {
-        path: 'medical-records',
+        path: "medical-records/:patientId",
         lazy: async () => {
-            const module = await import('./pages/medical-records/page');
-            return { Component: module.default };
+        const module = await import("./pages/medical-record/pages");
+        return { Component: module.default as React.ComponentType};
         },
-        children:[
-            {
-                index: true,
-                lazy: async () => {
-                    const module = await import('./components/medical-records/medical-records-list');
-                    return { Component: module.default };
-                }
-            },
-            {
-                path: ':recordId',
-                lazy: async () => {
-                    const module = await import('./pages/medical-records/[id]/page');
-                    return { Component: module.default as React.ComponentType };
-                }
-            },
-        ]
-    }
+  },
 ]

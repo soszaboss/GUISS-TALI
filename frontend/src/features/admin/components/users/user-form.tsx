@@ -17,7 +17,7 @@ export function AdminUserForm() {
       <div className="space-y-6">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" asChild className="mr-2">
-            <Link to="/admin-platform/users">
+            <Link to="/admin/users">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
@@ -195,7 +195,7 @@ export function AdminUserForm() {
 
         <div className="flex justify-end space-x-4">
           <Button variant="outline" asChild>
-            <Link to="/admin-platform/users">Annuler</Link>
+            <Link to="/admin/users">Annuler</Link>
           </Button>
           <Button>Créer l'utilisateur</Button>
         </div>

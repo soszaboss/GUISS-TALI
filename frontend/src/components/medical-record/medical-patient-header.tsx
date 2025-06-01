@@ -6,7 +6,7 @@ interface DoctorMedicalPatientHeaderProps {
   patient: any
 }
 
-export function DoctorMedicalPatientHeader({ patient }: DoctorMedicalPatientHeaderProps) {
+export function MedicalPatientHeader({ patient }: DoctorMedicalPatientHeaderProps) {
   return (
     <Card>
       <CardContent className="p-6">

@@ -43,7 +43,7 @@ export default function AdminUserEdit() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="icon" asChild>
-              <Link to={`/admin-platform/users/profile/${userId}`}>
+              <Link to={`/admin/users/profile/${userId}`}>
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
@@ -162,7 +162,7 @@ export default function AdminUserEdit() {
           {/* Actions */}
           <div className="flex justify-end space-x-4">
             <Button variant="outline" asChild>
-              <Link to={`/admin-platform/users/profile/${userId}`}>Annuler</Link>
+              <Link to={`/admin/users/profile/${userId}`}>Annuler</Link>
             </Button>
             <Button type="submit">
               <Save className="h-4 w-4 mr-2" />

@@ -226,13 +226,13 @@ export default function AdminMedicalRecordsList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
-                            <Link to={`/admin-platform/medical-records/${record.id}`} className="flex items-center">
+                            <Link to={`/admin/medical-records/${record.id}`} className="flex items-center">
                               <Eye className="mr-2 h-4 w-4" />
                               <span>Voir la fiche</span>
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Link to={`/admin-platform/patients/${record.patientId}`} className="flex items-center">
+                            <Link to={`/admin/patients/${record.patientId}`} className="flex items-center">
                               <FileText className="mr-2 h-4 w-4" />
                               <span>Voir le patient</span>
                             </Link>

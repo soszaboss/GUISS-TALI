@@ -1,5 +1,5 @@
-import { DoctorMedicalPatientsList } from "../doctor/components/patients/doctor-medical-patients-list";
+import { MedicalPatientsList } from "@/components/patients/medical-patients-list";
 
-export default function DoctorMedicalPatientsPage() {
-  return <DoctorMedicalPatientsList />
+export default function MedicalPatientsPage() {
+  return <MedicalPatientsList />
 }

@@ -151,7 +151,7 @@ export function AdminUsersList() {
           </div>
           <div className="mt-4 md:mt-0">
             <Button asChild>
-              <Link to="/admin-platform/users/add">
+              <Link to="/admin/users/add">
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter un utilisateur
               </Link>
@@ -235,19 +235,19 @@ export function AdminUsersList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/admin-platform/users/profile/${user.id}`}>
+                            <Link to={`/admin/users/profile/${user.id}`}>
                               <User className="h-4 w-4 mr-2" />
                               Voir le profil
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/admin-platform/users/edit/${user.id}`}>
+                            <Link to={`/admin/users/edit/${user.id}`}>
                               <Edit className="h-4 w-4 mr-2" />
                               Modifier
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to={`/admin-platform/users/permissions/${user.id}`}>
+                            <Link to={`/admin/users/permissions/${user.id}`}>
                               <UserCog className="h-4 w-4 mr-2" />
                               Permissions
                             </Link>

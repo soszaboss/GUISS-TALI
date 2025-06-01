@@ -1,14 +1,14 @@
 import { useState } from "react"
-import { DoctorMedicalLayout } from "../layouts/doctor-medical-layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Filter, Eye, AlertTriangle } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
-export function DoctorMedicalPatientsList() {
+export function MedicalPatientsList() {
   const [searchTerm, setSearchTerm] = useState("")
-
+  const location = useLocation()
+  const sectionPage = location.pathname.split('/')[1]
   // Ces données seraient normalement récupérées depuis une API
   const patients = [
     {
@@ -76,7 +76,6 @@ export function DoctorMedicalPatientsList() {
   const filteredPatients = patients.filter((patient) => patient.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   return (
-    <DoctorMedicalLayout>
       <div className="p-6">
         <Card className="mb-6">
           <CardContent className="p-4">
@@ -135,7 +134,7 @@ export function DoctorMedicalPatientsList() {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">{patient.nextVisit}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/doctor/medical-records/${patient.id}`}>
+                        <Link to={`/${sectionPage}/medical-records/${patient.id}`}>
                           <Eye className="h-4 w-4 mr-1" />
                           Dossier
                         </Link>
@@ -148,6 +147,5 @@ export function DoctorMedicalPatientsList() {
           </div>
         </div>
       </div>
-    </DoctorMedicalLayout>
   )
 }

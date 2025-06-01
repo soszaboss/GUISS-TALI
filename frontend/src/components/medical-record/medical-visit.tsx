@@ -101,7 +101,7 @@ interface DoctorMedicalVisitProps {
   userRole: string
 }
 
-export function DoctorMedicalVisit({ visit, userRole = "doctor" }: DoctorMedicalVisitProps) {
+export function MedicalVisit({ visit, userRole = "doctor" }: DoctorMedicalVisitProps) {
   const [activeTab, setActiveTab] = useState("technical")
 
   // État pour l'examen technique
