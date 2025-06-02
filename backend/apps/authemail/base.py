@@ -7,6 +7,7 @@ from services.authemail import send_multi_format_email
 
 
 class AbstractBaseCode(TimeStampedModel):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     code = models.CharField(_('code'), max_length=40, unique=True, db_index=True, null=True, blank=True)
 

@@ -1,6 +1,6 @@
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'SuiviSanté V1',
-    'DESCRIPTION': 'SuiviSanté est une plateforme web de suivi médical dédiée à la collecte,'
+    'TITLE': 'GUISS TALLI V1',
+    'DESCRIPTION': 'Guiss Talli est une plateforme web de suivi médical dédiée à la collecte,'
                    ' l’analyse et la prévention des troubles visuels, en particulier chez les conducteurs.'
                    ' Elle permet une gestion sécurisée des dossiers, des rendez-vous et des rapports,'
                    ' accessible selon les rôles utilisateurs.',

@@ -10,7 +10,7 @@ from django_extensions.db.models import TimeStampedModel
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-DEFAULT_AVATAR = 'images/profiles/avatars/default-profile-picture.png'
+DEFAULT_AVATAR = 'media/images/profiles/avatars/default-profile-picture.png'
 
 
 class UserManager(BaseUserManager):

@@ -12,6 +12,7 @@ router = DefaultRouter()
 
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
 
     # routes pour la gestion des utilisateurs et profiles
