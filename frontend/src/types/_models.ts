@@ -4,16 +4,11 @@ import type { Dispatch, SetStateAction } from 'react'
 export type ID = undefined | null | number
 
 // DRF Pagination Structure
-export type PaginationState = {
-  count: number
-  next: string | null
-  previous: string | null
-  links?: Array<{
-    label: string
-    active: boolean
-    url: string | null
-    page: number | null
-  }>
+export type PaginationState<T> = {
+  count?: number
+  next?: string | null
+  previous?: string | null
+  results?: T[]
 }
 
 // Sorting
@@ -32,28 +27,43 @@ export type SearchState = {
   search?: string
 }
 
-// Generic Response matching DRF
-export type Response<T> = {
-  data?: T
-  payload?: {
-    message?: string
-    errors?: {
-      [key: string]: string[]
-    }
-    pagination?: PaginationState
-  }
+export type ErrorDetail = {
+  detail?: string
 }
+
+type Error = {
+  code?: string
+  detail?: string | ErrorDetail | ErrorDetail[]
+  attr?: string
+}
+
+// Structure commune à toutes les réponses
+type BaseResponse = {
+  detail?: string
+  type?: string
+  errors?: Array<Error>
+}
+
+// Réponse simple
+export type Response<T> = BaseResponse & {
+  data?: T
+}
+
+// Réponse paginée
+export type PaginationResponse<T> = PaginationState<T> & PaginationState<T>
 
 // Unified Query State
 export type QueryState = {
-  page?: number
-  limit?: number
+  limit?: 10 | 20 | 50 | 100
   offset?: number
-  items_per_page?: 10 | 30 | 50 | 100
   sort?: string
   order?: 'asc' | 'desc'
   filter?: unknown
   search?: string
+  count?: 0,
+  next?: null,
+  previous?: null,
+  results?: []
 }
 
 // Query Request Context
@@ -64,8 +74,7 @@ export type QueryRequestContextProps = {
 
 // Default Query State
 export const initialQueryState: QueryState = {
-  page: 1,
-  items_per_page: 10,
+  limit: 10,
 }
 
 // Default Query Context
@@ -76,7 +85,7 @@ export const initialQueryRequest: QueryRequestContextProps = {
 
 // Query Response Context adapted to DRF
 export type QueryResponseContextProps<T> = {
-  response?: Response<Array<T>> | undefined
+  response?: Response<Array<T>> | undefined | PaginationResponse<T>
   refetch: () => void
   isLoading: boolean
   query: string

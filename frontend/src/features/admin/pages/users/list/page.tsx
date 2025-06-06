@@ -1,15 +1,6 @@
 import { useState } from "react"
 import {
-  Search,
-  Filter,
-  Plus,
-  Edit,
-  Trash2,
-  MoreVertical,
-  ChevronLeft,
-  ChevronRight,
-  UserCog,
-  User,
+  Search, Plus, Edit, Trash2, MoreVertical, UserCog, User, ChevronLeftIcon, ChevronRightIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,128 +9,102 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
 import { Link } from "react-router-dom"
+import { useQueryResponsePagination, useQueryResponseLoading } from "@/hooks/user/UserQueryResponseProvider"
+import { formatLastLogin } from "@/lib/utils"
+import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination"
+import { Label } from "@/components/ui/label";
+import { useQueryRequest } from "@/hooks/_QueryRequestProvider"
+import { deleteUser } from "@/services/usersService"
+import type { UserRole } from "@/types/userModels"
+import { toast } from 'sonner';
+import { useListView } from "@/hooks/_ListViewProvider"
+
 
 export function AdminUsersList() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const {state, updateState} = useQueryRequest()
+  const {results = [], count = 0, next, previous} = useQueryResponsePagination()
+  const { setItemIdForUpdate } = useListView()
+  const isLoading = useQueryResponseLoading()
+
+  // Pagination
+  const rowsPerPage = state.limit ?? 10
+  const offset = state.offset ?? 0
+
+
+  // Filtres
+  const [roleFilter, setRoleFilter] = useState("")
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState<null | { id: number; name: string }>(null)
 
-  // Données pour la liste des utilisateurs
-  const users = [
-    {
-      id: 1,
-      name: "Dr. Jean Martin",
-      email: "jean.martin@example.com",
-      role: "Médecin",
-      lastLogin: "Aujourd'hui, 10:30",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Sophie Lefebvre",
-      email: "sophie.lefebvre@example.com",
-      role: "Technicien",
-      lastLogin: "Hier, 15:45",
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "Pierre Dubois",
-      email: "pierre.dubois@example.com",
-      role: "Assistant",
-      lastLogin: "22/04/2023, 09:15",
-      status: "inactive",
-    },
-    {
-      id: 4,
-      name: "Marie Leclerc",
-      email: "marie.leclerc@example.com",
-      role: "Médecin",
-      lastLogin: "Aujourd'hui, 08:20",
-      status: "active",
-    },
-    {
-      id: 5,
-      name: "Thomas Bernard",
-      email: "thomas.bernard@example.com",
-      role: "Administrateur",
-      lastLogin: "Aujourd'hui, 11:05",
-      status: "active",
-    },
-    {
-      id: 6,
-      name: "Camille Moreau",
-      email: "camille.moreau@example.com",
-      role: "Technicien",
-      lastLogin: "Hier, 14:30",
-      status: "active",
-    },
-    {
-      id: 7,
-      name: "Lucas Petit",
-      email: "lucas.petit@example.com",
-      role: "Assistant",
-      lastLogin: "21/04/2023, 16:40",
-      status: "inactive",
-    },
-    {
-      id: 8,
-      name: "Emma Roux",
-      email: "emma.roux@example.com",
-      role: "Médecin",
-      lastLogin: "Aujourd'hui, 09:45",
-      status: "active",
-    },
-    {
-      id: 9,
-      name: "Hugo Fournier",
-      email: "hugo.fournier@example.com",
-      role: "Technicien",
-      lastLogin: "20/04/2023, 10:15",
-      status: "active",
-    },
-    {
-      id: 10,
-      name: "Léa Girard",
-      email: "lea.girard@example.com",
-      role: "Assistant",
-      lastLogin: "Hier, 11:30",
-      status: "active",
-    },
-  ]
+  // Recherche
+  const [searchTerm, setSearchTerm] = useState(state.search ?? "")
 
-  // Filtrer les utilisateurs
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter.toLowerCase()
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    return matchesSearch && matchesRole && matchesStatus
-  })
+  // Gérer la recherche
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+    updateState({ search: e.target.value, offset: 0 }) // reset page on search
+  }
 
-  // Gérer la suppression d'un utilisateur
+  // Gérer le changement du nombre de lignes par page
+  const rowPageOnValueChange = (rowsPerPage: 10 | 20 | 50 | 100 ) => {
+    updateState({
+      limit: rowsPerPage,
+      offset: 0, // reset to first page
+    })
+  }
+
+  // Navigation pagination
+  const pagNav = (nav: 'prev'|'next') => {
+    let newOffset = offset
+    if (nav === 'next' && next) {
+      newOffset = offset + rowsPerPage
+    } else if (nav === 'prev' && previous) {
+      newOffset = Math.max(0, offset - rowsPerPage)
+    }
+    updateState({
+      offset: newOffset
+    })
+  }
+
+  // Filtrage par role
+  function handleFilterRole(role:UserRole & 'all') {
+    if(role === 'all'){
+      setRoleFilter('')
+      updateState({
+        filter: undefined
+      })
+    }else{
+      setRoleFilter(role)
+      updateState({
+        filter: {role:role}
+      })
+    }
+  }
+
+  // Suppression utilisateur
   const handleDeleteClick = (user: { id: number; name: string }) => {
     setUserToDelete(user)
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDelete = () => {
-    // Logique de suppression ici
-    console.log(`Suppression de l'utilisateur ${userToDelete?.name}`)
-    setIsDeleteDialogOpen(false)
-    setUserToDelete(null)
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      const statutCode = await deleteUser(userToDelete.id)
+      if(statutCode !== 204) {
+        toast.error(`Erreur lors de la suppression de l'utilisateur ${userToDelete.name}.`)
+      }else{
+        toast.success(`Utilisateur ${userToDelete.name} supprimé avec succès.`)
+      }
+      setIsDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
   }
+
+  // Pour la liste des options de pagination
+  const rowsPerPageList = [10, 20, 50, 100].filter(value => value <= (count || 100))
 
   return (
     <>
@@ -167,23 +132,23 @@ export function AdminUsersList() {
                 placeholder="Rechercher un utilisateur..."
                 className="pl-10"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
               />
             </div>
             <div className="flex gap-2">
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <Select value={roleFilter} onValueChange={handleFilterRole}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Rôle" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les rôles</SelectItem>
-                  <SelectItem value="administrateur">Administrateur</SelectItem>
-                  <SelectItem value="médecin">Médecin</SelectItem>
-                  <SelectItem value="technicien">Technicien</SelectItem>
-                  <SelectItem value="assistant">Assistant</SelectItem>
+                  <SelectItem value="ADMIN">Administrateur</SelectItem>
+                  <SelectItem value="DOCTOR">Médecin</SelectItem>
+                  <SelectItem value="TECHNICIAN">Technicien</SelectItem>
+                  <SelectItem value="ASSISTANT">Assistant</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Statut" />
                 </SelectTrigger>
@@ -196,102 +161,152 @@ export function AdminUsersList() {
               <Button variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
                 Filtres
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Dernière connexion</TableHead>
-                  <TableHead className="text-center">Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.lastLogin}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge className={user.status === "active" ? "bg-green-500" : "bg-gray-500"}>
-                        {user.status === "active" ? "Actif" : "Inactif"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/users/profile/${user.id}`}>
-                              <User className="h-4 w-4 mr-2" />
-                              Voir le profil
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/users/edit/${user.id}`}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Modifier
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/users/permissions/${user.id}`}>
-                              <UserCog className="h-4 w-4 mr-2" />
-                              Permissions
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-500"
-                            onClick={() => handleDeleteClick({ id: user.id, name: user.name })}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {isLoading ?
+              (
+                <div className="p-8 flex flex-col items-center justify-center">
+                  <svg className="animate-spin h-8 w-8 text-primary mb-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  <div className="w-full max-w-2xl">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex items-center space-x-4 mb-4 animate-pulse">
+                        <div className="h-4 w-1/5 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-1/5 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-1/6 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-1/6 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-1/6 bg-gray-200 rounded"></div>
+                        <div className="h-4 w-1/12 bg-gray-200 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-gray-400 mt-4">Chargement des utilisateurs...</span>
+                </div>
+              ) :
+              (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom Complet</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Rôle</TableHead>
+                        <TableHead>Dernière connexion</TableHead>
+                        <TableHead className="text-center">Statut</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {results.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.profile?.first_name} {user.profile?.last_name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.role}</TableCell>
+                          <TableCell>{formatLastLogin(user.last_login)}</TableCell>
+                          <TableCell className="text-center">
+                            <Badge className={user.is_active === true ? "bg-green-500" : "bg-gray-500"}>
+                              {user.is_active === true ? "Actif" : "Inactif"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/admin/users/profile/${user.id}`}>
+                                    <User className="h-4 w-4 mr-2" />
+                                    Voir le profil
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/admin/users/edit`} onClick={() => setItemIdForUpdate(user.id)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Modifier
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/admin/users/permissions/${user.id}`}>
+                                    <UserCog className="h-4 w-4 mr-2" />
+                                    Permissions
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-500"
+                                  onClick={() => user.id !== undefined ? handleDeleteClick({ id: Number(user.id), name: `${user.profile?.first_name} ${user.profile?.last_name}` }) : undefined}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+              )
+            }
           </div>
 
-          <div className="flex items-center justify-between px-4 py-3 border-t">
-            <div className="text-sm text-gray-500">Affichage de 1 à 10 sur 42 utilisateurs</div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="icon">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="bg-blue-50">
-                1
-              </Button>
-              <Button variant="outline" size="sm">
-                2
-              </Button>
-              <Button variant="outline" size="sm">
-                3
-              </Button>
-              <Button variant="outline" size="sm">
-                4
-              </Button>
-              <Button variant="outline" size="sm">
-                5
-              </Button>
-              <Button variant="outline" size="icon">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+          <div className="w-full flex items-center justify-between gap-2 px-4 py-3 border-t">
+            <div className="flex items-center gap-2">
+              <Label className="whitespace-nowrap">Rows per page:</Label>
+              <Select
+                value={rowsPerPage.toString()}
+                onValueChange={(value) => rowPageOnValueChange(Number(value) as 10 | 20 | 50 | 100)}
+              >
+                <SelectTrigger className="w-[65px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {rowsPerPageList.map((value, index) => (
+                    <SelectItem value={value.toString()} key={index}>{value}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                {count === 0
+                  ? "0"
+                  : `${offset + 1}-${Math.min(offset + rowsPerPage, count)} sur ${count}`}
+              </span>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <Button
+                      aria-label="Go to previous page"
+                      size="icon"
+                      variant="ghost"
+                      disabled={!previous}
+                      onClick={()=> pagNav('prev')}
+                    >
+                      <ChevronLeftIcon className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <Button
+                      aria-label="Go to next page"
+                      size="icon"
+                      variant="ghost"
+                      disabled={!next}
+                      onClick={()=> pagNav('next')}
+                    >
+                      <ChevronRightIcon className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           </div>
         </div>

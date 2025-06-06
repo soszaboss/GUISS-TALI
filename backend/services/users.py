@@ -6,26 +6,50 @@ from apps.users.models import User, Profile
 
 
 @transaction.atomic
-def user_create(*, email: str, password: str, role: str, phone_number: str) -> User:
-    # if User.objects.filter(email=email).exists():
-    #     raise ValidationError(_("A user with this email already exists."))
-    # if User.objects.filter(phone_number=phone_number).exists():
-    #     raise ValidationError(_("A user with this phone number already exists."))
-
-    user = User(
-        email=email,
-        role=role,
-        phone_number=phone_number,
-    )
+def user_create(*, email: str, password: str, role: str, phone_number: str, profile:dict | Profile=None) -> User:
+    if role == User.Role.ADMIN:
+        user = User.objects.create_superuser(
+                email=email,
+                password=password,
+                phone_number=phone_number
+            )
+    else:
+        user = User(
+            email=email,
+            role=role,
+            phone_number=phone_number,
+        )
+        user.is_active=True
+        user.is_verified=True
+        user.is_staff=True
     user.set_password(password)
     user.full_clean()
 
     with transaction.atomic():
         user.save()
-
-        # Create user profil
-        profile_create(user=user)
-
+        if profile is not None:
+            first_name = profile.get('first_name', "")
+            last_name = profile.get('last_name', "")
+            birthday = profile.get('birthday', None)
+            gender = profile.get('gender', None)
+            address = profile.get('address', "")
+            city = profile.get('city', "")
+            zip = profile.get('zip', "")
+            # Create user profil
+            profile_create(
+                    user=user,
+                    first_name=first_name,
+                    last_name=last_name,
+                    birthday=birthday,
+                    gender=gender,
+                    address=address,
+                    city=city,
+                    zip=zip
+                )
+        else:
+            # Create empty profile if not provided
+            profile_create(user=user)
+    
     return user
 
 
@@ -106,3 +130,5 @@ def profile_update(
 
     profile.save()
     return profile
+
+

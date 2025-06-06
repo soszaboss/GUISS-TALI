@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { AlertTriangle, CheckCircle, Clock, Save, FileText } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChoiceSelect } from "../ChoiceSelect"
-import { choicesMap } from "@/utils/choicesMap"
+import { choicesMap } from "@/helpers/choicesMap"
 
 interface Visit {
   id: string

@@ -1,5 +1,5 @@
 import type { AuthModel,  } from "@/modules/auth";
-import type { UserGetModel } from "@/types/user";
+import type { UserGetModel } from "@/types/userModels";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_APP_API_URL;

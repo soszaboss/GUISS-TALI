@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useAuth } from "@/hooks/auth/Auth"
-import type { AuthModel } from "@/types/user"
+import type { AuthModel } from "@/types/userModels"
 import { redirect } from "react-router-dom"
 
 

@@ -12,7 +12,7 @@ class Command(BaseCommand):
             '-c',
             '--count',
             type=int,
-            help='Number of users to create',
+            help='Number of user(s) to create',
         )
 
     def handle(self, *args, **options):

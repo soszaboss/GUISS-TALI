@@ -3,11 +3,11 @@ from django.urls import path
 from apps.authemail import views
 
 urlpatterns = [
-    path(
-        'signup/',
-        views.Signup.as_view(),
-        name='signup_client'
-    ),
+    # path(
+    #     'signup/',
+    #     views.Signup.as_view(),
+    #     name='signup_client'
+    # ),
 
     path(
         'login/',

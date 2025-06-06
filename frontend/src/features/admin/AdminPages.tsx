@@ -32,14 +32,14 @@ export const adminPlatformRoutes: RouteObject[] = [
             {
                 path: 'add',
                 lazy: async () => {
-                    const module = await import('./pages/users/add/page');
+                    const module = await import('./components/users/user-form');
                     return { Component: module.default };
                 }
             },
             {
-                path:'edit/:userId',
+                path:'edit/',
                 lazy: async () => {
-                    const module = await import('./pages/users/edit/[id]/page');
+                    const module = await import('./components/users/user-form');
                     return { Component: module.default };
                 }
             },
