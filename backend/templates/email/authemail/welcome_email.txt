@@ -1,1 +1,20 @@
-Your registration is complete.
+Bienvenue !
+
+Bonjour,
+
+Votre compte a été créé avec succès sur notre plateforme.
+
+Email : {{ user.email }}
+Mot de passe temporaire : {{ default_password }}
+
+Pour votre sécurité, nous vous recommandons de :
+1. Vous connecter dès maintenant avec le mot de passe temporaire
+2. Changer votre mot de passe dans votre profil
+
+Se connecter : {{ login_url }}
+
+Si vous rencontrez des problèmes, vous pouvez réinitialiser votre mot de passe ici :
+{{ password_reset_url }}
+
+Cet email a été envoyé automatiquement. Merci de ne pas y répondre.
+© {% now "Y" %} {{ site_name }}. Tous droits réservés.

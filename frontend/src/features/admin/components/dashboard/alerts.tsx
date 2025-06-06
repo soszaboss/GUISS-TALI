@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, Clock, Shield, User } from "lucide-react"
+import { Link } from "react-router-dom"
 
 // Données fictives pour les alertes
 const alertsData = [
@@ -83,9 +84,9 @@ export default function AdminAlerts() {
         ))}
 
         <div className="pt-2 text-center">
-          <a href="#" className="text-sm text-blue-600 hover:underline">
+          <Link to="#" className="text-sm text-blue-600 hover:underline">
             Voir toutes les alertes
-          </a>
+          </Link>
         </div>
       </CardContent>
     </Card>

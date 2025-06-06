@@ -1,16 +1,13 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { InfoIcon, FileText, Car, Calendar } from "lucide-react"
+import { InfoIcon, FileText } from "lucide-react"
 
 // Importons les composants nécessaires
 // Note: Ces imports sont des placeholders, les composants réels seraient définis dans leurs fichiers respectifs
 import { PatientHeader } from "./patient-header"
 import { MedicalHistory } from "./medical-history"
-import { DrivingExperience } from "./driving-experience"
-import { Visit } from "./visit"
+
 
 
 // Utilisons export function au lieu de export default
@@ -71,60 +68,10 @@ export function PatientMedicalRecord() {
             <FileText className="h-4 w-4 mr-2" />
             Antécédents Médicaux
           </TabsTrigger>
-          <TabsTrigger value="experience" className="flex items-center">
-            <Car className="h-4 w-4 mr-2" />
-            Expérience de Conduite
-          </TabsTrigger>
-          <TabsTrigger value="visite-1" className="flex items-center text-green-600">
-            <Calendar className="h-4 w-4 mr-2" />
-            Visite 1
-          </TabsTrigger>
-          <TabsTrigger value="visite-2" className="flex items-center text-blue-600">
-            <Calendar className="h-4 w-4 mr-2" />
-            Visite 2
-          </TabsTrigger>
-          <TabsTrigger value="visite-3" className="flex items-center text-purple-600">
-            <Calendar className="h-4 w-4 mr-2" />
-            Visite 3
-          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="antecedents">
+        <TabsContent value="antecedents" aria-selected={activeTab === "antecedents"}>
           <MedicalHistory patientId={patientId} userRole={userRole} />
-        </TabsContent>
-
-        <TabsContent value="experience">
-          <DrivingExperience patientId={patientId} userRole={userRole} />
-        </TabsContent>
-
-        <TabsContent value="visite-1">
-          <Visit
-            visitNumber={1}
-            patientId={patientId}
-            userRole={userRole}
-            colorClass="border-green-500"
-            date="2023-05-15"
-          />
-        </TabsContent>
-
-        <TabsContent value="visite-2">
-          <Visit
-            visitNumber={2}
-            patientId={patientId}
-            userRole={userRole}
-            colorClass="border-blue-500"
-            date="2023-06-15"
-          />
-        </TabsContent>
-
-        <TabsContent value="visite-3">
-          <Visit
-            visitNumber={3}
-            patientId={patientId}
-            userRole={userRole}
-            colorClass="border-purple-500"
-            date="2023-07-15"
-          />
         </TabsContent>
       </Tabs>
     </div>

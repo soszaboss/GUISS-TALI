@@ -2,16 +2,14 @@
 import factory
 from factory.django import DjangoModelFactory
 from apps.users.models import User, Profile
-from django.utils import timezone
-import datetime
 
 
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
-    email = factory.Sequence(lambda n: f"user{n}@test.com")
-    phone_number = factory.Sequence(lambda n: f"+22177{n:07}")
+    email = factory.Faker('email')#.Sequence(lambda n: f"user{n}@test.com")
+    phone_number = factory.Sequence(lambda n: f"+221771{n:06}")
     role = factory.Iterator(User.Role.values)
     is_active = True
     is_verified = True

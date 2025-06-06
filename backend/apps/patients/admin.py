@@ -8,7 +8,6 @@ class VehiculeInline(admin.TabularInline):  # ou StackedInline
     fields = ('modele', 'annee', 'immatriculation', 'type_vehicule_conduit', 'autre_type_vehicule_conduit')
     show_change_link = True
 
-
 @admin.register(Conducteur)
 class ConducteurAdmin(admin.ModelAdmin):
     list_display = (
@@ -19,6 +18,8 @@ class ConducteurAdmin(admin.ModelAdmin):
     list_filter = ('type_permis', 'service', 'sexe', 'niveau_instruction')
     inlines = [VehiculeInline]
     readonly_fields = ('created', 'modified')
+    list_per_page = 15
+
 
 
 @admin.register(Vehicule)
@@ -31,6 +32,7 @@ class VehiculeAdmin(admin.ModelAdmin):
     list_filter = ('type_vehicule_conduit',)
     autocomplete_fields = ('conducteur',)
     readonly_fields = ('created', 'modified')
+    list_per_page = 15
 
     def conducteur_full_name(self, obj):
         return f"{obj.conducteur.first_name} {obj.conducteur.last_name}"

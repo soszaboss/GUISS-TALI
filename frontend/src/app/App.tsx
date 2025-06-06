@@ -1,16 +1,6 @@
-import { MetronicSplashScreenProvider } from '@/components/ui/splash-screen'
-import { AuthProvider } from '@/hooks/auth/Auth'
-import { RouterProvider } from 'react-router-dom'
-import { router } from './routes/AppRoutes'
+import { AppProvider } from './provider'
 
-function App() {
-  return (
-    <AuthProvider>
-      <MetronicSplashScreenProvider>
-        <RouterProvider router={router} />
-      </MetronicSplashScreenProvider>
-    </AuthProvider>
-  )
-}
+const App: React.FC = () => <AppProvider />
+
 
 export default App

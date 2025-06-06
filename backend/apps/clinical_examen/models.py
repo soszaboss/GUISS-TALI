@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from apps.clinical_examen.base import OcularMeasurementBase, Base, Segment
 from utils.models.choices import Cornee, ChambreAnterieureProfondeur, ChambreAnterieureTransparence, QuantiteAnomalie, \
     TypeAnomalie, Pupille, AxeVisuel, RPM, Iris, Cristallin, Vitre, Macula, ChampRetinienPeripherique, Vaisseaux, \
-    PositionCristallin, Papille, PerimetrieBinoculaire, HypotonisantValue
+    PositionCristallin, Papille, PerimetrieBinoculaire, HypotonisantValue, Symptomes
 
 
 # Visual Acuity model
@@ -25,10 +25,10 @@ class VisualAcuity(Base):
 # Refraction model
 class Refraction(Base):
     od_s = models.FloatField(_('S OD'), null=True)
-    od_c = models.FloatField(_('C OD'), null=True)
-    od_a = models.FloatField(_('A OD'), null=True)
     og_s = models.FloatField(_('S OG'), null=True)
+    od_c = models.FloatField(_('C OD'), null=True)
     og_c = models.FloatField(_('C OG'), null=True)
+    od_a = models.FloatField(_('A OD'), null=True)
     og_a = models.FloatField(_('A OG'), null=True)
     dp = models.FloatField(_('DP en mm'), null=True)
 
@@ -78,17 +78,6 @@ class Plaintes(Base):
     YES_NO_CHOICES = [(True, 'Oui'), (False, 'Non')]
     DIPLOPIE_TYPE_CHOICES = [('monoculaire', 'Monoculaire'), ('binoculaire', 'Binoculaire')]
     EYE_CHOICES = [('od', 'OD'), ('og', 'OG'), ('odg', 'ODG')]
-
-    class Symptomes(models.TextChoices):
-        AUCUN = 'AUCUN', _('Aucun')
-        BAV = 'BAV', _('BAV')
-        ROUGEUR = 'ROUGEUR', _('ROUGEUR')
-        DOULEUR = 'DOULEUR', _('DOULEUR')
-        DIPLOPIE = 'DIPLOPIE', _('DIPLOPIE')
-        STARBISME = 'STARBISME', _('STARBISME')
-        NYSTAGMUS = 'NYSTAGMUS', _('NYSTAGMUS')
-        PTOSIS = 'PTOSIS', _('PTOSIS')
-        AUTRES = 'AUTRES', _('AUTRES')
 
     od_symptom = models.CharField(_('OD symptom'), max_length=30, choices=Symptomes.choices)
     og_symptom = models.CharField(_('OG symptom'), max_length=30, choices=Symptomes.choices)

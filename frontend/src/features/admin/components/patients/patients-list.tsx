@@ -1,12 +1,10 @@
-"use client"
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Download, Eye, FileText, MoreHorizontal, Search, SlidersHorizontal } from "lucide-react"
+import { Eye, FileText, MoreHorizontal, Search, SlidersHorizontal } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Link } from "react-router-dom"
@@ -115,16 +113,6 @@ export default function AdminPatientsList() {
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
           <CardTitle>Liste des patients</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
-            </Button>
-            <Button variant="default" size="sm">
-              <Eye className="h-4 w-4 mr-2" />
-              Voir les statistiques
-            </Button>
-          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -212,13 +200,13 @@ export default function AdminPatientsList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
-                            <Link to={`/admin-platform/patients/${patient.id}`} className="flex items-center">
+                            <Link to={`/admin/patients/${patient.id}`} className="flex items-center">
                               <Eye className="mr-2 h-4 w-4" />
                               <span>Voir le profil</span>
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
-                            <Link to={`/admin-platform/medical-records/${patient.id}`} className="flex items-center">
+                            <Link to={`/admin/medical-records/${patient.id}`} className="flex items-center">
                               <FileText className="mr-2 h-4 w-4" />
                               <span>Voir la fiche médicale</span>
                             </Link>

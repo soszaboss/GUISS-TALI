@@ -10,7 +10,7 @@ from serializers.users import UserSerializer, ProfileSerializer
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('profile').all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['role']
     search_fields = [
@@ -20,12 +20,12 @@ class UserViewSet(viewsets.ModelViewSet):
         'phone_number',
     ]
 
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'update', 'destroy']:
-            return [permissions.IsAdminUser()]
-        elif self.action == 'me':
-            return [permissions.IsAuthenticated()]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action in ['list', 'retrieve', 'update', 'destroy']:
+    #         return [permissions.IsAdminUser()]
+    #     elif self.action == 'me':
+    #         return [permissions.IsAuthenticated()]
+    #     return super().get_permissions()
 
     @action(detail=False, methods=['get'], url_path='me', permission_classes=[permissions.IsAuthenticated])
     def me(self, request):
@@ -38,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.select_related('user').all()
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
         if self.action in ['retrieve', 'update', 'partial_update']:

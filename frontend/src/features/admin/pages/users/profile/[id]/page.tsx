@@ -37,7 +37,7 @@ export default function AdminUserProfile() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="icon" asChild>
-              <Link to="/admin-platform/users">
+              <Link to="/admin/users">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
@@ -47,7 +47,7 @@ export default function AdminUserProfile() {
             </div>
           </div>
           <Button asChild>
-            <Link to={`/admin-platform/users/edit/${userId}`}>
+            <Link to={`/admin/users/edit/${userId}`}>
               <Edit className="h-4 w-4 mr-2" />
               Modifier
             </Link>
@@ -146,7 +146,7 @@ export default function AdminUserProfile() {
                 </div>
                 <div className="mt-4">
                   <Button variant="outline" asChild>
-                    <Link to={`/admin-platform/users/permissions/${userId}`}>Gérer les permissions</Link>
+                    <Link to={`/admin/users/permissions/${userId}`}>Gérer les permissions</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -188,10 +188,10 @@ export default function AdminUserProfile() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to={`/admin-platform/users/edit/${userId}`}>Modifier le profil</Link>
+                  <Link to={`/admin/users/edit/${userId}`}>Modifier le profil</Link>
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to={`/admin-platform/users/permissions/${userId}`}>Gérer permissions</Link>
+                  <Link to={`/admin/users/permissions/${userId}`}>Gérer permissions</Link>
                 </Button>
                 <Button variant="outline" className="w-full">
                   Réinitialiser mot de passe

@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, FileText, Mail, MapPin, Phone, Printer, User, Eye } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ArrowLeft, Calendar, FileText, Mail, MapPin, Phone, User } from "lucide-react"
 import { Link } from "react-router-dom"
 
 
@@ -86,7 +84,7 @@ export default function AdminPatientDetail() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Link
-            to="/admin-platform/patients"
+            to="/admin/patients"
             className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-2"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -97,19 +95,13 @@ export default function AdminPatientDetail() {
             ID: {patient.id} | Enregistré le {patient.registrationDate}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Printer className="h-4 w-4 mr-2" />
-            Imprimer
-          </Button>
           <Button variant="default" size="sm">
             <FileText className="h-4 w-4 mr-2" />
             Voir la fiche médicale
           </Button>
-        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-1">
         <div className="md:col-span-3 space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -172,158 +164,13 @@ export default function AdminPatientDetail() {
               </div>
             </CardContent>
           </Card>
-
-          <Tabs defaultValue="medical-records">
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="medical-records">Fiches médicales</TabsTrigger>
-              <TabsTrigger value="appointments">Rendez-vous</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="medical-records">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fiches médicales</CardTitle>
-                  <CardDescription>Historique des fiches médicales du patient</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Médecin</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Vision</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {patient.medicalRecords.map((record) => (
-                        <TableRow key={record.id}>
-                          <TableCell className="font-medium">{record.id}</TableCell>
-                          <TableCell>{record.date}</TableCell>
-                          <TableCell>{record.type}</TableCell>
-                          <TableCell>{record.doctor}</TableCell>
-                          <TableCell>
-                            <Badge variant={record.status === "Complet" ? "default" : "outline"}>{record.status}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                record.visionStatus === "Compatible"
-                                  ? "success"
-                                  : record.visionStatus === "Compatible avec restrictions"
-                                    ? "warning"
-                                    : record.visionStatus === "Incompatible"
-                                      ? "destructive"
-                                      : "outline"
-                              }
-                            >
-                              {record.visionStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Link to={`/admin-platform/medical-records/${record.id}`}>
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4 mr-2" />
-                                Voir
-                              </Button>
-                            </Link>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="appointments">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Rendez-vous</CardTitle>
-                  <CardDescription>Historique et planification des rendez-vous</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Heure</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Médecin</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {patient.appointments.map((appointment) => (
-                        <TableRow key={appointment.id}>
-                          <TableCell className="font-medium">{appointment.id}</TableCell>
-                          <TableCell>{appointment.date}</TableCell>
-                          <TableCell>{appointment.time}</TableCell>
-                          <TableCell>{appointment.type}</TableCell>
-                          <TableCell>{appointment.doctor}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                appointment.status === "Terminé"
-                                  ? "default"
-                                  : appointment.status === "Planifié"
-                                    ? "outline"
-                                    : "secondary"
-                              }
-                            >
-                              {appointment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4 mr-2" />
-                              Détails
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="notes">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notes</CardTitle>
-                  <CardDescription>Notes et observations sur le patient</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {patient.notes.map((note) => (
-                      <div key={note.id} className="p-4 rounded-lg border">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="font-medium">{note.author}</div>
-                          <div className="text-sm text-muted-foreground">{note.date}</div>
-                        </div>
-                        <p>{note.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
         </div>
-
-        <div>
+        <div className="md:col-span-3">
           <Card className="sticky top-20">
             <CardHeader>
               <CardTitle>Informations</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 grid gap-6 md:grid-cols-2">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Catégorie</p>
                 <p>{patient.category}</p>

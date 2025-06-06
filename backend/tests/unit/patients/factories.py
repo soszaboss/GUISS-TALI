@@ -28,7 +28,7 @@ class ConducteurFactory(DjangoModelFactory):
     type_instruction_suivie = "Française"
     niveau_instruction = "Secondaire"
     annees_experience = 5
-    image = "profils/profile_avatars/avatar.png"
+    image = 'media/images/profiles/avatars/default-profile-picture.png'
 
 
 class VehiculeFactory(DjangoModelFactory):

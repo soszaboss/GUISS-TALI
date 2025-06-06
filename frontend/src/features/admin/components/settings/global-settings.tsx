@@ -23,7 +23,7 @@ export function AdminGlobalSettings() {
       <div className="space-y-6">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" asChild className="mr-2">
-            <Link to="/admin-platform/settings">
+            <Link to="/admin/settings">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>

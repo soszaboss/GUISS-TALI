@@ -1,7 +1,7 @@
 from django.urls import path
-from rest_framework import routers
 
 from apps.users.views import ProfileViewSet, UserViewSet
+from apps.authemail.views import Signup
 
 # router = routers.SimpleRouter()
 # router.register(r'', UserViewSet.as_view({'get': 'list', 'delete': 'destroy', }), basename='users')
@@ -17,6 +17,7 @@ profile_update = ProfileViewSet.as_view({'put': 'update', 'patch': 'partial_upda
 
 urlpatterns = [
     path('', list_users, name='users'),
+    path('create/', Signup.as_view(), name='user_create'),
     path('<int:pk>/', user_details, name='user_details'),
     path('<int:pk>/delete/', user_delete, name='user_delete'),
     path('<int:pk>/update/', user_update, name='user_update'),

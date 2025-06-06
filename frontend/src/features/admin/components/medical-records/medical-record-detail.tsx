@@ -84,7 +84,7 @@ export default function AdminMedicalRecordDetail() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Link
-            to="/admin-platform/medical-records"
+            to="/admin/medical-records"
             className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-2"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -113,7 +113,7 @@ export default function AdminMedicalRecordDetail() {
                 <CardTitle>Informations du patient</CardTitle>
                 <CardDescription>Détails personnels et statut</CardDescription>
               </div>
-              <Link to={`/admin-platform/patients/${medicalRecord.patientId}`}>
+              <Link to={`/admin/patients/${medicalRecord.patientId}`}>
                 <Button variant="outline" size="sm">
                   <User className="h-4 w-4 mr-2" />
                   Voir le profil
