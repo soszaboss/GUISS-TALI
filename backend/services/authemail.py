@@ -20,6 +20,8 @@ from services.users import user_create
 def _generate_code():
     return randint(100000, 999999)
 
+EXPIRY_PERIOD = getattr(settings, 'AUTH_EMAIL_EXPIRY_PERIOD') 
+
 def _make_random_password(length=10, allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'):
         return ''.join(secrets.choice(allowed_chars) for i in range(length))
 
@@ -91,8 +93,7 @@ def user_reset_password_verify(code):
     if not password_reset_code:
         raise ValidationError(_('Code invalide ou expiré.'))
 
-    expiry_period = 15  
-    expiration_time = password_reset_code.created + timedelta(minutes=expiry_period)
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
 
     if timezone.now() > expiration_time:
         password_reset_code.delete()
@@ -107,8 +108,8 @@ def user_reset_password_verified(code, password):
     if not password_reset_code:
         raise ValidationError(_('Code invalide ou expiré.'))
 
-    expiry_period = 15  
-    expiration_time = password_reset_code.created + timedelta(minutes=expiry_period)
+    EXPIRY_PERIOD = 15  
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
 
     if timezone.now() > expiration_time:
         password_reset_code.delete()
@@ -154,7 +155,7 @@ def user_reset_password_verified(code, password):
         raise ValidationError({'detail': _("Code invalide ou expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
     delta = date.today() - code_obj.created.date()
-    if delta.days > EmailChangeCode.objects.get_expiry_period():
+    if delta.days > EmailChangeCode.objects.get_EXPIRY_PERIOD():
         code_obj.delete()
         raise ValidationError({'detail': _("Ce code a expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
@@ -191,6 +192,7 @@ def password_change(*, user, password: str) -> dict:
 
 @transaction.atomic
 def user_signup(email: str, role: str, phone_number: str, profile: dict | Profile=None):
+    from apps.authemail.models import PasswordResetCode
     User = get_user_model()
 
     if User.objects.filter(email=email).exists():
@@ -207,9 +209,13 @@ def user_signup(email: str, role: str, phone_number: str, profile: dict | Profil
         role=role,
         profile=profile
     )
-    front_login_url = getattr(settings, 'FRONT_LOGIN_URL', '')
-    front_reset_password = getattr(settings, 'FRONT_RESET_PASSWORD', '')
+    password_reset_code = PasswordResetCode.objects.create_password_reset_code(user)
+    client_domain = getattr(settings, 'CLIENT_DOMAIN')
+    front_login_url = f'{client_domain}/auth/login'
+    front_reset_password = f'{client_domain}/auth/reset-password/{password_reset_code.code}'
     site_name = getattr(settings, 'SITE_NAME', '')
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
+    expiration_time = expiration_time.strftime('%d-%m-%Y %H:%M:%S')
 
     context = {
         'email': user.email,
@@ -217,6 +223,7 @@ def user_signup(email: str, role: str, phone_number: str, profile: dict | Profil
         'login_url': front_login_url,
         'password_reset_url': front_reset_password,
         'site_name': site_name,
+        'expiration_time': expiration_time,
     }
  
     return send_multi_format_email('welcome_email', context, target_email=user.email)
