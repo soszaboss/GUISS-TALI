@@ -1,12 +1,86 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <title>Thank you for signing up!</title>
+    <meta charset="UTF-8">
+    <title>Votre compte a été créé</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .header {
+            color: #1e88e5;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #1e88e5;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1e88e5;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<p>
-Your registration is complete.
-</p>
+    <div class="email-container">
+        <div class="header">Bienvenue !</div>
+        
+        <p>Bonjour,</p>
+        
+        <p>Votre compte a été créé avec succès sur notre plateforme.</p>
+        
+        <div class="info-box">
+            <strong>Email :</strong> {{ email }}<br>
+            <strong>Mot de passe temporaire :</strong> {{ password }}
+        </div>
+        
+        <p>Pour votre sécurité, nous vous recommandons de :</p>
+        <ol>
+            <li>Vous connecter dès maintenant avec le mot de passe temporaire</li>
+            <li>Changer votre mot de passe dans votre profil</li>
+        </ol>
+        
+        <div style="text-align: center;">
+            <a href="{{ login_url }}" class="button">Se connecter</a>
+        </div>
+        
+        <p>Si vous rencontrez des problèmes, vous pouvez réinitialiser votre mot de passe ici :<br>
+        <a href="{{ password_reset_url }}">{{ password_reset_url }}</a></p>
+        
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
+            <p>&copy; {% now "Y" %} {{ site_name }}. Tous droits réservés.</p>
+        </div>
+    </div>
 </body>
 </html>

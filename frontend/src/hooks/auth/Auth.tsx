@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { AuthModel, UserGetModel } from '@/types/user'
+import type { AuthModel, UserGetModel } from '@/types/userModels'
 import type { WithChildren } from '@/utils/react18MigrationHelpers'
-import * as authHelper from '@/utils/AuthHelpers'
+import * as authHelper from '@/helpers/crud-helper/AuthHelpers'
 import {type FC, useState, useEffect, createContext, useContext, type Dispatch, type SetStateAction} from 'react'
-import { getUserByToken } from '@/services/auth'
+import { getUserByToken } from '@/services/authService'
 import { LayoutSplashScreen } from '@/components/ui/splash-screen'
 
 

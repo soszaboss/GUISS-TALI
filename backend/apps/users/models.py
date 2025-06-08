@@ -10,7 +10,7 @@ from django_extensions.db.models import TimeStampedModel
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-DEFAULT_AVATAR = 'images/profiles/avatars/default-profile-picture.png'
+DEFAULT_AVATAR = 'media/images/profiles/avatars/default-profile-picture.png'
 
 
 class UserManager(BaseUserManager):
@@ -82,10 +82,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class Role(models.TextChoices):
-        ADMIN = 'ADMIN', _('Administrator')
-        DOCTOR = 'DOCTOR', _('Doctor')
-        TECHNICAL = 'TECHNICIAN', _('Technician')
-        ASSIST = 'ASSISTANT', _('Assistant')
+        ADMIN = 'admin', _('Administrator')
+        DOCTOR = 'doctor', _('Doctor')
+        TECHNICAL = 'technician', _('Technician')
+        ASSIST = 'assistant', _('Assistant')
 
     email = models.EmailField(
         _('email address'),

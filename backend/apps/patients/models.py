@@ -62,8 +62,12 @@ class Conducteur(TimeStampedModel):
     niveau_instruction = models.CharField(_('Education level'), choices=NIVEAU_INSTRUCTION_CHOICES, max_length=15)
 
     annees_experience = models.PositiveIntegerField(_('Years of experience'))
-    image = models.ImageField(_('Profile picture'), upload_to='profils/conducteurs',
-                              default='profils/profile_avatars/avatar.png', null=True)
+    image = models.ImageField(
+        _('Profile picture'),
+        upload_to='images/profiles/avatars/conducteurs/',
+        default='media/images/profiles/avatars/default-profile-picture.png',
+        null=True
+    )
 
     class Meta:
         verbose_name = _('Driver')

@@ -12,6 +12,7 @@ class SignupCodeAdmin(admin.ModelAdmin):
     list_display = ('code', 'user', 'ipaddr', 'created')
     ordering = ('-created',)
     readonly_fields = ('user', 'code', 'ipaddr')
+    list_per_page = 15
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -34,6 +35,7 @@ class PasswordResetCodeAdmin(admin.ModelAdmin):
     list_display = ('code', 'user', 'created')
     ordering = ('-created',)
     readonly_fields = ('user', 'code')
+    list_per_page = 15
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -56,6 +58,7 @@ class EmailChangeCodeAdmin(admin.ModelAdmin):
     list_display = ('code', 'user', 'email', 'created')
     ordering = ('-created',)
     readonly_fields = ('user', 'code', 'email')
+    list_per_page = 15
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -106,6 +109,8 @@ class EmailUserAdmin(UserAdmin):
     )
     search_fields = ('email', 'profile__first_name', 'profile__last_name')
     ordering = ('email',)
+    list_per_page = 15
+
 
 
 admin.site.register(get_user_model(), EmailUserAdmin)

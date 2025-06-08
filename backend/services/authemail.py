@@ -1,30 +1,34 @@
 import os
 import binascii
 from datetime import date
+import secrets
 
 # from ipware import get_client_ip
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate, password_validation
 from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
-
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from django.db import transaction
 
 from apps.authemail.tokens import get_tokens_for_user
-from apps.users.models import User
+from apps.users.models import Profile
+from services.users import user_create
 
 
 def _generate_code():
     return binascii.hexlify(os.urandom(20)).decode('utf-8')
 
+def _make_random_password(length=10, allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'):
+        return ''.join(secrets.choice(allowed_chars) for i in range(length))
+
 
 def send_multi_format_email(template_prefix, template_ctxt, target_email):
-    subject_file = 'authemail/%s_subject.txt' % template_prefix
-    txt_file = 'authemail/%s.txt' % template_prefix
-    html_file = 'authemail/%s.html' % template_prefix
+    subject_file = 'email/authemail/%s_subject.txt' % template_prefix
+    txt_file = 'email/authemail/%s.txt' % template_prefix
+    html_file = 'email/authemail/%s.html' % template_prefix
 
     subject = render_to_string(subject_file).strip()
     from_email = settings.EMAIL_FROM
@@ -37,74 +41,7 @@ def send_multi_format_email(template_prefix, template_ctxt, target_email):
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
 
-
-def user_signup(email:str, role:str, phone_number:str):
-
-    must_validate_email = getattr(settings, "AUTH_EMAIL_VERIFICATION", False)
-
-    try:
-        user = get_user_model().objects.get(email=email)
-        if user.is_verified:
-            content = {'detail': _('Email address already taken.')}
-            return ValidationError(content, code=status.HTTP_400_BAD_REQUEST)
-
-        is_phone_number_exists = get_user_model().objects.filter(phone_number=phone_number).exists()
-        if is_phone_number_exists:
-            content = {'detail': _('Phone number already taken.')}
-            return ValidationError(content, code=status.HTTP_400_BAD_REQUEST)
-
-        from apps.authemail.models import SignupCode
-        try:
-            # Delete old signup codes
-            signup_code = SignupCode.objects.get(user=user)
-            signup_code.delete()
-        except SignupCode.DoesNotExist:
-            pass
-
-    except get_user_model().DoesNotExist:
-        # generate a random password and assign it to the new user.
-        password = User.objects.make_random_password()
-        if role == User.Role.ADMIN:
-            user = User.objects.create_superuser(
-                email=email,
-                password=password,
-                phone_number=phone_number
-            )
-        else:
-            extra_fields = {
-                'is_active': True,
-                'is_verified': True,
-                'role': role,
-            }
-            user = User.objects.create_user(
-                email,
-                password,
-                phone_number,
-                **extra_fields
-            )
-
-    if not must_validate_email:
-        # user.is_verified = True
-        context = {
-            'email': user.email,
-            'password': user.password,
-        }
-        send_multi_format_email('welcome_email',
-                                context,
-                                target_email=user.email)
-    # user.save()
-
-    # if must_validate_email:
-    #     # Create and associate signup code
-    #     client_ip = get_client_ip(request)[0]
-    #     if client_ip is None:
-    #         client_ip = '0.0.0.0'  # Unable to get the client's IP address
-    #     signup_code = SignupCode.objects.create_signup_code(user, client_ip)
-    #     signup_code.send_signup_email()
-
-    return user
-
-
+    
 def user_login(email:str, password:str):
     user = authenticate(email=email, password=password)
     if user:
@@ -240,3 +177,35 @@ def password_change(*, user, password: str) -> dict:
     user.set_password(password)
     user.save()
     return {'success': _('Mot de passe changé.')}
+
+@transaction.atomic
+def user_signup(email: str, role: str, phone_number: str, profile: dict | Profile=None):
+    User = get_user_model()
+
+    if User.objects.filter(email=email).exists():
+        raise ValidationError(_('Email address already taken.'), code=400)
+
+    if User.objects.filter(phone_number=phone_number).exists():
+        raise ValidationError(_('Phone number already taken.'), code=400)
+
+    password = _make_random_password(length=6)
+    user = user_create(
+        email=email,
+        password=password,
+        phone_number=phone_number,
+        role=role,
+        profile=profile
+    )
+    front_login_url = getattr(settings, 'FRONT_LOGIN_URL', '')
+    front_reset_password = getattr(settings, 'FRONT_RESET_PASSWORD', '')
+    site_name = getattr(settings, 'SITE_NAME', '')
+
+    context = {
+        'email': user.email,
+        'password': password,
+        'login_url': front_login_url,
+        'password_reset_url': front_reset_password,
+        'site_name': site_name,
+    }
+ 
+    return send_multi_format_email('welcome_email', context, target_email=user.email)
