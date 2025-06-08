@@ -2,7 +2,8 @@
 
 import type { AuthModel } from "@/types/authModels"
 
-
+const KEY = "emailForPasswordReset"
+const DURATION = 15 * 60 * 1000 // 15 minutes
 const AUTH_LOCAL_STORAGE_KEY = 'kt-auth-react-v'
 
 const getAuth = (): AuthModel | undefined => {
@@ -51,7 +52,7 @@ const removeAuth = () => {
   }
 }
 
-export function isTokenExpired(token: string): boolean {
+function isTokenExpired(token: string): boolean {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
     return payload.exp * 1000 < Date.now()
@@ -60,22 +61,37 @@ export function isTokenExpired(token: string): boolean {
   }
 }
 
+function setResetEmail(email: string) {
+  localStorage.setItem(KEY, JSON.stringify({ email, expires: Date.now() + DURATION }))
+}
 
- // Redirection selon le rôle
-  // switch (decoded.role) {
-  //   case "admin":
-  //     navigate("/admin/dashboard")
-  //     break
-  //   case "doctor":
-  //     navigate("/doctor/dashboard")
-  //     break
-  //   case "technician":
-  //     navigate("/technician/dashboard")
-  //     break
-  //   case "assistant":
-  //     navigate("/assistant/dashboard")
-  //     break
-  //   default:
-  //     navigate("/")
-  // }
-export {getAuth, setAuth, removeAuth, AUTH_LOCAL_STORAGE_KEY}
+function getResetEmail(): string | null {
+  const raw = localStorage.getItem(KEY)
+  if (!raw) return null
+  try {
+    const { email, expires } = JSON.parse(raw)
+    if (Date.now() > expires) {
+      localStorage.removeItem(KEY)
+      return null
+    }
+    return email
+  } catch {
+    localStorage.removeItem(KEY)
+    return null
+  }
+}
+
+function clearResetEmail() {
+  localStorage.removeItem(KEY)
+}
+
+export {
+    getAuth,
+    setAuth,
+    removeAuth,
+    AUTH_LOCAL_STORAGE_KEY,
+    isTokenExpired,
+    setResetEmail,
+    getResetEmail,
+    clearResetEmail
+    }

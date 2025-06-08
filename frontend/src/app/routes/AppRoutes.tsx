@@ -1,5 +1,5 @@
 // routes/AppRoutes.tsx
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Logout } from '@/features/auth/Logout'
 import { errorRoutes } from '@/features/errors/ErrorsPage'
 import { authRoutes } from '@/features/auth/AuthPage'
@@ -41,6 +41,10 @@ export function AppRoutes() {
             path: '/auth/*',
             children: authRoutes,
           },
+          {
+            path:'*',
+            element: <Navigate to={'/error/404'} />,
+          }
         ]),
   ]
 

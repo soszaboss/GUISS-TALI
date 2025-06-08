@@ -21,7 +21,5 @@ const redirectPage = (role: UserRole | undefined): string => {
 export default function IndexPage() {
   const { currentUser } = useAuth()
   const redirectTo: string = redirectPage(currentUser?.role?.toLowerCase() as UserRole)
-    console.log("IndexPage redirectTo:", redirectTo)
-    console.log("IndexPage currentUser:", currentUser)
   return <Navigate to={redirectTo} replace />
 }

@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,7 @@ type LoginFormType = z.infer<typeof loginSchema>
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const { saveAuth } = useAuth()
-
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -42,8 +42,9 @@ export function LoginForm() {
     mutationFn: (data: LoginFormType) => login(data.email, data.password),
     mutationKey: [QUERIES, 'login'],
     onSuccess: (tokens) => {
-      toast.success("Connexion réussie !")
       saveAuth(tokens)
+      toast.success("Connexion réussie !")
+      navigate("/", { replace: true }) // Redirige immédiatement
     },
     onError: (error: any) => {
       if (error?.response?.status === 401) {
@@ -70,14 +71,10 @@ export function LoginForm() {
   }
 
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{
-        background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 60%, #fff 100%)",
-      }}
-    >
+    <div className="flex min-h-screen">
+      {/* Partie gauche - Formulaire sans card */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8 rounded-xl shadow-2xl bg-white/95 p-8">
+        <div className="w-full max-w-md space-y-8">
           <div className="text-center mb-10">
             <Link to="#" className="inline-block mb-6">
               <img
@@ -101,7 +98,7 @@ export function LoginForm() {
                 type="email"
                 autoComplete="email"
                 placeholder="Email"
-                className="h-12 bg-gray-50 border-gray-200 focus:border-blue-400"
+                className="h-12"
                 {...register("email")}
                 disabled={isSubmitting}
               />
@@ -120,7 +117,7 @@ export function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="Mot de passe"
-                  className="h-12 bg-gray-50 border-gray-200 focus:border-blue-400"
+                  className="h-12"
                   {...register("password")}
                   disabled={isSubmitting}
                 />
@@ -143,7 +140,7 @@ export function LoginForm() {
             </div>
 
             <div className="text-right">
-              <Link to="/forgot-password" className="text-sm font-medium text-blue-700 hover:text-blue-900">
+              <Link to="/auth/forgot-password" className="text-sm font-medium text-blue-700 hover:text-blue-900">
                 Mot de passe oublié ?
               </Link>
             </div>
@@ -158,6 +155,14 @@ export function LoginForm() {
           </form>
         </div>
       </div>
+
+      {/* Partie droite - Illustration */}
+      <div
+        className="hidden lg:block lg:w-1/2 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('https://i.pinimg.com/736x/db/cb/33/dbcb339d41ebda484d0a111643a69fe5.jpg')",
+        }}
+      ></div>
     </div>
   )
 }

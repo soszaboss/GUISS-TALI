@@ -149,7 +149,7 @@ const AuthInit: FC<WithChildren> = ({children}) => {
       setShowSplashScreen(false)
     }
     // eslint-disable-next-line
-  }, [])
+  }, [auth])
 
   return showSplashScreen ? <LayoutSplashScreen /> : <>{children}</>
 }
