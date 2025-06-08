@@ -5,6 +5,7 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_APP_API_URL;
 const USER_URL = `${API_URL}/users/`;
+export const GET_USER_BY_ACCESSTOKEN_URL = '/users/me/';
 
 const getUsers = (query: string): Promise<PaginationResponse<User>> => {
   return axios
@@ -44,6 +45,9 @@ const deleteSelectedUsers = (userIds: Array<ID>): Promise<void> => {
   return axios.all(requests).then(() => {});
 };
 
+function getUserByToken(): Promise<AxiosResponse<User>> {
+  return axios.get<User>(GET_USER_BY_ACCESSTOKEN_URL);
+}
 export {
   getUsers,
   deleteUser,
@@ -51,4 +55,5 @@ export {
   getUserById,
   createUser,
   updateUser,
+  getUserByToken
 };

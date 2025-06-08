@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 
 router = DefaultRouter()
@@ -25,6 +25,12 @@ urlpatterns = [
         'api/token/refresh/',
         TokenRefreshView.as_view(),
         name='token_refresh'
+    ),
+    # routes pour la gestion de la liste noire des tokens
+    path(
+        'api/token/blacklist/',
+        TokenBlacklistView.as_view(),
+            name='token_blacklist'
     ),
 
     # routes pour la documentation de l'api

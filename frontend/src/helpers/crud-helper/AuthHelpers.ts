@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useAuth } from "@/hooks/auth/Auth"
-import type { AuthModel } from "@/types/userModels"
-import { redirect } from "react-router-dom"
+import type { AuthModel } from "@/types/authModels"
 
 
 const AUTH_LOCAL_STORAGE_KEY = 'kt-auth-react-v'
@@ -53,27 +51,31 @@ const removeAuth = () => {
   }
 }
 
-export function setupAxios(axios: any) {
-  axios.defaults.headers.Accept = 'application/json'
-  axios.interceptors.request.use(
-    (config: {headers: {Authorization: string}}) => {
-      const auth = getAuth()
-      if (auth && auth.api_token) {
-        config.headers.Authorization = `Bearer ${auth.api_token}`
-      }
-
-      return config
-    },
-    (err: any) => Promise.reject(err)
-  )
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
 }
 
-function useCurrentUserLoader() {
-    const { currentUser } = useAuth();
-    if (currentUser) {
-      return redirect('/dashboard')
-    }
-    return null
-}
 
-export {getAuth, setAuth, removeAuth, useCurrentUserLoader, AUTH_LOCAL_STORAGE_KEY}
+ // Redirection selon le rôle
+  // switch (decoded.role) {
+  //   case "admin":
+  //     navigate("/admin/dashboard")
+  //     break
+  //   case "doctor":
+  //     navigate("/doctor/dashboard")
+  //     break
+  //   case "technician":
+  //     navigate("/technician/dashboard")
+  //     break
+  //   case "assistant":
+  //     navigate("/assistant/dashboard")
+  //     break
+  //   default:
+  //     navigate("/")
+  // }
+export {getAuth, setAuth, removeAuth, AUTH_LOCAL_STORAGE_KEY}

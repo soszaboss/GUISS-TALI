@@ -50,14 +50,14 @@ def user_login(email:str, password:str):
                 token = get_tokens_for_user(user)
                 return token
             else:
-                content = {'detail': _('L`\'utilisateur n\'est pas activé.')}
-                return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+                content = _('L`\'utilisateur n\'est pas activé.')
+                raise ValidationError(content, code=401)
         else:
-            content = {'detail':_('L`\'utilisateur n\'est pas verifié.')}
-            return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+            content = _('L`\'utilisateur n\'est pas verifié.')
+            raise ValidationError(content, code=401)
     else:
-        content = {'detail':_('Impossible de s\' authentifier avec ses credentials.')}
-        return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+        content = _('Email ou mot de passe incorrect.')
+        raise ValidationError(content, code=401)
 
 
 def user_reset_password(email):

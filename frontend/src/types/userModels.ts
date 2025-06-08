@@ -1,11 +1,6 @@
 import type { ID } from "./_models"
 import type { Response } from "./_models"
 
-export interface AuthModel {
-  api_token: string
-  refreshToken?: string
-}
-
 export type UserRole = 'admin' | 'doctor' | 'technician' | 'assistant';
 
 export type Gender = 1 | 2;

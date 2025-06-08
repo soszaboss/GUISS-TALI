@@ -1,44 +1,49 @@
-import type { AuthModel,  } from "@/modules/auth";
-import type { UserGetModel } from "@/types/userModels";
-import axios from "axios";
+
+import type { AuthModel } from "@/types/authModels";
+import axios, { type AxiosResponse } from "axios";
 
 const API_URL = import.meta.env.VITE_APP_API_URL;
 
-export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/verify_token`;
-export const LOGIN_URL = `${API_URL}/login`;
-export const REGISTER_URL = `${API_URL}/register`;
+export const LOGIN_URL = `${API_URL}/auth/login/`;
 export const REQUEST_PASSWORD_URL = `${API_URL}/forgot_password`;
 
 // Server should return AuthModel
-export function login(email: string, password: string) {
+export function login(email: string, password: string):Promise<AuthModel | undefined> {
   return axios.post<AuthModel>(LOGIN_URL, {
     email,
     password,
-  });
+  }).then((response: AxiosResponse<AuthModel>) => response.data);
 }
 
 // Server should return AuthModel
-export function register(
-  email: string,
-  phone_number: string,
-  roles: string
-) {
-  return axios.post(REGISTER_URL, {
-    email,
-    phone_number: phone_number,
-    roles: roles
-  });
-}
+// export function register(
+//   email: string,
+//   phone_number: string,
+//   roles: string
+// ) {
+//   return axios.post(REGISTER_URL, {
+//     email,
+//     phone_number: phone_number,
+//     roles: roles
+//   });
+// }
 
 // Server should return object => { result: boolean } (Is Email in DB)
-export function requestPassword(email: string) {
-  return axios.post<{ result: boolean }>(REQUEST_PASSWORD_URL, {
-    email,
-  });
+// export function requestPassword(email: string) {
+//   return axios.post<{ result: boolean }>(REQUEST_PASSWORD_URL, {
+//     email,
+//   });
+// }
+
+
+export function refreshToken(refresh: string): Promise<AuthModel | undefined> {
+  return axios.post<AuthModel>(`${API_URL}/api/token/refresh/`, {
+    refresh: refresh,
+  }).then((response: AxiosResponse<AuthModel>) => response.data);
 }
 
-export function getUserByToken(token: string) {
-  return axios.post<UserGetModel>(GET_USER_BY_ACCESSTOKEN_URL, {
-    api_token: token,
-  });
+export function blacklistToken(refresh: string): Promise<void> {
+  return axios.post(`${API_URL}/auth/logout/`, {
+    refresh: refresh,
+  }).then(() => {});
 }

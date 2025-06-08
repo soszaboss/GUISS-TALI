@@ -60,12 +60,7 @@ class LoginView(APIView):
         if serializer.is_valid():
             email = serializer.data['email']
             password = serializer.data['password']
-            user_login(email, password)
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(user_login(email, password), status=status.HTTP_200_OK)
 
 
 class LogoutView(GenericAPIView):
@@ -115,9 +110,6 @@ class PasswordResetView(APIView):
         if serializer.is_valid():
             email = serializer.data['email']
             user_reset_password(email)
-        else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordResetVerifyView(APIView):

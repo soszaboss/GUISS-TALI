@@ -17,13 +17,14 @@ profile_update = ProfileViewSet.as_view({'put': 'update', 'patch': 'partial_upda
 
 urlpatterns = [
     path('', list_users, name='users'),
-    path('create/', Signup.as_view(), name='user_create'),
+    path('me/', UserViewSet.as_view({'get': 'me'}), name='user-me'),
+    path('create/', Signup.as_view(), name='user-create'),
     path('<int:pk>/', user_details, name='user_details'),
-    path('<int:pk>/delete/', user_delete, name='user_delete'),
-    path('<int:pk>/update/', user_update, name='user_update'),
+    path('<int:pk>/delete/', user_delete, name='user-delete'),
+    path('<int:pk>/update/', user_update, name='user-update'),
 
     path('profile/<int:pk>/', profile_details, name='profile'),
-    path('profile/<int:pk>/update/', profile_update, name='profile_update'),
+    path('profile/<int:pk>/update/', profile_update, name='profile-update'),
 ]
 
 # urlpatterns += router.urls

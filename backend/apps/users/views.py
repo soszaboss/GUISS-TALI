@@ -1,4 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
+
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter, OpenApiTypes
+
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -26,7 +29,17 @@ class UserViewSet(viewsets.ModelViewSet):
     #     elif self.action == 'me':
     #         return [permissions.IsAuthenticated()]
     #     return super().get_permissions()
-
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Utilisateur récupéré avec succès."),
+            404: OpenApiResponse(description="Utilisateur non trouvé."),
+        },
+        description="Récupère les détails d'un utilisateur spécifique.",
+        parameters=[
+            OpenApiParameter(name='Bearer', type=OpenApiTypes.STR, required=True,
+                             description="Access token pour l'authentification"),
+        ]
+    )
     @action(detail=False, methods=['get'], url_path='me', permission_classes=[permissions.IsAuthenticated])
     def me(self, request):
         """Endpoint personnalisé pour accéder à l'utilisateur courant"""

@@ -5,6 +5,7 @@ import Register from './pages/register'
 import { EmailVerification } from './pages/email-verification'
 import ResetPassword from './pages/reset-password'
 import { TwoFactorVerification } from './pages/two-factor-verification'
+import Error404 from '../errors/components/Error404'
 
 export const authRoutes: RouteObject[] = [
   {
@@ -35,4 +36,8 @@ export const authRoutes: RouteObject[] = [
     path: 'email-verification',
     element: <EmailVerification />,
   },
+  {
+    path: '*',
+    element: <Error404 />
+  }
 ]
