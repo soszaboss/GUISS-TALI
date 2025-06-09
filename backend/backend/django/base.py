@@ -46,6 +46,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
     'corsheaders'
 ]
@@ -76,10 +77,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
-
-print(f'APPS_DIR: {APPS_DIR}')
-print(f'te;plqtes path: {os.path.join(APPS_DIR, "templates")}')
-print(f'BASE_DIR: {BASE_DIR}')
 
 TEMPLATES = [
     {

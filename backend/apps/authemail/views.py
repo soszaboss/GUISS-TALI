@@ -12,11 +12,10 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from django.utils.translation import gettext_lazy as _
 
 from apps.authemail.models import PasswordResetCode
-from apps.authemail.tokens import RefreshTokenSerializer
 from serializers.authemail import SignupSerializer, LoginSerializer, PasswordResetSerializer, \
-    PasswordResetVerifiedSerializer, EmailChangeSerializer, PasswordChangeSerializer
+    PasswordResetVerifiedSerializer, PasswordChangeSerializer
 from services.authemail import user_login, user_reset_password, user_reset_password_verify, \
-    user_reset_password_verified, email_change_request, email_change_verify, password_change
+    user_reset_password_verified, password_change
 
 
 class Signup(APIView):
@@ -60,12 +59,7 @@ class LoginView(APIView):
         if serializer.is_valid():
             email = serializer.data['email']
             password = serializer.data['password']
-            user_login(email, password)
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(user_login(email, password), status=status.HTTP_200_OK)
 
 
 class LogoutView(GenericAPIView):
@@ -115,10 +109,7 @@ class PasswordResetView(APIView):
         if serializer.is_valid():
             email = serializer.data['email']
             user_reset_password(email)
-        else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-
+            return Response("", status=status.HTTP_200_OK)
 
 class PasswordResetVerifyView(APIView):
     permission_classes = (AllowAny,)
@@ -197,41 +188,41 @@ class PasswordResetVerifiedView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmailChangeView(APIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = EmailChangeSerializer
+# class EmailChangeView(APIView):
+#     permission_classes = (IsAuthenticated,)
+#     serializer_class = EmailChangeSerializer
 
-    @extend_schema(
-        responses={
-            200: OpenApiResponse(description="Vérifier votre adresse email."),
-            400: OpenApiResponse(description="Email déjà pris ou l'utilisateur n'existe pas.")
-        },
-        description="Envoie du code via email.",
-        parameters=[
-            OpenApiParameter(
-                name='Authorization', type=OpenApiTypes.STR,
-                location=OpenApiParameter.HEADER,
-                description='JWT token format: Bearer <token>',
-                required=True
-            )
-        ]
-    )
-    def post(self, request, format=None):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            try:
-                email = email_change_request(
-                    user=request.user,
-                    new_email=serializer.validated_data['email']
-                )
-                return Response({'email': email}, status=status.HTTP_201_CREATED)
-            except ValidationError as e:
-                return Response(e.detail, status=e.code)
+#     @extend_schema(
+#         responses={
+#             200: OpenApiResponse(description="Vérifier votre adresse email."),
+#             400: OpenApiResponse(description="Email déjà pris ou l'utilisateur n'existe pas.")
+#         },
+#         description="Envoie du code via email.",
+#         parameters=[
+#             OpenApiParameter(
+#                 name='Authorization', type=OpenApiTypes.STR,
+#                 location=OpenApiParameter.HEADER,
+#                 description='JWT token format: Bearer <token>',
+#                 required=True
+#             )
+#         ]
+#     )
+#     def post(self, request, format=None):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             try:
+#                 email = email_change_request(
+#                     user=request.user,
+#                     new_email=serializer.validated_data['email']
+#                 )
+#                 return Response({'email': email}, status=status.HTTP_201_CREATED)
+#             except ValidationError as e:
+#                 return Response(e.detail, status=e.code)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmailChangeVerifyView(APIView):
+# class EmailChangeVerifyView(APIView):
     permission_classes = (AllowAny,)
 
     @extend_schema(

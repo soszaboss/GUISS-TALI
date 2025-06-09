@@ -6,7 +6,7 @@ export const queryConfig = {
     refetchOnReconnect: true, // Permet de récupérer les données après une reconnexion réseau
     retry: 1, // Effectue une seule tentative supplémentaire en cas d'échec
     staleTime: 1000 * 60, // Définit une fraîcheur des données à 60 secondes
-    cacheTime: 1000 * 300, // Conserve les données en cache pendant 5 minutes pour éviter des appels inutiles
+    // cacheTime: 1000 * 300, // Conserve les données en cache pendant 5 minutes pour éviter des appels inutiles
     useErrorBoundary: true, // Active la gestion centralisée des erreurs via Error Boundary
   },
 } satisfies DefaultOptions;

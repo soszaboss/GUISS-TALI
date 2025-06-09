@@ -53,7 +53,6 @@ export default function AdminUserForm() {
   })
   const { register, setValue, handleSubmit, reset, formState: { errors } } = methods
   const enabledQuery: boolean = isNotEmpty(itemIdForUpdate)
-  console.log("itemIdForUpdate", itemIdForUpdate)
   // Query pour récupérer l'utilisateur à éditer
   const {
     data,
@@ -73,7 +72,6 @@ export default function AdminUserForm() {
 
   // Remplir le formulaire si édition
   useEffect(() => {
-    console.log(`userData`, data)
     if (data && itemIdForUpdate) {
       reset({
         email: data.email ?? "",

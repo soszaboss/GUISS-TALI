@@ -1,6 +1,5 @@
-import os
-import binascii
-from datetime import date
+from datetime import date, timedelta
+from random import randint
 import secrets
 
 # from ipware import get_client_ip
@@ -12,14 +11,16 @@ from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
+from django.utils import timezone
 
 from apps.authemail.tokens import get_tokens_for_user
 from apps.users.models import Profile
 from services.users import user_create
 
-
 def _generate_code():
-    return binascii.hexlify(os.urandom(20)).decode('utf-8')
+    return randint(100000, 999999)
+
+EXPIRY_PERIOD = getattr(settings, 'AUTH_EMAIL_EXPIRY_PERIOD') 
 
 def _make_random_password(length=10, allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'):
         return ''.join(secrets.choice(allowed_chars) for i in range(length))
@@ -50,21 +51,25 @@ def user_login(email:str, password:str):
                 token = get_tokens_for_user(user)
                 return token
             else:
-                content = {'detail': _('L`\'utilisateur n\'est pas activé.')}
-                return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+                content = _('L`\'utilisateur n\'est pas activé.')
+                raise ValidationError(content, code=401)
         else:
-            content = {'detail':_('L`\'utilisateur n\'est pas verifié.')}
-            return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+            content = _('L`\'utilisateur n\'est pas verifié.')
+            raise ValidationError(content, code=401)
     else:
-        content = {'detail':_('Impossible de s\' authentifier avec ses credentials.')}
-        return ValidationError(content, code=status.HTTP_401_UNAUTHORIZED)
+        content = _('Email ou mot de passe incorrect.')
+        raise ValidationError(content, code=401)
 
 
 def user_reset_password(email):
     from apps.authemail.models import PasswordResetCode
     try:
         user = get_user_model().objects.get(email=email)
-
+        # Vérifier si un code a déjà été envoyé récemment
+        last_reset = PasswordResetCode.objects.filter(user=user).order_by('-created').first()
+        if last_reset and (timezone.now() - last_reset.created).seconds < 900:  # 15 min
+            raise ValidationError(_('Un code de réinitialisation a déjà été envoyé récemment.'), code=400)
+        
         # Delete all unused password reset codes
         PasswordResetCode.objects.filter(user=user).delete()
 
@@ -75,67 +80,73 @@ def user_reset_password(email):
             return email
 
     except get_user_model().DoesNotExist:
-        pass
+        raise ValidationError(_('Email non trouvé.'), code=404)
 
         # Since this is AllowAny, don't give away error.
-    content = {'detail': _('Reinitialisation non permis.')}
-    return ValidationError(content, code=status.HTTP_400_BAD_REQUEST)
+    content = _('Reinitialisation non permis.')
+    raise ValidationError(content, code=400)
 
 
 def user_reset_password_verify(code):
     from apps.authemail.models import PasswordResetCode
+    password_reset_code = PasswordResetCode.objects.filter(code=code).first()
+    if not password_reset_code:
+        raise ValidationError(_('Code invalide ou expiré.'))
 
-    password_reset_code = PasswordResetCode.objects.get(code=code)
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
 
-    # Delete password reset code if older than expiry period
-    delta = date.today() - password_reset_code.created_at.date()
-    if delta.days > PasswordResetCode.objects.get_expiry_period():
+    if timezone.now() > expiration_time:
         password_reset_code.delete()
-        raise PasswordResetCode.DoesNotExist()
+        raise ValidationError(_('Le code de réinitialisation a expiré.'))
 
-    content = {'success': _('Adresse email vérifié avec succès.')}
-
-    return content
+    return {'success': _('Adresse email vérifiée avec succès.')}
 
 
 def user_reset_password_verified(code, password):
     from apps.authemail.models import PasswordResetCode
+    password_reset_code = PasswordResetCode.objects.filter(code=code).first()
+    if not password_reset_code:
+        raise ValidationError(_('Code invalide ou expiré.'))
 
-    password_reset_code = PasswordResetCode.objects.get(code=code)
+    EXPIRY_PERIOD = 15  
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
+
+    if timezone.now() > expiration_time:
+        password_reset_code.delete()
+        raise ValidationError(_('Le code de réinitialisation a expiré.'))
+
+    # Supprimer le code avant modification du mot de passe
+    password_reset_code.delete()
     password_reset_code.user.set_password(password)
     password_reset_code.user.save()
 
-    # Delete password reset code just used
-    password_reset_code.delete()
-
-    content = {'success': _('Mot de passe changé.')}
-    return content
+    return {'success': _('Mot de passe changé avec succès.')}
 
 
-def email_change_request(*, user, new_email: str) -> str:
-    from apps.authemail.models import EmailChangeCode
+# def email_change_request(*, user, new_email: str) -> str:
+#     from apps.authemail.models import EmailChangeCode
 
-    # Check if new email already exists and is verified
-    try:
-        existing_user = get_user_model().objects.get(email=new_email)
-        if existing_user.is_verified:
-            raise ValidationError({'email': _('Email déjà pris.')}, code=status.HTTP_400_BAD_REQUEST)
-        else:
-            existing_user.delete()
-    except get_user_model().DoesNotExist:
-        pass
+#     # Check if new email already exists and is verified
+#     try:
+#         existing_user = get_user_model().objects.get(email=new_email)
+#         if existing_user.is_verified:
+#             raise ValidationError({'email': _('Email déjà pris.')}, code=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             existing_user.delete()
+#     except get_user_model().DoesNotExist:
+#         pass
 
-    # Supprimer anciens codes
-    EmailChangeCode.objects.filter(user=user).delete()
+#     # Supprimer anciens codes
+#     EmailChangeCode.objects.filter(user=user).delete()
 
-    # Créer le code
-    code = EmailChangeCode.objects.create_email_change_code(user, new_email)
-    code.send_email_change_emails()
+#     # Créer le code
+#     code = EmailChangeCode.objects.create_email_change_code(user, new_email)
+#     code.send_email_change_emails()
 
-    return new_email
+#     return new_email
 
 
-def email_change_verify(*, code: str) -> dict:
+# def email_change_verify(*, code: str) -> dict:
     from apps.authemail.models import EmailChangeCode
 
     try:
@@ -144,7 +155,7 @@ def email_change_verify(*, code: str) -> dict:
         raise ValidationError({'detail': _("Code invalide ou expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
     delta = date.today() - code_obj.created.date()
-    if delta.days > EmailChangeCode.objects.get_expiry_period():
+    if delta.days > EmailChangeCode.objects.get_EXPIRY_PERIOD():
         code_obj.delete()
         raise ValidationError({'detail': _("Ce code a expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
@@ -178,8 +189,10 @@ def password_change(*, user, password: str) -> dict:
     user.save()
     return {'success': _('Mot de passe changé.')}
 
+
 @transaction.atomic
 def user_signup(email: str, role: str, phone_number: str, profile: dict | Profile=None):
+    from apps.authemail.models import PasswordResetCode
     User = get_user_model()
 
     if User.objects.filter(email=email).exists():
@@ -196,9 +209,13 @@ def user_signup(email: str, role: str, phone_number: str, profile: dict | Profil
         role=role,
         profile=profile
     )
-    front_login_url = getattr(settings, 'FRONT_LOGIN_URL', '')
-    front_reset_password = getattr(settings, 'FRONT_RESET_PASSWORD', '')
+    password_reset_code = PasswordResetCode.objects.create_password_reset_code(user)
+    client_domain = getattr(settings, 'CLIENT_DOMAIN')
+    front_login_url = f'{client_domain}/auth/login'
+    front_reset_password = f'{client_domain}/auth/reset-password/{password_reset_code.code}'
     site_name = getattr(settings, 'SITE_NAME', '')
+    expiration_time = password_reset_code.created + timedelta(minutes=EXPIRY_PERIOD)
+    expiration_time = expiration_time.strftime('%d-%m-%Y %H:%M:%S')
 
     context = {
         'email': user.email,
@@ -206,6 +223,7 @@ def user_signup(email: str, role: str, phone_number: str, profile: dict | Profil
         'login_url': front_login_url,
         'password_reset_url': front_reset_password,
         'site_name': site_name,
+        'expiration_time': expiration_time,
     }
  
     return send_multi_format_email('welcome_email', context, target_email=user.email)

@@ -67,14 +67,14 @@
         <p>Pour votre sécurité, nous vous recommandons de :</p>
         <ol>
             <li>Vous connecter dès maintenant avec le mot de passe temporaire</li>
-            <li>Changer votre mot de passe dans votre profil</li>
+            {% comment %} <li>Changer votre mot de passe dans votre profil</li> {% endcomment %}
         </ol>
         
         <div style="text-align: center;">
             <a href="{{ login_url }}" class="button">Se connecter</a>
         </div>
         
-        <p>Si vous rencontrez des problèmes, vous pouvez réinitialiser votre mot de passe ici :<br>
+        <p>Vous pouvez réinitialiser votre mot de passe avec ce lien valable jusqu'a <span>{{expiration_time}}</span> :<br>
         <a href="{{ password_reset_url }}">{{ password_reset_url }}</a></p>
         
         <div class="footer">

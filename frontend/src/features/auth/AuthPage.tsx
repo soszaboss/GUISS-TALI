@@ -1,31 +1,32 @@
 import { type RouteObject } from 'react-router-dom'
-import Login from './pages/login'
-import ForgotPassword from './pages/forgot-password'
-import Register from './pages/register'
-import { EmailVerification } from './pages/email-verification'
-import ResetPassword from './pages/reset-password'
-import { TwoFactorVerification } from './pages/two-factor-verification'
+import { EmailVerification } from './components/email-verification'
+import { TwoFactorVerification } from './components/two-factor-verification'
+import Error404 from '../errors/components/Error404'
+import { LoginForm } from './components/LoginForm'
+import { RegisterForm } from './components/RegisterForm'
+import { ForgotPasswordForm } from './components/ForgotPasswordForm'
+import { ResetPasswordForm } from './components/ResetPasswordForm'
 
 export const authRoutes: RouteObject[] = [
   {
     index: true,
-    element: <Login />,
+    element: <LoginForm />,
   },
   {
     path: 'login',
-    element: <Login />,
+    element: <LoginForm />,
   },
   {
     path: 'registration',
-    element: <Register />,
+    element: <RegisterForm />,
   },
   {
     path: 'forgot-password',
-    element: <ForgotPassword />,
+    element: <ForgotPasswordForm />,
   },
   {
-    path: 'reset-password',
-    element: <ResetPassword />,
+    path: 'reset-password/:code',
+    element: <ResetPasswordForm />,
   },
   {
     path: 'two-factor-verification',
@@ -35,4 +36,8 @@ export const authRoutes: RouteObject[] = [
     path: 'email-verification',
     element: <EmailVerification />,
   },
+  {
+    path: '*',
+    element: <Error404 />
+  }
 ]
