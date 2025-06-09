@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 
 from apps.patients.models import Conducteur, Vehicule
 
-
+@transaction.atomic
 def validate_conducteur_data(data: dict):
     # Vérifie que les dates de permis sont cohérentes
     date_delivrance = data.get("date_delivrance_permis")
@@ -21,12 +22,12 @@ def validate_conducteur_data(data: dict):
             'autre_type_permis': _("You must specify the license type if 'Other' is selected.")
         })
 
-
+@transaction.atomic
 def conducteur_create(**data) -> Conducteur:
     validate_conducteur_data(data)
     return Conducteur.objects.create(**data)
 
-
+@transaction.atomic
 def conducteur_update(conducteur: Conducteur, **data) -> Conducteur:
     validate_conducteur_data(data)
     for attr, value in data.items():
@@ -34,7 +35,7 @@ def conducteur_update(conducteur: Conducteur, **data) -> Conducteur:
     conducteur.save()
     return conducteur
 
-
+@transaction.atomic
 def validate_vehicule_data(data: dict):
     # Vérifie cohérence autre_type_vehicule_conduit
     if data.get("type_vehicule_conduit") == "Autres" and not data.get("autre_type_vehicule_conduit"):
@@ -42,12 +43,13 @@ def validate_vehicule_data(data: dict):
             'autre_type_vehicule_conduit': _("You must specify the vehicle type if 'Other' is selected.")
         })
 
-
+@transaction.atomic
 def vehicule_create(**data) -> Vehicule:
     validate_vehicule_data(data)
-    return Vehicule.objects.create(**data)
+    vehicule = Vehicule.objects.create(**data)
+    return vehicule
 
-
+@transaction.atomic
 def vehicule_update(vehicule: Vehicule, **data) -> Vehicule:
     validate_vehicule_data(data)
     for attr, value in data.items():

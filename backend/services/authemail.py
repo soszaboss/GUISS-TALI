@@ -81,7 +81,6 @@ def user_reset_password(email):
     content = {'detail': _('Reinitialisation non permis.')}
     return ValidationError(content, code=status.HTTP_400_BAD_REQUEST)
 
-
 def user_reset_password_verify(code):
     from apps.authemail.models import PasswordResetCode
 
@@ -97,7 +96,6 @@ def user_reset_password_verify(code):
 
     return content
 
-
 def user_reset_password_verified(code, password):
     from apps.authemail.models import PasswordResetCode
 
@@ -110,7 +108,6 @@ def user_reset_password_verified(code, password):
 
     content = {'success': _('Mot de passe changé.')}
     return content
-
 
 def email_change_request(*, user, new_email: str) -> str:
     from apps.authemail.models import EmailChangeCode
@@ -133,7 +130,6 @@ def email_change_request(*, user, new_email: str) -> str:
     code.send_email_change_emails()
 
     return new_email
-
 
 def email_change_verify(*, code: str) -> dict:
     from apps.authemail.models import EmailChangeCode
@@ -166,7 +162,6 @@ def email_change_verify(*, code: str) -> dict:
     code_obj.delete()
 
     return {'success': _('Adresse email changée avec succès.')}
-
 
 def password_change(*, user, password: str) -> dict:
     try:

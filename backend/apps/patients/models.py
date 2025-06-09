@@ -7,9 +7,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class Conducteur(TimeStampedModel):
     TYPE_PERMIS_CHOICES = [
-        ('Léger', _('Light')),
-        ('Lourd', _('Heavy')),
-        ('Autres à préciser', _('Other (please specify)')),
+        ('leger', _('Light')),
+        ('lourd', _('Heavy')),
+        ('autres', _('Other (please specify)')),
     ]
 
     OUI_NON_CHOICES = [
@@ -49,7 +49,7 @@ class Conducteur(TimeStampedModel):
     date_naissance = models.DateField(_('Date of birth'))
     sexe = models.CharField(_('Gender'), choices=SEXE_CHOICES, max_length=10, default='Homme')
 
-    numero_permis = models.CharField(_('License number'), max_length=14, unique=True, db_index=True)
+    numero_permis = models.CharField(_('License number'), max_length=15, unique=True, db_index=True)
     type_permis = models.CharField(_('License type'), choices=TYPE_PERMIS_CHOICES)
     autre_type_permis = models.CharField(_('Other license type'), max_length=100, blank=True, null=True)
     date_delivrance_permis = models.DateField(_('License issue date'))
@@ -95,7 +95,7 @@ class Vehicule(TimeStampedModel):
         ('Autres', _('Other')),
     ]
 
-    immatriculation = models.CharField(_('Registration'), max_length=15, blank=True, null=True)
+    immatriculation = models.CharField(_('Registration'), max_length=15, unique=True, db_index=True)
     modele = models.CharField(_('Model'), max_length=15, blank=True, null=True)
     annee = models.CharField(_('Year'), max_length=15, blank=True, null=True)
 

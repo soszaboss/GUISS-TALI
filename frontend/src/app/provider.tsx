@@ -14,6 +14,7 @@ import { router } from './routes/AppRoutes';
 import { QueryRequestProvider } from '@/hooks/_QueryRequestProvider';
 import { Toaster } from '@/components/ui/sonner';
 import { ListViewProvider } from '@/hooks/_ListViewProvider';
+import { PatientQueryResponseProvider } from '@/hooks/patient/PatientQueryResponseProvider';
 
 
 export const AppProvider = ({ children }: WithChildren) => {
@@ -39,9 +40,11 @@ export const AppProvider = ({ children }: WithChildren) => {
                   <QueryRequestProvider>
                     <ListViewProvider>
                       <QueryClientProvider client={queryClient}>
-                          {import.meta.env.DEV && <ReactQueryDevtools />}
-                          {children}
-                          <RouterProvider router={router} />
+                        <PatientQueryResponseProvider>
+                            {import.meta.env.DEV && <ReactQueryDevtools />}
+                            {children}
+                            <RouterProvider router={router} />
+                        </PatientQueryResponseProvider>
                       </QueryClientProvider>
                       <Toaster richColors/>
                     </ListViewProvider>
