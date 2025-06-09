@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -49,6 +49,21 @@ function VehicleModal({ isOpen, onClose, onSubmit, defaultValues }: {
       autre_type_vehicule_conduit: "",
     },
   })
+
+  // Reset le formulaire à chaque ouverture avec les bonnes valeurs
+  useEffect(() => {
+    if (isOpen) {
+      methods.reset(defaultValues || {
+        immatriculation: "",
+        modele: "",
+        annee: "",
+        type_vehicule_conduit: "Léger",
+        autre_type_vehicule_conduit: "",
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, defaultValues])
+
   const { handleSubmit, watch, formState: { isSubmitting } } = methods
 
   if (!isOpen) return null
@@ -231,10 +246,6 @@ export function PatientDetails() {
               <FileText className="mr-2 h-4 w-4" />
               Cahier Médical
             </Button>
-            {/* <Button variant="outline" onClick={() => navigate(`/assistant/appointments/new?patient=${patient.id}`)}>
-              <Calendar className="mr-2 h-4 w-4" />
-              Planifier un rendez-vous
-            </Button> */}
             <Button
               variant="outline"
               onClick={() => {
@@ -475,6 +486,7 @@ export function PatientDetails() {
                   </CardContent>
                 </Card>
                 <VehicleModal
+                  key={vehicleToEdit ? vehicleToEdit.id : "new"}
                   isOpen={isVehicleModalOpen}
                   onClose={() => { setIsVehicleModalOpen(false); setVehicleToEdit(null) }}
                   onSubmit={(data) => mutationVehicule.mutate(vehicleToEdit ? { ...data, id: vehicleToEdit.id } : data)}

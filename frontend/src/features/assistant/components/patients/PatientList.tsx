@@ -124,7 +124,10 @@ export function PatientsList() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold">Gestion des Patients</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => navigate("/assistant/patients/new")}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => {
+          setItemIdForUpdate(null)
+          navigate("/assistant/patients/new")
+        }}>
           <Plus className="mr-2 h-4 w-4" />
           Nouveau Patient
         </Button>
