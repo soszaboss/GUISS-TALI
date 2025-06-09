@@ -4,7 +4,7 @@ from backend.env import APPS_DIR, BASE_DIR, env
 env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Make part of the model eventually, so it can be edited
-AUTH_EMAIL_EXPIRY_PERIOD = 3    # days
+AUTH_EMAIL_EXPIRY_PERIOD = 15    # days
 
 # Email settings
 # https://docs.djangoproject.com/en/3.1/topics/email/

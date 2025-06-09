@@ -1,8 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { useNavigate } from "react-router-dom"
-
 export default function Error500() {
-    const navigate = useNavigate()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-300 via-blue-300 to-purple-500">
@@ -40,12 +36,12 @@ export default function Error500() {
           </div>
         </div>
 
-        <Button  
-          className="bg-blue-600 hover:bg-blue-700"
-          onClick={() => navigate(-1)}
+        <a
+          href="/"
+          className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
-          Retour en arrière
-        </Button>
+          Retour à l'accueil
+        </a>
       </div>
     </div>
   )

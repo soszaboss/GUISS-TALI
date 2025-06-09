@@ -1,41 +1,34 @@
-// PrivateRoutes.tsx
+// routes/PrivateRoutes.tsx
 import { adminPlatformRoutes } from '@/features/admin/AdminPages'
 import { assistantRoutes } from '@/features/assistant/AssistantsPage'
 import { doctorRoutes } from '@/features/doctor/DoctorPages'
-import Error404 from '@/features/errors/components/Error404'
 import { technicianRoutes } from '@/features/technician/TechniciansPage'
-import { type RouteObject } from 'react-router-dom'
+import Error404 from '@/features/errors/components/Error404'
+import { RoleGuard } from '@/features/auth/components/RoleGuard'
 
-
-export const privateRoutes: RouteObject[] = [
-
-  // Default route for assistants
-  {
-    path: 'assistant/',
-    children: assistantRoutes,
-  },
-  
-  // Default route for admin platform
+export const privateRoutes = [
   {
     path: 'admin/',
-    children: adminPlatformRoutes
+    element: <RoleGuard allowedRoles={['admin']} />,
+    children: adminPlatformRoutes,
   },
-
-  // Default route for doctors
+  {
+    path: 'assistant/',
+    element: <RoleGuard allowedRoles={['assistant']} />,
+    children: assistantRoutes,
+  },
   {
     path: 'doctor/',
-    children: doctorRoutes
+    element: <RoleGuard allowedRoles={['doctor']} />,
+    children: doctorRoutes,
   },
-
-  // Default route for technicians
   {
     path: 'technician/',
-    children: technicianRoutes
+    element: <RoleGuard allowedRoles={['technician']} />,
+    children: technicianRoutes,
   },
-
-  //Page Not Found
   {
     path: '*',
-    element: <Error404 />
-  }
+    element: <Error404 />,
+  },
 ]

@@ -39,17 +39,17 @@ urlpatterns = [
          name='authemail-password-reset-verified'
     ),
 
-    path(
-        'email/change/',
-        views.EmailChangeView.as_view(),
-         name='authemail-email-change'
-    ),
+    # path(
+    #     'email/change/',
+    #     views.EmailChangeView.as_view(),
+    #      name='authemail-email-change'
+    # ),
 
-    path(
-        'email/change/verify/',
-        views.EmailChangeVerifyView.as_view(),
-         name='authemail-email-change-verify'
-    ),
+    # path(
+    #     'email/change/verify/',
+    #     views.EmailChangeVerifyView.as_view(),
+    #      name='authemail-email-change-verify'
+    # ),
 
     path(
         'password/change/',

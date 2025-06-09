@@ -1,18 +1,21 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { AuthModel, UserGetModel } from '@/types/userModels'
+import type { AuthModel } from '@/types/authModels'
 import type { WithChildren } from '@/utils/react18MigrationHelpers'
 import * as authHelper from '@/helpers/crud-helper/AuthHelpers'
 import {type FC, useState, useEffect, createContext, useContext, type Dispatch, type SetStateAction} from 'react'
-import { getUserByToken } from '@/services/authService'
+import { getUserByToken } from '@/services/usersService'
 import { LayoutSplashScreen } from '@/components/ui/splash-screen'
-
-
+import type { User } from '@/types/userModels'
+import { isTokenExpired } from '@/helpers/crud-helper/AuthHelpers'
+import { useMutation } from '@tanstack/react-query'
+import { blacklistToken, refreshToken } from '@/services/authService'
+import { QUERIES } from '@/helpers/crud-helper/consts'
 
 type AuthContextProps = {
   auth: AuthModel | undefined
   saveAuth: (auth: AuthModel | undefined) => void
-  currentUser: UserGetModel | undefined
-  setCurrentUser: Dispatch<SetStateAction<UserGetModel | undefined>>
+  currentUser: User | undefined
+  setCurrentUser: Dispatch<SetStateAction<User | undefined>>
   logout: () => void
 }
 
@@ -32,8 +35,9 @@ const useAuth = () => {
 
 const AuthProvider: FC<WithChildren> = ({children}) => {
   const [auth, setAuth] = useState<AuthModel | undefined>(authHelper.getAuth())
-  const [currentUser, setCurrentUser] = useState<UserGetModel | undefined>()
-  const saveAuth = (auth: AuthModel | undefined) => {
+  const [currentUser, setCurrentUser] = useState<User | undefined>()
+
+  const persistAuth = (auth: AuthModel | undefined) => {
     setAuth(auth)
     if (auth) {
       authHelper.setAuth(auth)
@@ -42,10 +46,70 @@ const AuthProvider: FC<WithChildren> = ({children}) => {
     }
   }
 
-  const logout = () => {
-    saveAuth(undefined)
-    setCurrentUser(undefined)
+  const mutateRefreshToken = useMutation({
+    mutationFn: (token: string) => refreshToken(token),
+    mutationKey: [QUERIES, 'refreshToken'],
+    onSuccess: (newAuth) => {
+      if (newAuth) {
+        persistAuth(newAuth)
+      } else {
+        persistAuth(undefined)
+        setCurrentUser(undefined)
+      }
+    },
+    onError: () => {
+      persistAuth(undefined)
+      setCurrentUser(undefined)
+    },
+  })
+
+  const mutateLogout = useMutation({
+    mutationKey: [QUERIES, 'logout'],
+    mutationFn: (refresh: string) => blacklistToken(refresh),
+    onSuccess: () => {
+      saveAuth(undefined)
+      setCurrentUser(undefined)
+    }
+  })
+
+  const saveAuth = (auth: AuthModel | undefined) => {
+    if (!auth) return persistAuth(undefined)
+
+    const { access, refresh } = auth
+
+    if (access && isTokenExpired(access)) {
+      if (refresh && !isTokenExpired(refresh)) {
+        mutateRefreshToken.mutate(refresh)
+      } else {
+        persistAuth(undefined)
+        setCurrentUser(undefined)
+      }
+    } else {
+      persistAuth(auth)
+    }
   }
+
+  const logout = () => {
+    if (auth && auth.refresh && !isTokenExpired(auth.refresh)) {
+      mutateLogout.mutate(auth.refresh)
+    } else {
+      saveAuth(undefined)
+      setCurrentUser(undefined)
+    }
+  }
+
+  /** 🔁 Vérifie token au montage */
+  useEffect(() => {
+    if (auth?.access && isTokenExpired(auth.access)) {
+      if (auth.refresh && !isTokenExpired(auth.refresh)) {
+        mutateRefreshToken.mutate(auth.refresh)
+      } else {
+        persistAuth(undefined)
+        setCurrentUser(undefined)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <AuthContext.Provider value={{auth, saveAuth, currentUser, setCurrentUser, logout}}>
@@ -58,12 +122,12 @@ const AuthInit: FC<WithChildren> = ({children}) => {
   const {auth, currentUser, logout, setCurrentUser} = useAuth()
   const [showSplashScreen, setShowSplashScreen] = useState(true)
 
-  // We should request user by authToken (IN OUR EXAMPLE IT'S API_TOKEN) before rendering the application
   useEffect(() => {
-    const requestUser = async (apiToken: string) => {
+    
+    const requestUser = async () => {
       try {
         if (!currentUser) {
-          const {data} = await getUserByToken(apiToken)
+          const {data} = await getUserByToken()
           if (data) {
             setCurrentUser(data)
           }
@@ -78,14 +142,14 @@ const AuthInit: FC<WithChildren> = ({children}) => {
       }
     }
 
-    if (auth && auth.api_token) {
-      requestUser(auth.api_token)
+    if (auth && auth.access) {
+      requestUser()
     } else {
       logout()
       setShowSplashScreen(false)
     }
     // eslint-disable-next-line
-  }, [])
+  }, [auth])
 
   return showSplashScreen ? <LayoutSplashScreen /> : <>{children}</>
 }

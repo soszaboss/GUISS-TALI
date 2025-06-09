@@ -106,6 +106,7 @@ class EmailUserAdmin(UserAdmin):
         'role',
         'is_verified',
         'is_staff',
+        'is_active',
     )
     search_fields = ('email', 'profile__first_name', 'profile__last_name')
     ordering = ('email',)

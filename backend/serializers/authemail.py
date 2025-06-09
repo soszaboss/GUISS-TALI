@@ -49,9 +49,9 @@ class PasswordChangeSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128)
 
 
-class EmailChangeSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=255)
+# class EmailChangeSerializer(serializers.Serializer):
+#     email = serializers.EmailField(max_length=255)
 
 
-class EmailChangeVerifySerializer(serializers.Serializer):
+# class EmailChangeVerifySerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255)

@@ -17,9 +17,8 @@ class AbstractBaseCode(TimeStampedModel):
     def send_email(self, prefix):
         ctxt = {
             'email': self.user.email,
-            'first_name': self.user.profile.first_name,
-            'last_name': self.user.profile.last_name,
-            'code': self.code
+            'site_name': getattr(settings, 'SITE_NAME', ''),
+            'code': self.code,
         }
         send_multi_format_email(prefix, ctxt, target_email=self.user.email)
 

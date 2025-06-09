@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useAuth } from "@/hooks/auth/Auth"
-import type { AuthModel } from "@/types/userModels"
-import { redirect } from "react-router-dom"
+import type { AuthModel } from "@/types/authModels"
 
-
+const KEY = "emailForPasswordReset"
+const DURATION = 15 * 60 * 1000 // 15 minutes
 const AUTH_LOCAL_STORAGE_KEY = 'kt-auth-react-v'
 
 const getAuth = (): AuthModel | undefined => {
@@ -53,27 +52,46 @@ const removeAuth = () => {
   }
 }
 
-export function setupAxios(axios: any) {
-  axios.defaults.headers.Accept = 'application/json'
-  axios.interceptors.request.use(
-    (config: {headers: {Authorization: string}}) => {
-      const auth = getAuth()
-      if (auth && auth.api_token) {
-        config.headers.Authorization = `Bearer ${auth.api_token}`
-      }
-
-      return config
-    },
-    (err: any) => Promise.reject(err)
-  )
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
 }
 
-function useCurrentUserLoader() {
-    const { currentUser } = useAuth();
-    if (currentUser) {
-      return redirect('/dashboard')
+function setResetEmail(email: string) {
+  localStorage.setItem(KEY, JSON.stringify({ email, expires: Date.now() + DURATION }))
+}
+
+function getResetEmail(): string | null {
+  const raw = localStorage.getItem(KEY)
+  if (!raw) return null
+  try {
+    const { email, expires } = JSON.parse(raw)
+    if (Date.now() > expires) {
+      localStorage.removeItem(KEY)
+      return null
     }
+    return email
+  } catch {
+    localStorage.removeItem(KEY)
     return null
+  }
 }
 
-export {getAuth, setAuth, removeAuth, useCurrentUserLoader, AUTH_LOCAL_STORAGE_KEY}
+function clearResetEmail() {
+  localStorage.removeItem(KEY)
+}
+
+export {
+    getAuth,
+    setAuth,
+    removeAuth,
+    AUTH_LOCAL_STORAGE_KEY,
+    isTokenExpired,
+    setResetEmail,
+    getResetEmail,
+    clearResetEmail
+    }
