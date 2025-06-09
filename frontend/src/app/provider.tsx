@@ -39,10 +39,12 @@ export const AppProvider = ({ children }: WithChildren) => {
                 <QueryRequestProvider>
                   <ListViewProvider>
                     <AuthInit>
-                      {import.meta.env.DEV && <ReactQueryDevtools />}
-                      {children}
-                      <AppRoutes />
-                      <Toaster richColors/>
+                      <PatientQueryResponseProvider>
+                        {import.meta.env.DEV && <ReactQueryDevtools />}
+                        {children}
+                        <AppRoutes />
+                        <Toaster richColors/>
+                      </PatientQueryResponseProvider>
                     </AuthInit>
                   </ListViewProvider>
                 </QueryRequestProvider>
