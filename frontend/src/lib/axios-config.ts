@@ -21,23 +21,24 @@ export function setupAxios(axios: typeof Axios) {
   axios.interceptors.request.use(authRequestInterceptor);
   axios.interceptors.response.use(
   (response) => {
-    return response;
-  },
-  (error) => {
-    const message = error.response?.data?.message || error.message;
-    toast.error(message, {
-      description: error.response?.data?.description || '',}
-    )
+  return response;
+},
+(error) => {
+  const message = error.response?.data?.message || error.message;
+  toast.error(message, {
+    description: error.response?.data?.description || '',
+  });
 
-    if (error.response?.status === 401) {
-      const searchParams = new URLSearchParams();
-      const redirectTo =
-        searchParams.get('redirectTo') || window.location.pathname;
-      window.location.href = `/auth/login${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`;
+  if (
+    error.response?.status === 401 &&
+    !window.location.pathname.startsWith('/auth/login')
+  ) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectTo = searchParams.get('redirectTo') || window.location.pathname;
+    window.location.href = `/auth/login${redirectTo ? `?redirectTo=${encodeURIComponent(redirectTo)}` : ''}`;
     }
 
     return Promise.reject(error);
   },
-);
-}
+)}
 

@@ -163,6 +163,15 @@ Symptomes: [
         { value: 'a_risque', label: 'À risque' },
     ],
 
+    TypeVehicule: [
+      {value: 'lourd', label: 'Lourd'},
+      {value: 'leger', label: 'Léger'}
+    ],
+
+    RV: [
+      {value: '6 mois', label: '6 Mois'},
+      {value: 'moins 6 mois', label: 'Moins de 6 mois'}
+    ]
 
 }
 
