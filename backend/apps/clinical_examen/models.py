@@ -8,6 +8,7 @@ from utils.models.choices import Cornee, ChambreAnterieureProfondeur, ChambreAnt
     PositionCristallin, Papille, PerimetrieBinoculaire, HypotonisantValue, Symptomes
 
 
+                                                                # Examens techniques
 # Visual Acuity model
 class VisualAcuity(Base):
     avsc_od = models.CharField(_('AVSC OD'), max_length=100)
@@ -73,6 +74,9 @@ class Pachymetry(OcularMeasurementBase):
         verbose_name_plural = _('Pachymétries')
 
 
+        
+
+                                                                        # examen clinique
 # Clinical Findings model
 class Plaintes(Base):
     YES_NO_CHOICES = [(True, 'Oui'), (False, 'Non')]
