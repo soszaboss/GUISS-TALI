@@ -1,6 +1,6 @@
 import { useState } from "react"
 import {
-  Search, Plus, Edit, Trash2, MoreVertical, UserCog, User, ChevronLeftIcon, ChevronRightIcon,
+  Search, Plus, Edit, Trash2, MoreVertical, User, ChevronLeftIcon, ChevronRightIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,6 +21,7 @@ import { deleteUser } from "@/services/usersService"
 import type { UserRole } from "@/types/userModels"
 import { toast } from 'sonner';
 import { useListView } from "@/hooks/_ListViewProvider"
+import { useMutation } from "@tanstack/react-query"
 
 
 export function AdminUsersList() {
@@ -28,7 +29,17 @@ export function AdminUsersList() {
   const {results = [], count = 0, next, previous} = useQueryResponsePagination()
   const { setItemIdForUpdate } = useListView()
   const isLoading = useQueryResponseLoading()
-
+  const mutation = useMutation({
+    mutationFn: (userId: number) => deleteUser(userId),
+    onSuccess: () => {
+      if (userToDelete) {
+        toast.success(`Utilisateur ${userToDelete.name} supprimé avec succès.`)
+      }
+    }
+  , onError: () => {
+      toast.error(`Erreur lors de la suppression de l'utilisateur ${userToDelete?.name ?? ''}.`)
+    }
+  })
   // Pagination
   const rowsPerPage = state.limit ?? 10
   const offset = state.offset ?? 0
@@ -90,14 +101,9 @@ export function AdminUsersList() {
     setIsDeleteDialogOpen(true)
   }
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (userToDelete) {
-      const statutCode = await deleteUser(userToDelete.id)
-      if(statutCode !== 204) {
-        toast.error(`Erreur lors de la suppression de l'utilisateur ${userToDelete.name}.`)
-      }else{
-        toast.success(`Utilisateur ${userToDelete.name} supprimé avec succès.`)
-      }
+      mutation.mutate(userToDelete.id)
       setIsDeleteDialogOpen(false)
       setUserToDelete(null)
     }
@@ -116,7 +122,7 @@ export function AdminUsersList() {
           </div>
           <div className="mt-4 md:mt-0">
             <Button asChild>
-              <Link to="/admin/users/add">
+              <Link to="/admin/users/add" onClick={()=>setItemIdForUpdate(null)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter un utilisateur
               </Link>
@@ -234,12 +240,12 @@ export function AdminUsersList() {
                                     Modifier
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
+                                {/* <DropdownMenuItem asChild>
                                   <Link to={`/admin/users/permissions/${user.id}`}>
                                     <UserCog className="h-4 w-4 mr-2" />
                                     Permissions
                                   </Link>
-                                </DropdownMenuItem>
+                                </DropdownMenuItem> */}
                                 <DropdownMenuItem
                                   className="text-red-500"
                                   onClick={() => user.id !== undefined ? handleDeleteClick({ id: Number(user.id), name: `${user.profile?.first_name} ${user.profile?.last_name}` }) : undefined}

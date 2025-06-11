@@ -103,12 +103,12 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
                 title="Ajouter un utilisateur"
                 active={pathname === "/admin/users/add"}
               />
-              <SidebarItem
+              {/* <SidebarItem
                 href="/admin/users/roles"
                 icon={<User size={16} />}
                 title="Rôles et permissions"
                 active={pathname === "/admin/users/roles"}
-              />
+              /> */}
             </div>
           )}
         </div>

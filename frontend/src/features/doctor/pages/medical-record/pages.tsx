@@ -1,4 +1,4 @@
-import MedicalPatientRecord from "@/components/medical-record/medical-patient-record";
+import MedicalPatientRecord from "@/components/medical-record/MedicalPatientRecord";
 import { DoctorMedicalLayout } from "../../components/layouts/doctor-medical-layout";
 
 export default function MedicalRecord(){

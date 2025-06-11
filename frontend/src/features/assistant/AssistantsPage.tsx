@@ -1,7 +1,6 @@
 import { Navigate, type RouteObject } from "react-router-dom";
 
 
-
 export const assistantRoutes: RouteObject[] = [
     {
         index: true,
@@ -24,34 +23,30 @@ export const assistantRoutes: RouteObject[] = [
             {
                 index: true,
                 lazy: async () => {
-                    const module = await import('./components/patients/patients-list');
+                    const module = await import('./components/patients/PatientList');
                     return { Component: module.PatientsList };
                 }
             },
             {
                 path: ':patientId',
                 lazy: async () => {
-                    const module = await import('./components/patients/patient-details');
+                    const module = await import('./components/patients/PatientDetails');
                     return { Component: module.PatientDetails };
                 }
             },
             {
                 path: 'new',
                 lazy: async () => {
-                    const module = await import('./pages/patients/new/page');
+                    const module = await import('./components/patients/PatientForm');
                     return { Component: module.default };
                 }
             },
             {
-                path: 'edit/:patientId',
+                path: 'edit',
                 lazy: async () => {
-                    const module = await import('./pages/patients/edit/[id]/page');
+                    const module = await import('./components/patients/PatientForm');
                     return { Component: module.default };
                 }
-            },
-            {
-                path: 'delete/:patientId',
-                element: <div>Delete Patient</div>
             },
             {
                 path: 'medical-record/:patientId',
