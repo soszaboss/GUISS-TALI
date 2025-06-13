@@ -8,7 +8,7 @@ from my_selectors.patients import (
     get_all_vehicules,
     get_vehicules_by_conducteur
 )
-from tests.unit.patients.factories import ConducteurFactory, VehiculeFactory
+from backend.factories.patients import ConducteurFactory, VehiculeFactory
 
 
 @pytest.mark.django_db

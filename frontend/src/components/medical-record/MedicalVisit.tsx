@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TechnicalExam } from "./TechnicalExam"
 import { ClinicalExam } from "./ClinicalExam"
 import { DrivingExperience } from "./DrivingExperience"
+import { MedicalHistory } from "./MedicalHistory"
 
 // Exemple de props, adapte selon ton projet
 type DoctorMedicalVisitProps = {
@@ -26,7 +27,22 @@ export function MedicalVisit({ visit, userRole = "doctor" }: DoctorMedicalVisitP
   const canEditDriving = userRole === "doctor" || userRole === "admin"
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
+  const [medicalHistoryData, setMedicalHistoryData] = useState(
+    visit?.medicalHistory || {
+      antecedents_medico_chirurgicaux: "",
+      pathologie_ophtalmologique: "",
+      // ...autres champs selon ta structure...
+    }
+  )
+  const [medicalHistoryErrors, setMedicalHistoryErrors] = useState<Record<string, string>>({})
 
+  // ...handlers pour chaque sous-formulaire...
+
+  const handleMedicalHistoryChange = (field: string, value: any) => {
+    setMedicalHistoryData((prev) => ({ ...prev, [field]: value }))
+    // Optionnel: gestion des erreurs
+    setMedicalHistoryErrors((prev) => ({ ...prev, [field]: "" }))
+  }
   // Handlers pour chaque sous-formulaire
   const handleTechnicalChange = (field: string, value: any) => {
     setTechnicalData((prev: any) => ({ ...prev, [field]: value }))
@@ -60,11 +76,23 @@ export function MedicalVisit({ visit, userRole = "doctor" }: DoctorMedicalVisitP
     <div className="p-4">
       {/* ... header, workflow, etc ... */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 mb-6">
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="history">Antécédents médicaux</TabsTrigger>
           <TabsTrigger value="technical">Examen technique</TabsTrigger>
           <TabsTrigger value="clinical">Examen clinique</TabsTrigger>
           <TabsTrigger value="driving">Expérience de conduite</TabsTrigger>
         </TabsList>
+        <TabsContent value="history">
+          <MedicalHistory
+            formData={medicalHistoryData}
+            errors={medicalHistoryErrors}
+            canEdit={canEditTechnical}
+            isSaving={isSaving}
+            saveStatus={saveStatus}
+            onChange={handleMedicalHistoryChange}
+            onSave={handleSave}
+          />
+        </TabsContent>
         <TabsContent value="technical">
           <TechnicalExam
             technicalData={technicalData}

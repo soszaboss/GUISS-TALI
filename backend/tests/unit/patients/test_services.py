@@ -8,7 +8,7 @@ from services.patients import (
     conducteur_create, conducteur_update,
     vehicule_create, vehicule_update
 )
-from tests.unit.patients.factories import ConducteurFactory, VehiculeFactory
+from backend.factories.patients import ConducteurFactory, VehiculeFactory
 
 
 @pytest.mark.django_db

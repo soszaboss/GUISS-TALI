@@ -1,104 +1,180 @@
-from typing import Dict, Optional, List
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.utils.translation import gettext_lazy as _
-import logging
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from .models import (
+    DriverExperience,
+    Antecedent,
+    HealthRecord,
+    Conducteur,
+    Examen
+)
 
-from apps.patients.models import Conducteur
-from apps.clinical_examen.models import ExamenClinique
-from apps.health_record.models import HealthRecord, Antecedent, DriverExperience
+class DriverExperienceService:
+    """
+    Service pour la gestion de l'expérience de conduite
+    """
+    @staticmethod
+    def create_or_update_driver_experience(patient_id, visite, data):
+        """
+        Crée ou met à jour une expérience de conduite
+        """
+        patient = Conducteur.objects.get(pk=patient_id)
+        
+        defaults = {
+            'km_parcourus': data.get('km_parcourus'),
+            'nombre_accidents': data.get('nombre_accidents', 0),
+            'tranche_horaire': data.get('tranche_horaire'),
+            'dommage': data.get('dommage'),
+            'degat': data.get('degat')
+        }
+        
+        driver_exp, created = DriverExperience.objects.update_or_create(
+            patient=patient,
+            visite=visite,
+            defaults=defaults
+        )
+        
+        return driver_exp
 
-logger = logging.getLogger(__name__)
+    @staticmethod
+    def get_driver_experience(patient_id, visite=None):
+        """
+        Récupère l'expérience de conduite d'un patient
+        Si visite=None, retourne la dernière expérience
+        """
+        queryset = DriverExperience.objects.filter(patient_id=patient_id)
+        
+        if visite:
+            return queryset.filter(visite=visite).first()
+        return queryset.order_by('-visite').first()
+
+
+class AntecedentService:
+    """
+    Service pour la gestion des antécédents médicaux
+    """
+    @staticmethod
+    def create_or_update_antecedent(patient_id, data):
+        """
+        Crée ou met à jour les antécédents médicaux
+        """
+        patient = Conducteur.objects.get(pk=patient_id)
+        
+        antecedent_data = {
+            'antecedents_medico_chirurgicaux': data.get('antecedents_medico_chirurgicaux', ''),
+            'pathologie_ophtalmologique': data.get('pathologie_ophtalmologique', ''),
+            'addiction': data.get('addiction', False),
+            'type_addiction': data.get('type_addiction'),
+            'autre_addiction_detail': data.get('autre_addiction_detail', ''),
+            'tabagisme_detail': data.get('tabagisme_detail', ''),
+            'familial': data.get('familial'),
+            'autre_familial_detail': data.get('autre_familial_detail', '')
+        }
+        
+        antecedent, created = Antecedent.objects.update_or_create(
+            patient=patient,
+            defaults=antecedent_data
+        )
+        
+        return antecedent
+
+    @staticmethod
+    def get_antecedent(patient_id):
+        """
+        Récupère les antécédents d'un patient
+        """
+        try:
+            return Antecedent.objects.get(patient_id=patient_id)
+        except ObjectDoesNotExist:
+            return None
 
 
 class HealthRecordService:
     """
-    Service principal de gestion des dossiers médicaux.
+    Service pour la gestion des dossiers médicaux complets
     """
-
-    @classmethod
-    @transaction.atomic
-    def create(cls, patient_id: int) -> HealthRecord:
+    @staticmethod
+    def create_or_update_health_record(patient_id, antecedent_id=None, driver_exp_id=None, examen_ids=None):
+        """
+        Crée ou met à jour un dossier médical complet
+        """
         patient = Conducteur.objects.get(pk=patient_id)
+        
+        # Vérification des relations
+        antecedent = Antecedent.objects.filter(pk=antecedent_id).first() if antecedent_id else None
+        driver_exp = DriverExperience.objects.filter(pk=driver_exp_id).first() if driver_exp_id else None
+        
+        if antecedent and antecedent.patient != patient:
+            raise ValidationError("L'antécédent ne correspond pas au patient")
+        if driver_exp and driver_exp.patient != patient:
+            raise ValidationError("L'expérience de conduite ne correspond pas au patient")
+        
+        # Création/Mise à jour du dossier
+        health_record, created = HealthRecord.objects.update_or_create(
+            patient=patient,
+            defaults={
+                'antecedant': antecedent,
+                'driver_experience': driver_exp
+            }
+        )
+        
+        # Gestion des examens (ManyToMany)
+        if examen_ids:
+            examens = Examen.objects.filter(pk__in=examen_ids, patient=patient)
+            health_record.examens.set(examens)
+        
+        return health_record
 
-        if HealthRecord.objects.filter(patient=patient).exists():
-            raise ValidationError(_("Un dossier médical existe déjà pour ce patient."))
-
-        antecedent = AntecedentService.create(patient)
-        record = HealthRecord.objects.create(patient=patient, antecedant=antecedent)
-
-        # Associe les examens cliniques et expériences si déjà créés
-        record.clinical_examen.set(ExamenClinique.objects.filter(patient=patient))
-        record.driver_experience.set(DriverExperience.objects.filter(patient=patient))
-
-        logger.info(f"Dossier médical créé pour le patient {patient_id}")
-        return record
-
-    @classmethod
-    def get_by_patient(cls, patient_id: int) -> Optional[HealthRecord]:
+    @staticmethod
+    def get_full_health_record(patient_id):
+        """
+        Récupère un dossier médical complet avec toutes les relations préchargées
+        """
         try:
-            return HealthRecord.objects.select_related("antecedant", "patient") \
-                .prefetch_related("clinical_examen", "driver_experience") \
-                .get(patient_id=patient_id)
-        except HealthRecord.DoesNotExist:
+            return HealthRecord.objects.select_related(
+                'antecedant',
+                'driver_experience'
+            ).prefetch_related(
+                'examens',
+                'examens__technical_examen',
+                'examens__clinical_examen'
+            ).get(patient_id=patient_id)
+        except ObjectDoesNotExist:
             return None
 
-    @classmethod
-    def delete(cls, patient_id: int) -> None:
-        record = cls.get_by_patient(patient_id)
-        if not record:
-            raise ValidationError(_("Dossier médical introuvable."))
-
-        record.clinical_examen.all().delete()
-        record.driver_experience.all().delete()
-        record.antecedant.delete()
-        record.delete()
-        logger.info(f"Dossier médical du patient {patient_id} supprimé.")
-
-
-class AntecedentService:
-
-    @classmethod
-    def create(cls, patient: Conducteur) -> Antecedent:
-        return Antecedent.objects.create(
-            patient=patient,
-            antecedents_medico_chirurgicaux="",
-            pathologie_ophtalmologique="",
-        )
-
-    @classmethod
-    def update(cls, patient_id: int, data: Dict) -> Antecedent:
-        antecedent = Antecedent.objects.get(patient_id=patient_id)
-
-        for field, value in data.items():
-            setattr(antecedent, field, value)
-
-        antecedent.full_clean()
-        antecedent.save()
-        return antecedent
+    @staticmethod
+    def add_examen_to_health_record(health_record_id, examen_id):
+        """
+        Ajoute un examen à un dossier médical existant
+        """
+        health_record = HealthRecord.objects.get(pk=health_record_id)
+        examen = Examen.objects.get(pk=examen_id)
+        
+        if examen.patient != health_record.patient:
+            raise ValidationError("L'examen ne correspond pas au patient du dossier")
+        
+        health_record.examens.add(examen)
+        return health_record
 
 
-class DriverExperienceService:
-
-    @classmethod
-    def create(cls, patient_id: int, visite: int) -> DriverExperience:
-        return DriverExperience.objects.create(
-            patient_id=patient_id,
-            visite=visite,
-            km_parcourus=0,
-            nombre_accidents=0
-        )
-
-    @classmethod
-    def update(cls, patient_id: int, visite: int, data: Dict) -> DriverExperience:
-        try:
-            instance = DriverExperience.objects.get(patient_id=patient_id, visite=visite)
-        except DriverExperience.DoesNotExist:
-            instance = cls.create(patient_id, visite)
-
-        for field, value in data.items():
-            setattr(instance, field, value)
-
-        instance.full_clean()
-        instance.save()
-        return instance
+class MedicalHistoryService:
+    """
+    Service global pour la gestion de l'historique médical complet
+    """
+    @staticmethod
+    def get_complete_patient_history(patient_id):
+        """
+        Récupère toutes les informations médicales d'un patient en une seule requête optimisée
+        """
+        health_record = HealthRecordService.get_full_health_record(patient_id)
+        
+        if not health_record:
+            return None
+            
+        return {
+            'health_record': health_record,
+            'all_driver_experiences': DriverExperience.objects.filter(
+                patient_id=patient_id
+            ).order_by('visite'),
+            'all_examens': health_record.examens.all().order_by('visite'),
+            'antecedent': health_record.antecedant,
+            'current_driver_experience': health_record.driver_experience
+        }

@@ -29,7 +29,6 @@ export function LoginForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setError,
   } = useForm<LoginFormType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -47,22 +46,12 @@ export function LoginForm() {
       navigate("/", { replace: true }) // Redirige immédiatement
     },
     onError: (error: any) => {
-      if (error?.response?.status === 401) {
+      if (error?.response?.status === 400) {
         toast.error("Email ou mot de passe incorrect.")
-      } else if (error?.response?.data?.detail) {
-        const detail = error.response.data.detail
-        if (typeof detail === "string") {
-          toast.error(detail)
-        } else if (typeof detail === "object") {
-          Object.values(detail).flat().forEach((msg: any) => toast.error(String(msg)))
-        } else {
-          toast.error("Erreur lors de la connexion.")
-        }
-      } else {
+      }else {
+        navigate('error/505')
         toast.error("Erreur lors de la connexion.")
       }
-      setError("email", { message: " " })
-      setError("password", { message: " " })
     },
   })
 

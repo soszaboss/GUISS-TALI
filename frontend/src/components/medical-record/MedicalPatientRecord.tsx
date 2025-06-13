@@ -2,14 +2,13 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Printer, AlertTriangle } from "lucide-react"
+import { Printer, AlertTriangle, User, Calendar, Mail, MapPin, Phone, IdCard } from "lucide-react"
 import { Link } from "react-router-dom"
 import { MedicalVisit } from "./MedicalVisit"
 
-
 export default function MedicalPatientRecord() {
-  const [activeTab, setActiveTab] = useState("antecedents")
-  const patientId = "101" // ID fictif du patient, à remplacer par l'ID réel
+  const [activeTab, setActiveTab] = useState("general")
+  const patientId = "101"
   // Ces données seraient normalement récupérées depuis une API
   const patient = {
     id: patientId,
@@ -29,6 +28,12 @@ export default function MedicalPatientRecord() {
         { condition: "Hypertension", since: "2015", treatment: "Lisinopril" },
         { condition: "Diabète type 2", since: "2018", treatment: "Metformine" },
       ],
+      surgeries: [
+        { type: "Appendicectomie", year: "2005" }
+      ],
+      allergies: [
+        "Pénicilline"
+      ],
       ophthalmological: [
         { condition: "Myopie", since: "1995", treatment: "Lunettes correctrices" },
         { condition: "Début de cataracte", since: "2022", treatment: "Surveillance" },
@@ -43,392 +48,281 @@ export default function MedicalPatientRecord() {
       ],
     },
     visits: [
-      {
-        id: "1",
-        date: "15/04/2023",
-        type: "Visite périodique",
-        doctor: "Dr. Martin",
-        status: "Finalisé",
-        technical: {
-          visualAcuity: {
-            rightEye: "9/10",
-            leftEye: "10/10",
-            withCorrection: true,
-          },
-          visualField: {
-            rightEye: "Normal",
-            leftEye: "Normal",
-          },
-          intraocularPressure: {
-            rightEye: "14 mmHg",
-            leftEye: "15 mmHg",
-          },
-          colorVision: "Normal",
-          contrastSensitivity: "Normal",
-        },
-        clinical: {
-          symptoms: ["Fatigue oculaire occasionnelle", "Légère sensibilité à la lumière"],
-          biomicroscopy: "Légère opacification du cristallin OD",
-          fundusExamination: "Normal",
-          diagnosis: "Début de cataracte OD, vision compatible avec la conduite",
-          recommendations: "Contrôle dans 6 mois, port de lunettes obligatoire pour la conduite",
-          followUpNeeded: true,
-          followUpDate: "15/10/2023",
-        },
-        drivingExperience: {
-          kilometersPerYear: 15000,
-          accidents: 1,
-          lastAccidentDate: "2018",
-          nightDriving: "Régulier",
-          longDistanceDriving: "Fréquent",
-          timeSlot: "Jour et nuit",
-          damage: "Oui",
-          damageType: "Matériel uniquement",
-        },
-        conclusion: "Vision compatible avec la conduite",
-      },
-      {
-        id: "2",
-        date: "10/10/2022",
-        type: "Visite périodique",
-        doctor: "Dr. Martin",
-        status: "Finalisé",
-        technical: {
-          visualAcuity: {
-            rightEye: "9/10",
-            leftEye: "10/10",
-            withCorrection: true,
-          },
-          visualField: {
-            rightEye: "Normal",
-            leftEye: "Normal",
-          },
-          intraocularPressure: {
-            rightEye: "14 mmHg",
-            leftEye: "14 mmHg",
-          },
-          colorVision: "Normal",
-          contrastSensitivity: "Normal",
-        },
-        clinical: {
-          symptoms: ["Aucun symptôme particulier"],
-          biomicroscopy: "Normal",
-          fundusExamination: "Normal",
-          diagnosis: "Vision compatible avec la conduite",
-          recommendations: "Contrôle dans 6 mois, port de lunettes obligatoire pour la conduite",
-          followUpNeeded: true,
-          followUpDate: "15/04/2023",
-        },
-        drivingExperience: {
-          kilometersPerYear: 14000,
-          accidents: 0,
-          lastAccidentDate: "",
-          nightDriving: "Régulier",
-          longDistanceDriving: "Fréquent",
-          timeSlot: "Jour uniquement",
-          damage: "Non",
-          damageType: "",
-        },
-        conclusion: "Vision compatible avec la conduite",
-      },
-      {
-        id: "3",
-        date: "12/04/2022",
-        type: "Visite périodique",
-        doctor: "Dr. Martin",
-        status: "En cours",
-        technical: {
-          visualAcuity: {
-            rightEye: "9/10",
-            leftEye: "10/10",
-            withCorrection: true,
-          },
-          visualField: {
-            rightEye: "Normal",
-            leftEye: "Normal",
-          },
-          intraocularPressure: {
-            rightEye: "15 mmHg",
-            leftEye: "14 mmHg",
-          },
-          colorVision: "Normal",
-          contrastSensitivity: "Normal",
-        },
-        clinical: {
-          symptoms: [""],
-          biomicroscopy: "",
-          fundusExamination: "",
-          diagnosis: "",
-          recommendations: "",
-          followUpNeeded: false,
-          followUpDate: "",
-        },
-        drivingExperience: {
-          kilometersPerYear: 0,
-          accidents: 0,
-          lastAccidentDate: "",
-          nightDriving: "",
-          longDistanceDriving: "",
-          timeSlot: "",
-          damage: "",
-          damageType: "",
-        },
-        conclusion: "",
-      },
+      // ...visites comme avant...
     ],
   }
 
   return (
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Dossier médical</h1>
-          <div className="flex space-x-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Printer className="h-4 w-4" />
-              Imprimer
-            </Button>
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-20 w-20 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+            <img
+              src={patient.photo || "/placeholder.svg"}
+              alt={patient.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <User className="h-7 w-7 text-blue-600" />
+              {patient.name}
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              {patient.riskLevel === "Élevé" || patient.riskLevel === "Modéré" ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold">
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  Risque {patient.riskLevel.toLowerCase()}
+                </span>
+              ) : null}
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                <IdCard className="h-4 w-4 mr-1" />
+                Permis {patient.permitCategory}
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* En-tête patient */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="h-16 w-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
-                <img
-                  src={patient.photo || "/placeholder.svg"}
-                  alt={patient.name}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="ml-4 flex-1">
-                <div className="flex items-center">
-                  <h2 className="text-xl font-bold">{patient.name}</h2>
-                  {patient.riskLevel === "Élevé" || patient.riskLevel === "Modéré" ? (
-                    <div className="ml-2 flex items-center text-sm font-medium text-red-600">
-                      <AlertTriangle className="h-4 w-4 mr-1" />
-                      Risque {patient.riskLevel.toLowerCase()}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                  <div>
-                    <p className="text-sm text-gray-500">Âge</p>
-                    <p className="font-medium">{patient.age} ans</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Genre</p>
-                    <p className="font-medium">{patient.gender}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Permis</p>
-                    <p className="font-medium">{patient.permitCategory}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Date du permis</p>
-                    <p className="font-medium">{patient.permitDate}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Onglets du dossier médical */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-6">
-            <TabsTrigger value="antecedents">Antécédents médicaux</TabsTrigger>
-            <TabsTrigger value="visits">Visites</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="antecedents">
-            <Card>
-              <CardHeader>
-                <CardTitle>Antécédents médicaux</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-medium mb-3">Antécédents généraux</h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="text-left text-sm text-gray-500">
-                            <th className="pb-2">Condition</th>
-                            <th className="pb-2">Depuis</th>
-                            <th className="pb-2">Traitement</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {patient.medicalHistory.general.map((item, index) => (
-                            <tr key={index} className="border-t border-gray-200">
-                              <td className="py-2">{item.condition}</td>
-                              <td className="py-2">{item.since}</td>
-                              <td className="py-2">{item.treatment}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-medium mb-3">Antécédents ophtalmologiques</h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="text-left text-sm text-gray-500">
-                            <th className="pb-2">Condition</th>
-                            <th className="pb-2">Depuis</th>
-                            <th className="pb-2">Traitement</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {patient.medicalHistory.ophthalmological.map((item, index) => (
-                            <tr key={index} className="border-t border-gray-200">
-                              <td className="py-2">{item.condition}</td>
-                              <td className="py-2">{item.since}</td>
-                              <td className="py-2">{item.treatment}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Addictions</h3>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="text-left text-sm text-gray-500">
-                              <th className="pb-2">Type</th>
-                              <th className="pb-2">Statut</th>
-                              <th className="pb-2">Détails</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {patient.medicalHistory.addictions.map((item, index) => (
-                              <tr key={index} className="border-t border-gray-200">
-                                <td className="py-2">{item.type}</td>
-                                <td className="py-2">{item.status}</td>
-                                <td className="py-2">{item.details}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Antécédents familiaux</h3>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="text-left text-sm text-gray-500">
-                              <th className="pb-2">Condition</th>
-                              <th className="pb-2">Relation</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {patient.medicalHistory.family.map((item, index) => (
-                              <tr key={index} className="border-t border-gray-200">
-                                <td className="py-2">{item.condition}</td>
-                                <td className="py-2">{item.relation}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="visits">
-
-            <div className="space-y-6">
-              {patient.visits.map((visit) => (
-                <Card key={visit.id} className="overflow-hidden">
-                  <CardHeader className="bg-gray-50 p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <CardTitle className="text-lg">Visite du {visit.date}</CardTitle>
-                        <p className="text-sm text-gray-500">
-                          {visit.type} • {visit.doctor}
-                        </p>
-                      </div>
-                      <div className="flex items-center">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            visit.status === "Finalisé"
-                              ? "bg-green-100 text-green-800"
-                              : visit.status === "En cours"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {visit.status}
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Tabs defaultValue="summary" className="w-full">
-                      <TabsList className="w-full rounded-none border-b">
-                        <TabsTrigger value="summary" className="flex-1">
-                          Résumé
-                        </TabsTrigger>
-                        <TabsTrigger value="details" className="flex-1">
-                          Détails complets
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="summary" className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Acuité visuelle</h3>
-                            <p>
-                              OD: {visit.technical?.visualAcuity?.rightEye || "N/A"}, OG:{" "}
-                              {visit.technical?.visualAcuity?.leftEye || "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Diagnostic</h3>
-                            <p>{visit.clinical?.diagnosis || "Non renseigné"}</p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Conduite</h3>
-                            <p>
-                              {visit.drivingExperience?.kilometersPerYear || "N/A"} km/an,{" "}
-                              {visit.drivingExperience?.accidents || "0"} accident(s)
-                            </p>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-500">Conclusion</h3>
-                            <p>{visit.conclusion || "Non finalisé"}</p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex justify-end">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to={`/doctor/visits/${visit.id}`}>Voir tous les détails</Link>
-                          </Button>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="details" className="p-0">
-                        <MedicalVisit visit={visit} />
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        <Button variant="outline" className="flex items-center gap-2">
+          <Printer className="h-4 w-4" />
+          Imprimer
+        </Button>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-8 bg-gray-50 rounded-lg p-1">
+          <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow">
+            Informations générales
+          </TabsTrigger>
+          <TabsTrigger value="visits" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow">
+            Visites
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Onglet Informations générales */}
+        <TabsContent value="general">
+          <Card className="shadow-md border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-xl">Informations générales du patient</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-8">
+
+              {/* Identité */}
+              <section>
+                <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+                  <User className="h-5 w-5" /> Identité
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                  <div><span className="font-medium">Nom :</span> {patient.name}</div>
+                  <div><span className="font-medium">Âge :</span> {patient.age} ans</div>
+                  <div><span className="font-medium">Genre :</span> {patient.gender}</div>
+                  <div><span className="font-medium">Date de naissance :</span> {patient.birthDate}</div>
+                  <div className="col-span-2 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <span className="font-medium">Adresse :</span> {patient.address}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-400" />
+                    <span className="font-medium">Téléphone :</span> {patient.phone}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <span className="font-medium">Email :</span> {patient.email}
+                  </div>
+                </div>
+              </section>
+
+              {/* Permis */}
+              <section>
+                <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+                  <IdCard className="h-5 w-5" /> Permis de conduire
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                  <div><span className="font-medium">Catégorie :</span> {patient.permitCategory}</div>
+                  <div><span className="font-medium">Date d'obtention :</span> {patient.permitDate}</div>
+                </div>
+              </section>
+
+              {/* Antécédents médicaux */}
+              <section>
+                <h3 className="text-lg font-semibold mb-3 text-blue-700">Antécédents médicaux</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="font-semibold mb-1">Généraux</div>
+                    {patient.medicalHistory.general.length === 0 ? (
+                      <span className="text-gray-400">Aucun</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.general.map((item, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{item.condition}</span>
+                            {item.since && <> (depuis {item.since})</>}
+                            {item.treatment && <> — Traitement : {item.treatment}</>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Chirurgies</div>
+                    {patient.medicalHistory.surgeries?.length === 0 ? (
+                      <span className="text-gray-400">Aucune</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.surgeries?.map((item, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{item.type}</span>
+                            {item.year && <> ({item.year})</>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Allergies</div>
+                    {patient.medicalHistory.allergies?.length === 0 ? (
+                      <span className="text-gray-400">Aucune</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.allergies?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Ophtalmologiques</div>
+                    {patient.medicalHistory.ophthalmological.length === 0 ? (
+                      <span className="text-gray-400">Aucun</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.ophthalmological.map((item, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{item.condition}</span>
+                            {item.since && <> (depuis {item.since})</>}
+                            {item.treatment && <> — Traitement : {item.treatment}</>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Addictions</div>
+                    {patient.medicalHistory.addictions.length === 0 ? (
+                      <span className="text-gray-400">Aucune</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.addictions.map((item, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{item.type}</span>
+                            {item.status && <> — {item.status}</>}
+                            {item.details && <> ({item.details})</>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold mb-1">Familiaux</div>
+                    {patient.medicalHistory.family.length === 0 ? (
+                      <span className="text-gray-400">Aucun</span>
+                    ) : (
+                      <ul className="list-disc ml-6 text-gray-700">
+                        {patient.medicalHistory.family.map((item, idx) => (
+                          <li key={idx}>
+                            <span className="font-medium">{item.condition}</span>
+                            {item.relation && <> ({item.relation})</>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Onglet Visites */}
+        <TabsContent value="visits">
+          <div className="space-y-8">
+            {patient.visits.map((visit) => (
+              <Card key={visit.id} className="overflow-hidden shadow border-gray-200">
+                <CardHeader className="bg-blue-50 p-4 border-b">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-lg text-blue-800">Visite du {visit.date}</CardTitle>
+                      <p className="text-sm text-gray-500">
+                        {visit.type} • {visit.doctor}
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full font-semibold ${
+                          visit.status === "Finalisé"
+                            ? "bg-green-100 text-green-800"
+                            : visit.status === "En cours"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {visit.status}
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Tabs defaultValue="summary" className="w-full">
+                    <TabsList className="w-full rounded-none border-b bg-gray-50">
+                      <TabsTrigger value="summary" className="flex-1">
+                        Résumé
+                      </TabsTrigger>
+                      <TabsTrigger value="details" className="flex-1">
+                        Détails complets
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="summary" className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500">Acuité visuelle</h3>
+                          <p>
+                            OD: {visit.technical?.visualAcuity?.rightEye || "N/A"}, OG:{" "}
+                            {visit.technical?.visualAcuity?.leftEye || "N/A"}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500">Diagnostic</h3>
+                          <p>{visit.clinical?.diagnosis || "Non renseigné"}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500">Conduite</h3>
+                          <p>
+                            {visit.drivingExperience?.kilometersPerYear || "N/A"} km/an,{" "}
+                            {visit.drivingExperience?.accidents || "0"} accident(s)
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-gray-500">Conclusion</h3>
+                          <p>{visit.conclusion || "Non finalisé"}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/doctor/visits/${visit.id}`}>Voir tous les détails</Link>
+                        </Button>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="details" className="p-0">
+                      <MedicalVisit visit={visit} />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

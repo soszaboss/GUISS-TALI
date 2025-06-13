@@ -1,155 +1,170 @@
-# tests/unit/health_record/test_factories.py
+# tests/test_medical_records.py
 import pytest
-from django.utils import timezone
-from apps.health_record.models import DriverExperience, Antecedent, HealthRecord
-from tests.unit.clinical_examen.factories import ExamenCliniqueFactory
-from tests.unit.health_record.factories import (
+from django.core.exceptions import ValidationError
+from factories.examens import ExamensFactory
+from factories.health_record import (
     DriverExperienceFactory,
     AntecedentFactory,
     HealthRecordFactory
 )
+from factories.patients import ConducteurFactory
 from utils.models.choices import (
-    AddictionTypeChoices,
-    FamilialChoices,
     DommageChoices,
     DegatChoices,
-    VisiteChoices
+    AddictionTypeChoices,
+    FamilialChoices
 )
 
+@pytest.mark.django_db
+class TestDriverExperienceModel:
+    """Tests pour le modèle DriverExperience"""
+    
+    def test_valid_driver_experience(self):
+        de = DriverExperienceFactory(
+            km_parcourus=50000,
+            nombre_accidents=2,
+            tranche_horaire="Journée"
+        )
+        assert de.km_parcourus == 50000
+        assert de.nombre_accidents == 2
+        assert de.tranche_horaire == "Journée"
+
+    @pytest.mark.parametrize("field,value,expected_error", [
+        ('km_parcourus', -100, 'ne peuvent pas être négatifs'),
+        ('nombre_accidents', -1, 'ne peut pas être négatif')
+    ])
+    def test_negative_values_validation(self, field, value, expected_error):
+        with pytest.raises(ValidationError, match=expected_error):
+            DriverExperienceFactory(**{field: value}).full_clean()
+
+    def test_unique_patient_visite_constraint(self):
+        de = DriverExperienceFactory()
+        with pytest.raises(ValidationError):
+            DriverExperienceFactory(
+                patient=de.patient,
+                visite=de.visite
+            ).full_clean()
+
+    def test_dommage_degat_choices(self):
+        for dommage, _ in DommageChoices.choices:
+            DriverExperienceFactory(dommage=dommage).full_clean()
+        
+        for degat, _ in DegatChoices.choices:
+            DriverExperienceFactory(degat=degat).full_clean()
 
 @pytest.mark.django_db
-class TestDriverExperienceFactory:
-    def test_basic_creation(self):
-        """Test la création basique d'un DriverExperience"""
-        experience = DriverExperienceFactory()
-        assert experience.pk is not None
-        assert isinstance(experience.km_parcourus, float)
-        assert 1000 <= experience.km_parcourus <= 500000
-        assert isinstance(experience.nombre_accidents, int)
-        assert 0 <= experience.nombre_accidents <= 10
-        assert experience.visite in [v[0] for v in VisiteChoices.choices]
-        assert experience.dommage in [c[0] for c in DommageChoices.choices]
-        assert experience.degat in [c[0] for c in DegatChoices.choices]
-
-    def test_with_dommage_trait(self):
-        """Test le trait with_dommage"""
-        experience = DriverExperienceFactory(with_dommage=True)
-        assert experience.dommage in ['corporel', 'materiel']
-
-    def test_with_degat_trait(self):
-        """Test le trait with_degat"""
-        experience = DriverExperienceFactory(with_degat=True)
-        assert experience.degat in ['important', 'modéré', 'leger']
-
-    def test_tranche_horaire(self):
-        """Test que tranche_horaire est bien un objet time"""
-        experience = DriverExperienceFactory()
-        assert hasattr(experience.tranche_horaire, 'hour')
-        assert hasattr(experience.tranche_horaire, 'minute')
-
-
-@pytest.mark.django_db
-class TestAntecedentFactory:
-    def test_basic_creation(self):
-        """Test la création basique d'un Antecedent"""
+class TestAntecedentModel:
+    """Tests pour le modèle Antecedent"""
+    
+    def test_antecedent_creation(self):
         antecedent = AntecedentFactory()
-        assert antecedent.pk is not None
-        assert isinstance(antecedent.antecedents_medico_chirurgicaux, str)
-        assert isinstance(antecedent.pathologie_ophtalmologique, str)
-        assert antecedent.addiction is False
-        assert antecedent.familial in [c[0] for c in FamilialChoices.choices]
+        assert antecedent.patient is not None
+        assert isinstance(antecedent.addiction, bool)
 
-    def test_with_addiction_trait(self):
-        """Test le trait with_addiction"""
-        antecedent = AntecedentFactory(with_addiction=True)
-        assert antecedent.addiction is True
-        assert antecedent.type_addiction in [c[0] for c in AddictionTypeChoices.choices]
-        if antecedent.type_addiction == 'tabagisme':
-            assert antecedent.tabagisme_detail is not None
+    def test_addiction_validation(self):
+        # Addiction sans type
+        with pytest.raises(ValidationError, match='spécifier le type'):
+            AntecedentFactory(addiction=True, type_addiction=None).full_clean()
 
-    def test_with_other_addiction_trait(self):
-        """Test le trait with_other_addiction"""
-        antecedent = AntecedentFactory(with_other_addiction=True)
-        assert antecedent.addiction is True
-        assert antecedent.type_addiction == 'other'
-        assert antecedent.autre_addiction_detail is not None
+        # Tabagisme sans détail
+        with pytest.raises(ValidationError, match='détails pour le tabagisme'):
+            AntecedentFactory(
+                addiction=True,
+                type_addiction='tabagisme',
+                tabagisme_detail=''
+            ).full_clean()
 
-    def test_with_familial_trait(self):
-        """Test le trait with_familial"""
-        antecedent = AntecedentFactory(with_familial=True)
-        assert antecedent.familial in ['cecite', 'gpao']
+        # Autre addiction sans détail
+        with pytest.raises(ValidationError, match='détails pour l\'autre addiction'):
+            AntecedentFactory(
+                addiction=True,
+                type_addiction='other',
+                autre_addiction_detail=''
+            ).full_clean()
 
-    def test_with_other_familial_trait(self):
-        """Test le trait with_other_familial"""
-        antecedent = AntecedentFactory(with_other_familial=True)
-        assert antecedent.familial == 'other'
-        assert antecedent.autre_familial_detail is not None
-
-    def test_post_generation_addiction_details(self):
-        """Test la post_generation pour les détails d'addiction"""
-        # Test tabagisme
-        antecedent = AntecedentFactory(
+    def test_valid_addiction_scenarios(self):
+        # Tabagisme valide
+        AntecedentFactory(
             addiction=True,
             type_addiction='tabagisme',
-            tabagisme_detail=None
-        )
-        assert antecedent.tabagisme_detail == "5 paquets/an"
+            tabagisme_detail='10 paquets/an'
+        ).full_clean()
 
-        # Test other addiction
-        antecedent = AntecedentFactory(
+        # Autre addiction valide
+        AntecedentFactory(
             addiction=True,
             type_addiction='other',
-            autre_addiction_detail=None
-        )
-        assert antecedent.autre_addiction_detail == "Dépendance aux jeux"
+            autre_addiction_detail='Jeu compulsif'
+        ).full_clean()
 
-        # Test other familial
-        antecedent = AntecedentFactory(
-            familial='other',
-            autre_familial_detail=None
-        )
-        assert antecedent.autre_familial_detail == "Antécédents familiaux divers"
+    def test_familial_validation(self):
+        # Autre familial sans détail
+        with pytest.raises(ValidationError, match='préciser les autres'):
+            AntecedentFactory(
+                familial='other',
+                autre_familial_detail=''
+            ).full_clean()
 
+    def test_all_addiction_choices(self):
+        for choice, _ in AddictionTypeChoices.choices:
+            AntecedentFactory(
+                addiction=True,
+                type_addiction=choice,
+                tabagisme_detail='10 paquets/an' if choice == 'tabagisme' else '',
+                autre_addiction_detail='Détail' if choice == 'other' else ''
+            ).full_clean()
+
+    def test_all_familial_choices(self):
+        for choice, _ in FamilialChoices.choices:
+            AntecedentFactory(
+                familial=choice,
+                autre_familial_detail='Détail' if choice == 'other' else ''
+            ).full_clean()
 
 @pytest.mark.django_db
-class TestHealthRecordFactory:
-    def test_basic_creation(self):
-        """Test la création basique d'un HealthRecord"""
-        health_record = HealthRecordFactory()
-        assert health_record.pk is not None
-        assert health_record.antecedant is not None
-        assert health_record.clinical_examen.count() == 2
-        assert health_record.driver_experience.count() == 2
+class TestHealthRecordModel:
+    """Tests pour le modèle HealthRecord"""
+    
+    def test_health_record_creation(self):
+        hr = HealthRecordFactory()
+        assert hr.patient is not None
+        assert str(hr) == f"Dossier médical - {hr.patient.get_full_name()}"
 
-    def test_with_custom_antecedant(self):
-        """Test avec un antecedant personnalisé"""
-        antecedant = AntecedentFactory()
-        health_record = HealthRecordFactory(antecedant=antecedant)
-        assert health_record.antecedant == antecedant
+    def test_patient_consistency_validation(self):
+        other_patient = ConducteurFactory()
+        
+        # Test incohérence antecedant
+        with pytest.raises(ValidationError, match='Incohérence'):
+            HealthRecordFactory(
+                antecedant__patient=other_patient
+            ).full_clean()
 
-    def test_with_custom_clinical_examens(self):
-        """Test avec des examens cliniques personnalisés"""
-        examens = [ExamenCliniqueFactory() for _ in range(3)]
-        health_record = HealthRecordFactory(clinical_examen=examens)
-        assert health_record.clinical_examen.count() == 3
-        assert list(health_record.clinical_examen.all()) == examens
+        # Test incohérence driver_experience
+        with pytest.raises(ValidationError, match='Incohérence'):
+            HealthRecordFactory(
+                driver_experience__patient=other_patient
+            ).full_clean()
 
-    def test_with_custom_driver_experiences(self):
-        """Test avec des expériences de conduite personnalisées"""
-        experiences = [DriverExperienceFactory() for _ in range(3)]
-        health_record = HealthRecordFactory(driver_experience=experiences)
-        assert health_record.driver_experience.count() == 3
-        assert list(health_record.driver_experience.all()) == experiences
+    def test_relations_optional(self):
+        # Tous les champs optionnels
+        HealthRecordFactory(
+            antecedant=None,
+            driver_experience=None,
+            sExamenss=[]
+        ).full_clean()
 
-    # def test_relations_patient_coherence(self):
-    #     """Test que tous les objets liés ont le même patient"""
-    #     health_record = HealthRecordFactory()
-    #     patient = health_record.patient
-    #
-    #     assert health_record.antecedant.patient == patient
-    #
-    #     for exam in health_record.clinical_examen.all():
-    #         assert exam.patient == patient
-    #
-    #     for exp in health_record.driver_experience.all():
-    #         assert exp.patient == patient
+    def test_examens_relation(self):
+        """Test de la relation ManyToMany avec Examens"""
+        hr = HealthRecordFactory()
+        examens = [ExamensFactory() for _ in range(3)]
+        
+        # Correction: Utilisation de set() pour ManyToMany
+        hr.sExamenss.set(examens)
+        assert hr.sExamenss.count() == 3
+
+    def test_one_to_one_patient_constraint(self):
+        patient = ConducteurFactory()
+        HealthRecordFactory(patient=patient)
+        
+        with pytest.raises(Exception):  # IntegrityError ou ValidationError
+            HealthRecordFactory(patient=patient)

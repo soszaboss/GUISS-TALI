@@ -4,7 +4,7 @@ from apps.patients.models import Conducteur, Vehicule
 from django.core.exceptions import ValidationError
 from datetime import date, timedelta
 
-from tests.unit.patients.factories import ConducteurFactory, VehiculeFactory
+from backend.factories.patients import ConducteurFactory, VehiculeFactory
 
 
 @pytest.mark.django_db
