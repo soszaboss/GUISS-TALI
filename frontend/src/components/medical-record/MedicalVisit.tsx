@@ -12,7 +12,7 @@ type DoctorMedicalVisitProps = {
   userRole?: "doctor" | "admin" | "readonly"
 }
 
-export function MedicalVisit({ visit, userRole = "doctor" }: DoctorMedicalVisitProps) {
+export function MedicalVisit({ visit, userRole = "admin" }: DoctorMedicalVisitProps) {
   // Onglet actif
   const [activeTab, setActiveTab] = useState("technical")
 

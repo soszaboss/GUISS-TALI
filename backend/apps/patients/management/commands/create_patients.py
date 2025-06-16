@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
 
-from backend.factories.patients import VehiculeFactory
+from factories.patients import VehiculeFactory
 
 
 class Command(BaseCommand):

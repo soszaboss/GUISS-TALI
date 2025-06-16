@@ -49,6 +49,12 @@ urlpatterns = [
     # routes pour les patients
     path('patients/', include('apps.patients.urls'), name='patients'),
 
+    # routes pour les examens cliniques
+    path('examens/', include('apps.examens.urls'), name='examens'),
+
+    # routes pour les cahiers medicaux
+    path('health-records/', include('apps.health_record.urls'), name='health-records')
+
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { ListViewProvider } from '@/hooks/_ListViewProvider';
 import { PatientQueryResponseProvider } from '@/hooks/patient/PatientQueryResponseProvider';
 import { queryClient } from '@/lib/react-query';
+import { MedicalRecordQueryResponseProvider } from '@/hooks/health record/MedicalRecordQueryResponseProvider';
 
 
 export const AppProvider = ({ children }: WithChildren) => {
@@ -35,10 +36,12 @@ export const AppProvider = ({ children }: WithChildren) => {
                   <ListViewProvider>
                     <AuthInit>
                       <PatientQueryResponseProvider>
-                        {import.meta.env.DEV && <ReactQueryDevtools />}
-                        {children}
-                        <AppRoutes />
-                        <Toaster richColors/>
+                        {/* <MedicalRecordQueryResponseProvider> */}
+                          {import.meta.env.DEV && <ReactQueryDevtools />}
+                          {children}
+                          <AppRoutes />
+                          <Toaster richColors/>
+                      {/* </MedicalRecordQueryResponseProvider> */}
                       </PatientQueryResponseProvider>
                     </AuthInit>
                   </ListViewProvider>

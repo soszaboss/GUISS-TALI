@@ -150,7 +150,7 @@ class TestHealthRecordModel:
         HealthRecordFactory(
             antecedant=None,
             driver_experience=None,
-            sExamenss=[]
+            examens=[]
         ).full_clean()
 
     def test_examens_relation(self):
@@ -159,8 +159,8 @@ class TestHealthRecordModel:
         examens = [ExamensFactory() for _ in range(3)]
         
         # Correction: Utilisation de set() pour ManyToMany
-        hr.sExamenss.set(examens)
-        assert hr.sExamenss.count() == 3
+        hr.examens.set(examens)
+        assert hr.examens.count() == 3
 
     def test_one_to_one_patient_constraint(self):
         patient = ConducteurFactory()

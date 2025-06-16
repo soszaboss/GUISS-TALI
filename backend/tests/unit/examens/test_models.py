@@ -128,8 +128,12 @@ class TestExamensModels:
         assert te.is_completed
 
         # Examen incomplet
-        te_incomplete = TechnicalExamenFactory(visual_acuity=None)
-        assert not te_incomplete.is_completed
+        tech = TechnicalExamenFactory()
+        tech.visual_acuity.delete()  # supprime en base
+
+        with pytest.raises(ValidationError):
+            tech.full_clean()
+
 
     # 7. Tests pour ClinicalExamen
     def test_clinical_examen_relations(self):

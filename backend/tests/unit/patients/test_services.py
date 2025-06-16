@@ -4,11 +4,13 @@ from datetime import date, timedelta
 from django.core.exceptions import ValidationError
 
 from apps.patients.models import Conducteur, Vehicule
+from apps.health_record.models import HealthRecord
+
 from services.patients import (
     conducteur_create, conducteur_update,
     vehicule_create, vehicule_update
 )
-from backend.factories.patients import ConducteurFactory, VehiculeFactory
+from factories.patients import ConducteurFactory, VehiculeFactory
 
 
 @pytest.mark.django_db
@@ -21,6 +23,7 @@ class TestConducteurServices:
         conducteur = conducteur_create(**data)
         assert isinstance(conducteur, Conducteur)
         assert Conducteur.objects.filter(id=conducteur.id).exists()
+        assert HealthRecord.objects.filter(patient=conducteur.id).exists()
 
     def test_conducteur_create_invalid_dates(self):
         """🚫 Échec si la date de péremption est avant celle de délivrance."""

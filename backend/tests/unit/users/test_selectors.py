@@ -2,13 +2,13 @@ import pytest
 from typing import Dict, Any
 from django.db.models import Q
 from apps.users.models import User, Profile
-from my_selectors.users import (
+from selector.users import (
     user_get,
     user_list,
     profile_get,
     profile_list,
 )
-from tests.unit.users.factories import UserFactory, ProfileFactory
+from factories.users import UserFactory, ProfileFactory
 
 # ---- Tests pour user_get ----
 @pytest.mark.django_db

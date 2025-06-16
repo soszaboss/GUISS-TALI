@@ -23,28 +23,28 @@ export const assistantRoutes: RouteObject[] = [
             {
                 index: true,
                 lazy: async () => {
-                    const module = await import('./components/patients/PatientList');
+                    const module = await import('../../components/patients/PatientList');
                     return { Component: module.PatientsList };
                 }
             },
             {
                 path: ':patientId',
                 lazy: async () => {
-                    const module = await import('./components/patients/PatientDetails');
+                    const module = await import('../../components/patients/PatientDetails');
                     return { Component: module.PatientDetails };
                 }
             },
             {
                 path: 'new',
                 lazy: async () => {
-                    const module = await import('./components/patients/PatientForm');
+                    const module = await import('../../components/patients/PatientForm');
                     return { Component: module.default };
                 }
             },
             {
                 path: 'edit',
                 lazy: async () => {
-                    const module = await import('./components/patients/PatientForm');
+                    const module = await import('../../components/patients/PatientForm');
                     return { Component: module.default };
                 }
             },
@@ -54,10 +54,6 @@ export const assistantRoutes: RouteObject[] = [
                     const module = await import('./components/patients/medical-record/patient-medical-record');
                     return { Component: module.PatientMedicalRecord };
                 }
-            },
-            {
-                path: ':patientId/add-new-vehicle',
-                element: <div>Add New Vehicle</div>
             }
         ]
     }, 

@@ -2,7 +2,7 @@ import pytest
 
 from apps.users.models import User, Profile
 from tests.unit.conftest import generer_numero_senegalais
-from tests.unit.users.factories import UserFactory, ProfileFactory
+from factories.users import UserFactory, ProfileFactory
 from django.core.exceptions import ValidationError
 
 

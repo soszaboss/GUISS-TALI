@@ -112,8 +112,7 @@ class Plaintes(TimeStampedModel):
     DIPLOPIE_TYPE_CHOICES = [('monoculaire', 'Monoculaire'), ('binoculaire', 'Binoculaire')]
     EYE_CHOICES = [('od', 'OD'), ('og', 'OG'), ('odg', 'ODG')]
 
-    od_symptom = models.CharField(_('OD symptom'), max_length=30, choices=Symptomes.choices)
-    og_symptom = models.CharField(_('OG symptom'), max_length=30, choices=Symptomes.choices)
+    eye_symptom = models.CharField(_('OD symptom'), max_length=30, choices=Symptomes.choices)
 
     diplopie = models.BooleanField(_('Diplopie'), choices=YES_NO_CHOICES, default=False)
     diplopie_type = models.CharField(_('Diplopie type'), max_length=20,
@@ -296,18 +295,24 @@ class TechnicalExamen(Base):
     )
     is_completed = models.BooleanField(_('Examen technique complété'), default=False)
 
-    def clean(self):
-        # Supprimez la validation stricte qui oblige tous les champs
-        pass
-
-    def save(self, *args, **kwargs):
-        # Déterminez si l'examen technique est complet
-        self.is_completed = all([
+    def completed(self):
+        return all([
             self.visual_acuity,
             self.refraction,
             self.ocular_tension,
             self.pachymetry
         ])
+    
+    def clean(self):
+        super().clean()
+        is_completed = self.completed()
+        if not is_completed:
+            raise ValidationError('tous les champs sont obligatoires.')
+
+    def save(self, *args, **kwargs):
+        # Déterminez si l'examen technique est complet
+        self.full_clean()
+        self.is_completed = self.completed()
         super().save(*args, **kwargs)
 
 

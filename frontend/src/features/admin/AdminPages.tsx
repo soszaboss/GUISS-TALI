@@ -87,27 +87,41 @@ export const adminPlatformRoutes: RouteObject[] = [
             return { Component: module.default };
         },
         children: [
-            {
+           {
                 index: true,
                 lazy: async () => {
-                    const module = await import('./components/patients/patients-list');
-                    return { Component: module.default };
+                    const module = await import('../../components/patients/PatientList');
+                    return { Component: module.PatientsList };
                 }
             },
             {
                 path: ':patientId',
                 lazy: async () => {
-                    const module = await import('./components/patients/patient-detail');
+                    const module = await import('../../components/patients/PatientDetails');
+                    return { Component: module.PatientDetails };
+                }
+            },
+            {
+                path: 'new',
+                lazy: async () => {
+                    const module = await import('../../components/patients/PatientForm');
                     return { Component: module.default };
+                }
+            },
+            {
+                path: 'edit',
+                lazy: async () => {
+                    const module = await import('../../components/patients/PatientForm');
+                    return { Component: module.default };
+                }
+            },
+            {
+                path: 'medical-record/:patientId',
+                lazy: async () => {
+                    const module = await import('../../components/medical-record/MedicalPatientRecord');
+                    return { Component: module.default};
                 }
             }
         ]
     },
-    {
-        path: "medical-records/:patientId",
-        lazy: async () => {
-        const module = await import("./pages/medical-record/pages");
-        return { Component: module.default as React.ComponentType};
-        },
-  },
 ]

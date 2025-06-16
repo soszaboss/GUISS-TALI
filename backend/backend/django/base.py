@@ -180,7 +180,12 @@ REST_FRAMEWORK = {
         ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
-    'EXCEPTION_HANDLER': 'api.exceptions.exception_handlers.drf_default_with_modifications_exception_handler',
+    'EXCEPTION_HANDLER': 'api.exception_handlers.drf_default_with_modifications_exception_handler',
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
+    ]
     }
 
 

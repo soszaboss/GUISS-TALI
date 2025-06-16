@@ -1,10 +1,13 @@
+from datetime import datetime
 import factory
 from factory.django import DjangoModelFactory
+import factory.fuzzy
 from apps.health_record.models import (
     DriverExperience,
     Antecedent,
     HealthRecord
 )
+from factories.examens import ExamensFactory
 from factories.patients import ConducteurFactory
 from utils.models.choices import (
     DommageChoices,
@@ -24,6 +27,7 @@ class DriverExperienceFactory(DjangoModelFactory):
     tranche_horaire = "Journée"
     dommage = DommageChoices.CORPOREL
     degat = DegatChoices.LEGER
+    date_visite = factory.LazyFunction(datetime.now().date) 
 
 class AntecedentFactory(DjangoModelFactory):
     class Meta:
@@ -45,7 +49,7 @@ class AntecedentFactory(DjangoModelFactory):
 class HealthRecordFactory(DjangoModelFactory):
     class Meta:
         model = HealthRecord
-    
+    risky_patient = factory.fuzzy.FuzzyChoice([True, False])
     patient = factory.SubFactory(ConducteurFactory)
     antecedant = factory.SubFactory(AntecedentFactory, patient=factory.SelfAttribute('..patient'))
     driver_experience = factory.SubFactory(
@@ -53,12 +57,20 @@ class HealthRecordFactory(DjangoModelFactory):
         patient=factory.SelfAttribute('..patient')
     )
 
-
     @factory.post_generation
-    def sExamenss(self, create, extracted, **kwargs):
+    def examens(self, create, extracted, **kwargs):
         if not create:
             return
-            
+
         if extracted:
-            # Utilisation correcte de set() après création
-            self.sExamenss.set(extracted)
+            # Si des examens sont fournis, on les ajoute
+            for examen in extracted:
+                self.examens.add(examen)
+        else:
+            # Sinon on en génère 3 automatiquement
+            for _ in range(3):
+                count = _+1
+                print(f'patient: {self.patient}')
+                print(f'patient email: {self.patient.email}')
+                examen = ExamensFactory(patient=self.patient, visite=count)
+                self.examens.add(examen)

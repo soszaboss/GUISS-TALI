@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 
 from apps.patients.models import Conducteur, Vehicule
+from services.health_records import HealthRecordService
 
 @transaction.atomic
 def validate_conducteur_data(data: dict):
@@ -25,7 +26,10 @@ def validate_conducteur_data(data: dict):
 @transaction.atomic
 def conducteur_create(**data) -> Conducteur:
     validate_conducteur_data(data)
-    return Conducteur.objects.create(**data)
+    patient = Conducteur.objects.create(**data)
+    if patient:
+        HealthRecordService.create_or_update_health_record(patient.id)
+    return patient
 
 @transaction.atomic
 def conducteur_update(conducteur: Conducteur, **data) -> Conducteur:

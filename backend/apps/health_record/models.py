@@ -12,10 +12,13 @@ from utils.models.choices import AddictionTypeChoices, FamilialChoices, DommageC
 class DriverExperience(Base):
     km_parcourus = models.FloatField(_('Kilomètres parcourus'), null=True, blank=True)  # Ajout de blank=True
     nombre_accidents = models.PositiveIntegerField(_('Nombre d\'accidents'), default=0)
-    tranche_horaire = models.CharField(_('Tranche horaire de conduite'), max_length=50)  # Changé de TimeField
+    tranche_horaire = models.CharField(
+        _('Tranche horaire de conduite'),
+        max_length=50, null=True,blank=True
+        )  # Changé de TimeField
     dommage = models.CharField(_('Dommages'), max_length=10, choices=DommageChoices.choices, null=True, blank=True)
     degat = models.CharField(_('Dégâts'), max_length=10, choices=DegatChoices.choices, null=True, blank=True)
-
+    date_visite = models.DateField(_('Date de visite'), null=True, default=None, blank=True)
     class Meta:
         verbose_name = _('Expérience de conduite')
         verbose_name_plural = _('Expériences de conduite')
@@ -31,6 +34,8 @@ class DriverExperience(Base):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+    
+    
 class Antecedent(TimeStampedModel):
     patient = models.OneToOneField(Conducteur, on_delete=models.CASCADE, related_name='antecedents')
     antecedents_medico_chirurgicaux = models.TextField(_('Antécédents médico-chirurgicaux'), blank=True)
@@ -79,6 +84,10 @@ class HealthRecord(TimeStampedModel):
     """
     Dossier médical complet du conducteur.
     """
+    risky_patient = models.BooleanField(
+        _('risky patient'),
+        default=False
+    )
     patient = models.OneToOneField(
         Conducteur, 
         on_delete=models.CASCADE,
@@ -90,7 +99,7 @@ class HealthRecord(TimeStampedModel):
         null=True,
         blank=True
     )
-    sExamenss = models.ManyToManyField(Examens, blank=True)
+    examens = models.ManyToManyField(Examens, blank=True)
     driver_experience = models.ForeignKey(
         DriverExperience,
         on_delete=models.SET_NULL,

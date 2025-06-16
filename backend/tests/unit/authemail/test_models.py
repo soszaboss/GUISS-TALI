@@ -14,13 +14,13 @@ from faker.proxy import Faker
 from apps.authemail.models import PasswordResetCode, EmailChangeCode
 from apps.users.models import User
 from services.users import user_create
-from tests.unit.authemail.factories import (
+from factories.authmail import (
     SignupCodeFactory,
     PasswordResetCodeFactory,
     EmailChangeCodeFactory
 )
 
-from tests.unit.users.factories import UserFactory
+from factories.users import UserFactory
 
 
 fake = Faker('Fr')

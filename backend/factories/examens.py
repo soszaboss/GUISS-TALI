@@ -2,7 +2,6 @@ import random
 import factory
 from factory import fuzzy
 from factory.django import DjangoModelFactory, ImageField
-from django.utils import timezone
 
 from apps.patients.models import Conducteur
 from apps.examens.models import (
@@ -101,8 +100,7 @@ class PlaintesFactory(DjangoModelFactory):
     class Meta:
         model = Plaintes
 
-    od_symptom = fuzzy.FuzzyChoice([c[0] for c in Symptomes.choices])
-    og_symptom = fuzzy.FuzzyChoice([c[0] for c in Symptomes.choices])
+    eye_symptom = fuzzy.FuzzyChoice([c[0] for c in Symptomes.choices])
     diplopie = fuzzy.FuzzyChoice([True, False])
     strabisme = fuzzy.FuzzyChoice([True, False])
     nystagmus = fuzzy.FuzzyChoice([True, False])

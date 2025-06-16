@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from apps.users.models import User, Profile
 
 from services.users import user_create, user_update, profile_create
-from tests.unit.users.factories import UserFactory, ProfileFactory
+from factories.users import UserFactory, ProfileFactory
 
 from tests.unit.users.test_models import generer_numero_senegalais
 

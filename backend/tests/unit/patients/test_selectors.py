@@ -1,6 +1,6 @@
 # apps/patients/tests/unit/test_selectors.py
 import pytest
-from my_selectors.patients import (
+from selector.patients import (
     get_conducteur_by_id,
     get_all_conducteurs,
     search_conducteurs_by_nom,
@@ -8,7 +8,7 @@ from my_selectors.patients import (
     get_all_vehicules,
     get_vehicules_by_conducteur
 )
-from backend.factories.patients import ConducteurFactory, VehiculeFactory
+from factories.patients import ConducteurFactory, VehiculeFactory
 
 
 @pytest.mark.django_db

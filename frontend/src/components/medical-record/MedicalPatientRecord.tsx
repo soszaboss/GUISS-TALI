@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Printer, AlertTriangle, User, Calendar, Mail, MapPin, Phone, IdCard } from "lucide-react"
+import { Printer, AlertTriangle, User, Mail, MapPin, Phone, IdCard } from "lucide-react"
 import { Link } from "react-router-dom"
 import { MedicalVisit } from "./MedicalVisit"
 
@@ -100,54 +100,82 @@ export default function MedicalPatientRecord() {
 
         {/* Onglet Informations générales */}
         <TabsContent value="general">
-          <Card className="shadow-md border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-xl">Informations générales du patient</CardTitle>
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 via-white to-gray-50">
+            <CardHeader className="border-b-0 pb-0">
+              <CardTitle className="text-2xl font-bold text-blue-900 flex items-center gap-3">
+                <User className="h-7 w-7 text-blue-600" />
+                Informations générales du patient
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-8">
+            <CardContent className="p-8 space-y-10">
 
               {/* Identité */}
               <section>
-                <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
                   <User className="h-5 w-5" /> Identité
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                  <div><span className="font-medium">Nom :</span> {patient.name}</div>
-                  <div><span className="font-medium">Âge :</span> {patient.age} ans</div>
-                  <div><span className="font-medium">Genre :</span> {patient.gender}</div>
-                  <div><span className="font-medium">Date de naissance :</span> {patient.birthDate}</div>
-                  <div className="col-span-2 flex items-center gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">
+                  <div>
+                    <span className="block text-xs text-gray-500">Nom</span>
+                    <span className="font-semibold text-base">{patient.name}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-500">Âge</span>
+                    <span className="font-semibold text-base">{patient.age} ans</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-500">Genre</span>
+                    <span className="font-semibold text-base">{patient.gender}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-500">Date de naissance</span>
+                    <span className="font-semibold text-base">{patient.birthDate}</span>
+                  </div>
+                  <div className="md:col-span-2 flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="font-medium">Adresse :</span> {patient.address}
+                    <span className="block text-xs text-gray-500">Adresse</span>
+                    <span className="font-semibold text-base">{patient.address}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="font-medium">Téléphone :</span> {patient.phone}
+                    <span className="block text-xs text-gray-500">Téléphone</span>
+                    <span className="font-semibold text-base">{patient.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="font-medium">Email :</span> {patient.email}
+                    <span className="block text-xs text-gray-500">Email</span>
+                    <span className="font-semibold text-base">{patient.email}</span>
                   </div>
                 </div>
               </section>
 
               {/* Permis */}
               <section>
-                <h3 className="text-lg font-semibold mb-3 text-blue-700 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
                   <IdCard className="h-5 w-5" /> Permis de conduire
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                  <div><span className="font-medium">Catégorie :</span> {patient.permitCategory}</div>
-                  <div><span className="font-medium">Date d'obtention :</span> {patient.permitDate}</div>
+                <div className="flex flex-wrap gap-6 text-gray-800">
+                  <div>
+                    <span className="block text-xs text-gray-500">Catégorie</span>
+                    <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-700 font-semibold text-sm">
+                      {patient.permitCategory}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-500">Date d'obtention</span>
+                    <span className="font-semibold text-base">{patient.permitDate}</span>
+                  </div>
                 </div>
               </section>
 
               {/* Antécédents médicaux */}
               <section>
-                <h3 className="text-lg font-semibold mb-3 text-blue-700">Antécédents médicaux</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-500" /> Antécédents médicaux
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <div className="font-semibold mb-1">Généraux</div>
+                    <div className="font-semibold mb-1 text-gray-700">Généraux</div>
                     {patient.medicalHistory.general.length === 0 ? (
                       <span className="text-gray-400">Aucun</span>
                     ) : (
@@ -163,7 +191,7 @@ export default function MedicalPatientRecord() {
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold mb-1">Chirurgies</div>
+                    <div className="font-semibold mb-1 text-gray-700">Chirurgies</div>
                     {patient.medicalHistory.surgeries?.length === 0 ? (
                       <span className="text-gray-400">Aucune</span>
                     ) : (
@@ -178,7 +206,7 @@ export default function MedicalPatientRecord() {
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold mb-1">Allergies</div>
+                    <div className="font-semibold mb-1 text-gray-700">Allergies</div>
                     {patient.medicalHistory.allergies?.length === 0 ? (
                       <span className="text-gray-400">Aucune</span>
                     ) : (
@@ -190,7 +218,7 @@ export default function MedicalPatientRecord() {
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold mb-1">Ophtalmologiques</div>
+                    <div className="font-semibold mb-1 text-gray-700">Ophtalmologiques</div>
                     {patient.medicalHistory.ophthalmological.length === 0 ? (
                       <span className="text-gray-400">Aucun</span>
                     ) : (
@@ -206,7 +234,7 @@ export default function MedicalPatientRecord() {
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold mb-1">Addictions</div>
+                    <div className="font-semibold mb-1 text-gray-700">Addictions</div>
                     {patient.medicalHistory.addictions.length === 0 ? (
                       <span className="text-gray-400">Aucune</span>
                     ) : (
@@ -222,7 +250,7 @@ export default function MedicalPatientRecord() {
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold mb-1">Familiaux</div>
+                    <div className="font-semibold mb-1 text-gray-700">Familiaux</div>
                     {patient.medicalHistory.family.length === 0 ? (
                       <span className="text-gray-400">Aucun</span>
                     ) : (
