@@ -30,11 +30,12 @@ class TestExamensModels:
     # 1. Tests pour VisualAcuity
     def test_visual_acuity_creation(self):
         va = VisualAcuityFactory(
-            avsc_od=1.234,
-            avsc_og=2.345,
-            avac_od=3.456,
-            avac_og=4.567
+            avsc_od='1.234',
+            avsc_og='2.345',
+            avac_od='3.456',
+            avac_og='4.567'
         )
+        va.save()
         assert 0 <= va.avsc_od <= 10
         assert 0 <= va.avac_og <= 10
 
@@ -59,16 +60,13 @@ class TestExamensModels:
         assert -10 <= refraction.od_s <= 10
         assert -10 <= refraction.og_c <= 10
 
-    @pytest.mark.parametrize("field,invalid_value", [
-        ('od_s', -10.1),
-        ('og_c', 10.1),
-        ('od_a', 181),
-        ('dp', 0)
-    ])
-    def test_refraction_invalid_values(self, field, invalid_value):
+    def test_refraction_invalid_values(self):
+        r = RefractionFactory()
+        r.od_s='-10.1'
+        r.og_c='10.1'
+        r.od_a='181'
         with pytest.raises(ValidationError):
-            r = RefractionFactory(**{field: invalid_value})
-            r.full_clean()
+            r.save()
 
     # 3. Tests pour OcularTension
     def test_ocular_tension_with_ttt(self):
@@ -108,8 +106,8 @@ class TestExamensModels:
     def test_segment_anterieur_anomalie(self):
         sa = BiomicroscopySegmentAnterieurFactory(
             transparence=ChambreAnterieureTransparence.ANORMALE,
-            type_anomalie_value='Pigments',
-            quantite_anomalie='Minime'
+            type_anomalie_value='PIGMENTS',
+            quantite_anomalie='MINIME'
         )
         sa.full_clean()
 

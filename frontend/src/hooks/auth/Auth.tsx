@@ -60,6 +60,7 @@ const AuthProvider: FC<WithChildren> = ({children}) => {
     onError: () => {
       persistAuth(undefined)
       setCurrentUser(undefined)
+      window.location.href = '/auth/login'
     },
   })
 
@@ -67,6 +68,10 @@ const AuthProvider: FC<WithChildren> = ({children}) => {
     mutationKey: [QUERIES, 'logout'],
     mutationFn: (refresh: string) => blacklistToken(refresh),
     onSuccess: () => {
+      saveAuth(undefined)
+      setCurrentUser(undefined)
+    },
+    onError: () => {
       saveAuth(undefined)
       setCurrentUser(undefined)
     }
@@ -145,7 +150,6 @@ const AuthInit: FC<WithChildren> = ({children}) => {
     if (auth && auth.access) {
       requestUser()
     } else {
-      logout()
       setShowSplashScreen(false)
     }
     // eslint-disable-next-line

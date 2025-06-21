@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
+from django.db.models import TextChoices, IntegerChoices
 
 from apps.examens.models import (
     Examens, TechnicalExamen, ClinicalExamen,
@@ -20,14 +21,13 @@ from services.examens import (
 
 from selector.health_record import HealthRecordSelector
 
-
 class VisualAcuitySerializer(serializers.ModelSerializer):
     class Meta:
         model = VisualAcuity
         fields = '__all__'
 
     def validate(self, data):
-        for field in ['avsc_od', 'avsc_og', 'avsc_dg', 'avac_od', 'avac_og', 'avac_dg']:
+        for field in ['avsc_od', 'avsc_og', 'avsc_odg', 'avac_od', 'avac_og', 'avac_odg']:
             value = data.get(field)
             if value is not None and not (0 <= value <= 10):
                 raise ValidationError(f"{field} doit être entre 0 et 10")
@@ -153,25 +153,43 @@ class TechnicalExamenSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        # Utilisation du service pour la création technique
-        technical_examen = TechnicalExamenService.init_technical_examen(
-            examen_id=validated_data.pop('examen_id')
-        )
-        
-        components = {
+        examen_id = self.context.get('examen_id')
+        print("VALIDATED DATA =>", validated_data)
+        print("examen_id =>", examen_id)
+        technical_examen = TechnicalExamenService.init_technical_examen(examen_id)
+        nested_fields = {
             'visual_acuity': TechnicalExamenService.update_visual_acuity,
             'refraction': TechnicalExamenService.update_refraction,
-            'ocular_tension': lambda id, data: OcularTension.objects.create(**data),
-            'pachymetry': lambda id, data: Pachymetry.objects.create(**data)
+            'ocular_tension': TechnicalExamenService.update_ocular_tension,
+            'pachymetry': TechnicalExamenService.update_pachymetry,
         }
 
-        for field, service_method in components.items():
+        for field, service in nested_fields.items():
             if field in validated_data:
-                component = service_method(technical_examen.id, validated_data[field])
-                setattr(technical_examen, field, component)
-        
-        technical_examen.save()
+                service(technical_examen.id, validated_data.pop(field))
+
+        technical_examen.refresh_from_db()
         return technical_examen
+
+    def update(self, instance, validated_data):
+        nested_fields = {
+            'visual_acuity': TechnicalExamenService.update_visual_acuity,
+            'refraction': TechnicalExamenService.update_refraction,
+            'ocular_tension': TechnicalExamenService.update_ocular_tension,
+            'pachymetry': TechnicalExamenService.update_pachymetry,
+        }
+
+        for field, service in nested_fields.items():
+            if field in validated_data:
+                service(instance.id, validated_data.pop(field))
+
+        # Update des autres champs simples
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        instance.refresh_from_db()
+        return instance
 
 class ClinicalExamenSerializer(serializers.ModelSerializer):
     conclusion = ConclusionSerializer(required=False)
@@ -185,46 +203,105 @@ class ClinicalExamenSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_internal_value(self, data):
-        # Gestion spéciale pour les fichiers dans les requêtes multipart
-        if isinstance(data, dict) and self.context.get('request').FILES:
-            files = self.context['request'].FILES
-            if 'bp_sup' not in data:
-                data['bp_sup'] = {}
-            data['bp_sup'].update({
-                'retinographie': files.get('retinographie'),
-                'oct': files.get('oct'),
-                'autres': files.get('autres')
-            })
-        return super().to_internal_value(data)
-    
+        request = self.context.get('request')
+        files = request.FILES if request else {}
+
+        data = data.copy() if hasattr(data, 'copy') else dict(data)
+
+        nested_data = {}
+
+        def assign_nested(dct, keys, value):
+            for key in keys[:-1]:
+                dct = dct.setdefault(key, {})
+            dct[keys[-1]] = value
+
+        for key, value in data.items():
+            keys = key.split('.')
+            if isinstance(value, list) and len(value) == 1:
+                value = value[0]
+            assign_nested(nested_data, keys, value)
+
+        # ➤ Ajout fichiers perimetry
+        peri_data = nested_data.get('perimetry', {})
+        for field in ['image', 'images']:
+            file_key = f'perimetry.{field}'
+            if file_key in files:
+                peri_data[field] = files[file_key]
+            elif isinstance(peri_data.get(field), str):
+                # Keep existing path
+                continue
+            else:
+                peri_data.pop(field, None)
+        nested_data['perimetry'] = peri_data
+
+        # ➤ Ajout fichiers bp_sup
+        bp_sup_data = nested_data.get('bp_sup', {})
+        for field in ['retinographie', 'oct', 'autres']:
+            if field in files:
+                bp_sup_data[field] = files[field]
+            elif isinstance(bp_sup_data.get(field), str):
+                continue
+            else:
+                bp_sup_data.pop(field, None)
+        nested_data['bp_sup'] = bp_sup_data
+
+        # ➤ Normalisation des booléens
+        def normalize_booleans(d):
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    normalize_booleans(value)
+                elif isinstance(value, str):
+                    if value.lower() == 'true':
+                        d[key] = True
+                    elif value.lower() == 'false':
+                        d[key] = False
+
+        normalize_booleans(nested_data)
+
+        print("NESTED DATA =>", nested_data)
+        return super().to_internal_value(nested_data)
+
     def create(self, validated_data):
-        # Délégation au service clinique
         bp_sup_data = validated_data.pop('bp_sup', None)
         clinical_examen = ClinicalExamenService.init_clinical_examen(
             examen_id=validated_data.pop('examen_id')
         )
 
-        # Gestion des plaintes via le service
-        if 'og' in validated_data or 'od' in validated_data:
-            ClinicalExamenService.create_plaintes(
-                clinical_examen.id,
-                {
-                    'og': validated_data.pop('og', {}),
-                    'od': validated_data.pop('od', {})
-                }
-            )
+        for side in ['og', 'od']:
+            eye_data = validated_data.pop(side, None)
+            if eye_data:
+                ClinicalExamenService.create_or_update_eye_side(clinical_examen.id, side, eye_data)
 
-        # Autres composants
-        components = ['conclusion', 'perimetry']
-        for component in components:
-            if component in validated_data:
-                data = validated_data.pop(component)
-                model_class = globals()[component.capitalize()]
-                setattr(clinical_examen, component, model_class.objects.create(**data))
+        if 'conclusion' in validated_data:
+            ConclusionService.update_conclusion(clinical_examen.id, validated_data.pop('conclusion'))
+
+        if 'perimetry' in validated_data:
+            ClinicalExamenService.update_perimetry(clinical_examen.id, validated_data.pop('perimetry'))
+
         if bp_sup_data:
-            clinical_examen.bp_sup = BpSuP.objects.create(**bp_sup_data)
+            ClinicalExamenService.update_bp_sup(clinical_examen.id, bp_sup_data)
+
         clinical_examen.save()
         return clinical_examen
+
+    def update(self, instance, validated_data):
+        if 'og' in validated_data:
+            ClinicalExamenService.create_or_update_eye_side(instance.id, 'og', validated_data.pop('og'))
+
+        if 'od' in validated_data:
+            ClinicalExamenService.create_or_update_eye_side(instance.id, 'od', validated_data.pop('od'))
+
+        if 'conclusion' in validated_data:
+            ConclusionService.update_conclusion(instance.id, validated_data.pop('conclusion'))
+
+        if 'perimetry' in validated_data:
+            ClinicalExamenService.update_perimetry(instance.id, validated_data.pop('perimetry'), replace=True)
+
+        if 'bp_sup' in validated_data:
+            ClinicalExamenService.update_bp_sup(instance.id, validated_data.pop('bp_sup'), replace=True)
+
+        instance.save()
+        return instance
 
 class ExamensSerializer(serializers.ModelSerializer):
     technical_examen = TechnicalExamenSerializer(required=False)
@@ -265,26 +342,26 @@ class ExamensSerializer(serializers.ModelSerializer):
         examen.save()
         return examen
 
-class HealthRecordSerializer(serializers.ModelSerializer):
-    examens = ExamensSerializer(many=True, read_only=True)
-    antecedant = serializers.PrimaryKeyRelatedField(read_only=True)
-    driver_experience = serializers.PrimaryKeyRelatedField(read_only=True)
+# class HealthRecordSerializer(serializers.ModelSerializer):
+#     examens = ExamensSerializer(many=True, read_only=True)
+#     antecedant = serializers.PrimaryKeyRelatedField(read_only=True)
+#     driver_experience = serializers.PrimaryKeyRelatedField(read_only=True)
 
-    class Meta:
-        model = HealthRecord
-        fields = '__all__'
-        read_only_fields = ('risky_patient',)
+#     class Meta:
+#         model = HealthRecord
+#         fields = '__all__'
+#         read_only_fields = ('risky_patient',)
 
-    def to_representation(self, instance):
-        # Utilisation des selectors pour une représentation optimisée
-        representation = super().to_representation(instance)
-        full_record = HealthRecordSelector.get_full_health_record(instance.patient_id)
+#     def to_representation(self, instance):
+#         # Utilisation des selectors pour une représentation optimisée
+#         representation = super().to_representation(instance)
+#         full_record = HealthRecordSelector.get_full_health_record(instance.patient_id)
         
-        if full_record:
-            representation.update({
-                'examens': ExamensSerializer(full_record.examens.all(), many=True).data,
-                'antecedant': full_record.antecedant.id if full_record.antecedant else None,
-                'driver_experience': full_record.driver_experience.id if full_record.driver_experience else None
-            })
+#         if full_record:
+#             representation.update({
+#                 'examens': ExamensSerializer(full_record.examens.all(), many=True).data,
+#                 'antecedant': full_record.antecedant.id if full_record.antecedant else None,
+#                 'driver_experience': full_record.driver_experience.id if full_record.driver_experience else None
+#             })
         
-        return representation
+#         return representation

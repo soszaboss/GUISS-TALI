@@ -63,14 +63,14 @@ class Antecedent(TimeStampedModel):
         if self.addiction and not self.type_addiction:
             raise ValidationError(_('Veuillez spécifier le type d\'addiction.'))
         
-        if self.type_addiction == 'tabagisme' and not self.tabagisme_detail:
+        if self.type_addiction == 'TABAGISME' and not self.tabagisme_detail:
             raise ValidationError(_('Veuillez indiquer les détails pour le tabagisme.'))
             
-        if self.type_addiction == 'other' and not self.autre_addiction_detail:
+        if self.type_addiction == 'OTHER' and not self.autre_addiction_detail:
             raise ValidationError(_('Veuillez indiquer les détails pour l\'autre addiction.'))
         
         # Validation des antécédents familiaux
-        if self.familial == 'other' and not self.autre_familial_detail:
+        if self.familial == 'OTHER' and not self.autre_familial_detail:
             raise ValidationError(_('Veuillez préciser les autres antécédents familiaux.'))
 
     def save(self, **kwargs):
@@ -100,12 +100,7 @@ class HealthRecord(TimeStampedModel):
         blank=True
     )
     examens = models.ManyToManyField(Examens, blank=True)
-    driver_experience = models.ForeignKey(
-        DriverExperience,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+    driver_experience = models.ManyToManyField(DriverExperience, blank=True)
 
     class Meta:
         verbose_name = _('Dossier médical')
@@ -117,8 +112,7 @@ class HealthRecord(TimeStampedModel):
     def clean(self):
         super().clean()
         # Vérification que le patient correspond dans toutes les relations
-        if (self.antecedant and self.antecedant.patient != self.patient) or \
-           (self.driver_experience and self.driver_experience.patient != self.patient):
+        if (self.antecedant and self.antecedant.patient != self.patient):
             raise ValidationError(_('Incohérence dans les données patient'))
         
     def save(self, **kwargs):

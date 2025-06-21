@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
-
+from django.db import transaction
 
 from factories.health_record import HealthRecordFactory
 
@@ -24,6 +24,7 @@ class Command(BaseCommand):
             count = int(count)
 
         for i in range(count):
-            health_record = HealthRecordFactory()
-            health_record.save()
+            with transaction.atomic():
+                health_record = HealthRecordFactory()
+                health_record.save()
         print('Successfully created {} record'.format(count))

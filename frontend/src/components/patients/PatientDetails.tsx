@@ -19,6 +19,7 @@ import { z } from "zod"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { useAuth } from "@/hooks/auth/Auth"
 
 const vehiculeSchema = z.object({
   immatriculation: z.string().min(1, "Immatriculation requise"),
@@ -154,7 +155,8 @@ export function PatientDetails() {
   const { patientId } = useParams<{ patientId: string }>()
   const navigate = useNavigate()
   const { setItemIdForUpdate } = useListView()
-
+  const {currentUser} = useAuth()
+  const role = currentUser?.role?.toLowerCase()
   // Patient data
   const { data: patient, isLoading: isPatientLoading } = useQuery({
     queryKey: [QUERIES.PATIENTS_LIST, "getPatient", patientId],
@@ -242,7 +244,7 @@ export function PatientDetails() {
             <h1 className="text-2xl font-bold">Fiche Patient</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate(`/assistant/patients/medical-record/${patient.id}`)}>
+            <Button variant="outline" onClick={() => navigate(`/${role}/patients/medical-record/${patient.id}`)}>
               <FileText className="mr-2 h-4 w-4" />
               Cahier Médical
             </Button>
@@ -250,7 +252,7 @@ export function PatientDetails() {
               variant="outline"
               onClick={() => {
                 setItemIdForUpdate(patient.id)
-                navigate(`/assistant/patients/edit`)
+                navigate(`/${role}/patients/edit`)
               }}
             >
               <Edit className="mr-2 h-4 w-4" />

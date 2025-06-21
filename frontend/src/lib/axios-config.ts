@@ -2,7 +2,7 @@
 import { getAuth, setAuth, removeAuth } from '@/helpers/crud-helper/AuthHelpers'
 import { refreshToken } from '@/services/authService'
 import Axios, { type InternalAxiosRequestConfig } from 'axios'
-import { toast } from 'sonner'
+// import { toast } from 'sonner'
 
 const API_URL = import.meta.env.VITE_APP_API_URL
 
@@ -28,7 +28,9 @@ function authRequestInterceptor(config: InternalAxiosRequestConfig) {
   if (auth && auth.access) {
     config.headers.Authorization = `Bearer ${auth.access}`
   }
-  if (config.headers) {
+  // Ajoute Accept seulement si ce n’est pas un FormData (sinon backend peut rager)
+  const isFormData = config.data instanceof FormData
+  if (config.headers && !isFormData) {
     config.headers.Accept = 'application/json'
   }
   return config
@@ -70,7 +72,13 @@ export function setupAxios(axios: typeof Axios) {
 
           isRefreshing = true
           try {
-            const newAuth = await refreshToken(auth.refresh)
+            const newAuth = await refreshToken(auth.refresh).catch((error)=>{
+              if (error.code === 401 || error.code === '401') {
+                 if (!window.location.href.startsWith('/auth/login')) {
+                    window.location.href = 'auth/login'
+                  }
+              }
+            })
             if (newAuth && newAuth.access) {
               setAuth({ ...auth, access: newAuth.access })
               axios.defaults.headers.common['Authorization'] = 'Bearer ' + newAuth.access
@@ -80,29 +88,38 @@ export function setupAxios(axios: typeof Axios) {
             } else {
               processQueue(new Error('Refresh token failed'), null)
               removeAuth()
-              window.location.href = '/auth/login'
+              if (!window.location.href.startsWith('/auth/login')) {
+                window.location.href = 'auth/login'
+              }
               return Promise.reject(error)
             }
           } catch (refreshError) {
+             console.log('hello refresh')
             processQueue(refreshError, null)
+            if (!window.location.href.startsWith('/auth/login')) {
+                window.location.href = 'auth/login'
+              }
+
             removeAuth()
-            window.location.href = '/auth/login'
             return Promise.reject(refreshError)
           } finally {
             isRefreshing = false
           }
         } else {
           removeAuth()
-          window.location.href = '/auth/login'
+          if (!window.location.href.startsWith('/auth/login')) {
+                window.location.href = 'auth/login'
+              }
+
           return Promise.reject(error)
         }
       }
 
       // Toast pour toute autre erreur
-      const message = error.response?.data?.message || error.message
-      toast.error(message, {
-        description: error.response?.data?.description || '',
-      })
+      // const message = error.response?.data?.message || error.message
+      // toast.error(message, {
+      //   description: error.response?.data?.description || '',
+      // })
 
       return Promise.reject(error)
     }

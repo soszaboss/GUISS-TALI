@@ -4,7 +4,7 @@ import type { AxiosResponse } from "axios"
 import axios from "axios"
 
 const API_URL = import.meta.env.VITE_APP_API_URL
-const TECHNICAL_EXAM_URL = `${API_URL}/technical-exams/`
+const TECHNICAL_EXAM_URL = `${API_URL}/examens/technical-examens/`
 
 const getTechnicalExams = (query: string): Promise<PaginationResponse<TechnicalExamen>> => {
   return axios
@@ -18,9 +18,12 @@ const getTechnicalExamById = (id: ID): Promise<TechnicalExamen | undefined> => {
     .then((response: AxiosResponse<TechnicalExamen | undefined>) => response.data)
 }
 
-const createTechnicalExam = (exam: TechnicalExamen): Promise<TechnicalExamen | undefined> => {
+const createTechnicalExam = (exam: TechnicalExamen, examenID: number): Promise<TechnicalExamen | undefined> => {
   return axios
-    .post(`${TECHNICAL_EXAM_URL}`, exam)
+    .post(`${TECHNICAL_EXAM_URL}create/${examenID}/`, {
+      ...exam,
+      examen_id: examenID,
+    })
     .then((response: AxiosResponse<TechnicalExamen | undefined>) => response.data)
 }
 

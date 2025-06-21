@@ -7,12 +7,11 @@ from apps.health_record.models import (
     Antecedent,
     HealthRecord
 )
-from factories.examens import ExamensFactory
+from factories.examens import ClinicalExamenFactory, ExamensFactory, TechnicalExamenFactory
 from factories.patients import ConducteurFactory
 from utils.models.choices import (
     DommageChoices,
     DegatChoices,
-    AddictionTypeChoices,
     FamilialChoices
 )
 
@@ -52,10 +51,6 @@ class HealthRecordFactory(DjangoModelFactory):
     risky_patient = factory.fuzzy.FuzzyChoice([True, False])
     patient = factory.SubFactory(ConducteurFactory)
     antecedant = factory.SubFactory(AntecedentFactory, patient=factory.SelfAttribute('..patient'))
-    driver_experience = factory.SubFactory(
-        DriverExperienceFactory,
-        patient=factory.SelfAttribute('..patient')
-    )
 
     @factory.post_generation
     def examens(self, create, extracted, **kwargs):
@@ -63,14 +58,33 @@ class HealthRecordFactory(DjangoModelFactory):
             return
 
         if extracted:
-            # Si des examens sont fournis, on les ajoute
-            for examen in extracted:
-                self.examens.add(examen)
+            self.examens.set(extracted)  # On suppose que c’est un queryset ou une liste
         else:
-            # Sinon on en génère 3 automatiquement
-            for _ in range(3):
-                count = _+1
-                print(f'patient: {self.patient}')
-                print(f'patient email: {self.patient.email}')
-                examen = ExamensFactory(patient=self.patient, visite=count)
-                self.examens.add(examen)
+            generated_examens = []
+            for i in range(3):
+                technical_examen = TechnicalExamenFactory(patient=self.patient, visite=i + 1)
+                clinical_examen = ClinicalExamenFactory(patient=self.patient, visite=i + 1)
+                examen = ExamensFactory(
+                    patient=self.patient,
+                    visite=i + 1,
+                    technical_examen=technical_examen,
+                    clinical_examen=clinical_examen
+                )
+                generated_examens.append(examen)
+            self.examens.set(generated_examens)  # ✅ Là c’est bien une liste
+
+
+    @factory.post_generation
+    def driver_experience(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # Si des driver_experiences sont fournis, on les ajoute après la création
+            self.driver_experience.set(extracted)
+            self.save()
+        else:
+            # Sinon on en génère 3 automatiquement après la création
+            driver_experiences = [DriverExperienceFactory(patient=self.patient, visite=i+1) for i in range(3)]
+            self.driver_experience.set(driver_experiences)
+            self.save()

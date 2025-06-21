@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from apps.patients.models import Conducteur
-from utils.models.choices import VisiteChoices, SegmentChoices
+from utils.models.choices import VisiteChoices
 
 
 class Base(TimeStampedModel):
@@ -36,21 +36,6 @@ class OcularMeasurementBase(TimeStampedModel):
 
     class Meta:
         abstract = True
-
-    def validate_eye_measurements(self, field_prefix, min_val, max_val):
-        """Valide les mesures pour OD/OG"""
-        for eye in ['od', 'og']:
-            value = getattr(self, f"{field_prefix}_{eye}", None)
-            if value is not None and not (min_val <= value <= max_val):
-                raise ValidationError(
-                    _(f"La valeur {eye} doit être entre {min_val} et {max_val}")
-                )
-
-
-class Segment(TimeStampedModel):
-    od = models.FloatField(_('OD (œil droit)'))
-    og = models.FloatField(_('OG (œil gauche)'))
-    segment = models.CharField(_('Segment'), max_length=20, choices=SegmentChoices.choices)
 
     def validate_eye_measurements(self, field_prefix, min_val, max_val):
         """Valide les mesures pour OD/OG"""

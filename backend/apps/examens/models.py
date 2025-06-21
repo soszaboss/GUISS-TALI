@@ -4,9 +4,9 @@ from django.core.exceptions import ValidationError
 
 from django_extensions.db.models import TimeStampedModel
 
-from apps.examens.base import OcularMeasurementBase, Base, Segment
+from apps.examens.base import OcularMeasurementBase, Base
 
-from utils.models.choices import Cornee, ChambreAnterieureProfondeur, ChambreAnterieureTransparence, QuantiteAnomalie, \
+from utils.models.choices import Cornee, ChambreAnterieureProfondeur, ChambreAnterieureTransparence, QuantiteAnomalie, SegmentChoices, \
     TypeAnomalie, Pupille, AxeVisuel, RPM, Iris, Cristallin, Vitre, Macula, ChampRetinienPeripherique, Vaisseaux, \
     PositionCristallin, Papille, PerimetrieBinoculaire, HypotonisantValue, Symptomes
 
@@ -18,12 +18,12 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class VisualAcuity(TimeStampedModel):
-    avsc_od = models.FloatField(_('AVSC OD'))
-    avsc_og = models.FloatField(_('AVSC OG'))
-    avsc_dg = models.FloatField(_('AVSC ODG'))
-    avac_od = models.FloatField(_('AVAC OD'))
-    avac_og = models.FloatField(_('AVAC OG'))
-    avac_dg = models.FloatField(_('AVAC ODG'))
+    avsc_od = models.DecimalField(_('AVSC OD'), max_digits=5, decimal_places=3)
+    avsc_og = models.DecimalField(_('AVSC OG'), max_digits=5, decimal_places=3)
+    avsc_odg = models.DecimalField(_('AVSC ODG'), max_digits=5, decimal_places=3)
+    avac_od = models.DecimalField(_('AVAC OD'), max_digits=5, decimal_places=3)
+    avac_og = models.DecimalField(_('AVAC OG'), max_digits=5, decimal_places=3)
+    avac_odg = models.DecimalField(_('AVAC ODG'), max_digits=5, decimal_places=3)
 
     class Meta:
         verbose_name = _('Acuité visuelle')
@@ -34,10 +34,10 @@ class VisualAcuity(TimeStampedModel):
         fields = [
             ('avsc_od', self.avsc_od),
             ('avsc_og', self.avsc_og),
-            ('avsc_dg', self.avsc_dg),
+            ('avsc_odg', self.avsc_odg),
             ('avac_od', self.avac_od),
             ('avac_og', self.avac_og),
-            ('avac_dg', self.avac_dg),
+            ('avac_odg', self.avac_odg),
         ]
 
         for field_name, value in fields:
@@ -45,29 +45,32 @@ class VisualAcuity(TimeStampedModel):
                 # Vérifie que la valeur est entre 0 et 13
                 if not (0 <= value <= 10):
                     raise ValidationError({field_name: _('La valeur doit être comprise entre 0 et 13.')})
-                # Vérifie qu’il y a au maximum 3 décimales
-                if round(value, 3) != round(value, 6):
-                    raise ValidationError({field_name: _('La valeur doit avoir au maximum 3 chiffres après la virgule.')})
+    def save(self, **kwargs):
+         self.full_clean()
+         return super().save(**kwargs)
 
 # Refraction model
 class Refraction(TimeStampedModel):
-    od_s = models.FloatField(_('S OD'))
-    og_s = models.FloatField(_('S OG'))
-    od_c = models.FloatField(_('C OD'))
-    og_c = models.FloatField(_('C OG'))
-    od_a = models.FloatField(_('A OD'))
-    og_a = models.FloatField(_('A OG'))
+    od_s = models.DecimalField(_('S OD'),  max_digits=5, decimal_places=3)
+    og_s = models.DecimalField(_('S OG'),  max_digits=5, decimal_places=3)
+    od_c = models.DecimalField(_('C OD'),  max_digits=5, decimal_places=3)
+    og_c = models.DecimalField(_('C OG'),  max_digits=5, decimal_places=3)
+    od_a = models.DecimalField(_('A OD'),  max_digits=5, decimal_places=3)
+    og_a = models.DecimalField(_('A OG'),  max_digits=5, decimal_places=3)
     dp = models.FloatField(_('DP en mm'))
 
     def clean(self):
+        super().clean()
         refraction_fields = {
             'S OD': self.od_s, 'C OD': self.od_c, 'A OD': self.od_a,
             'S OG': self.og_s, 'C OG': self.og_c, 'A OG': self.og_a
         }
         for field_name, value in refraction_fields.items():
-            if value and not (-10.0 <= value <= 10.0):
+            if value and not (-10.0 <= float(value) <= 10.0):
                 raise ValidationError(_(f'La valeur de {field_name} doit être entre -10.0 et 10.0'))
-
+    def save(self, **kwargs):
+         self.full_clean()
+         return super().save(**kwargs)
     class Meta:
         verbose_name = _('Réfraction automatisée')
         verbose_name_plural = _('Réfractions automatisées')
@@ -151,23 +154,25 @@ class Plaintes(TimeStampedModel):
 
 
 # Segment Anterieur
-class BiomicroscopySegmentAnterieur(Segment):
+class BiomicroscopySegmentAnterieur(TimeStampedModel):
+    segment = models.CharField(_('Segment'), max_length=20, choices=SegmentChoices.choices)
+
     # Cornée
-    cornee = models.CharField(_('Corne'), max_length=30, choices=Cornee, blank=True)
+    cornee = models.CharField(_('Corne'), max_length=30, choices=Cornee.choices)
 
     # Chambre antérieure
-    profondeur = models.CharField(_('Profondeur'), max_length=30, choices=ChambreAnterieureProfondeur, blank=True)
-    transparence = models.CharField(_('Transparence'), max_length=30, choices=ChambreAnterieureTransparence, blank=True)
-    type_anomalie_value = models.CharField(_('Anormal transparence'), max_length=30, choices=TypeAnomalie, null=True, blank=True)
-    quantite_anomalie = models.CharField(_('quantité anomalie'), max_length=30, choices=QuantiteAnomalie, null=True, blank=True)
+    profondeur = models.CharField(_('Profondeur'), max_length=30, choices=ChambreAnterieureProfondeur.choices)
+    transparence = models.CharField(_('Transparence'), max_length=30, choices=ChambreAnterieureTransparence.choices)
+    type_anomalie_value = models.CharField(_('Anormal transparence'), max_length=30, choices=TypeAnomalie.choices, null=True, blank=True)
+    quantite_anomalie = models.CharField(_('quantité anomalie'), max_length=30, choices=QuantiteAnomalie.choices, null=True, blank=True)
 
-    pupille = models.CharField(_('Pupille'), max_length=30, choices=Pupille, blank=True)
-    axe_visuel = models.CharField(_('Axe Visuel'), max_length=30, choices=AxeVisuel, blank=True)
-    rpm = models.CharField(_('RPM'), max_length=30, choices=RPM, blank=True)
-    iris = models.CharField(_('Iris'), max_length=30, choices=Iris, blank=True)
+    pupille = models.CharField(_('Pupille'), max_length=30, choices=Pupille.choices)
+    axe_visuel = models.CharField(_('Axe Visuel'), max_length=30, choices=AxeVisuel.choices)
+    rpm = models.CharField(_('RPM'), max_length=30, choices=RPM)
+    iris = models.CharField(_('Iris'), max_length=30, choices=Iris.choices)
 
-    cristallin = models.CharField(_('Cristallin'), max_length=30, choices=Cristallin, blank=True)
-    position_cristallin = models.CharField(_('Position Cristallin'), max_length=32, choices=PositionCristallin, blank=True)
+    cristallin = models.CharField(_('Cristallin'), max_length=30, choices=Cristallin.choices)
+    position_cristallin = models.CharField(_('Position Cristallin'), max_length=32, choices=PositionCristallin.choices)
 
     class Meta:
         verbose_name = _('Segment antérieur (SA)')
@@ -186,14 +191,16 @@ class BiomicroscopySegmentAnterieur(Segment):
          return super().save(**kwargs)
 
 # Segment Postérieur
-class BiomicroscopySegmentPosterieur(Segment):
-    vitre = models.CharField(_('Vitre'), max_length=30, choices=Vitre, blank=True)
+class BiomicroscopySegmentPosterieur(TimeStampedModel):
+    segment = models.CharField(_('Segment'), max_length=20, choices=SegmentChoices.choices)
+
+    vitre = models.CharField(_('Vitre'), max_length=30, choices=Vitre.choices)
 
     retine = models.FloatField(_('Rétine'))
-    papille = models.CharField(_('Papille'), max_length=30, choices=Papille, blank=True)
-    macula = models.CharField(_('Macula'), max_length=30, choices=Macula, blank=True)
-    retinien_peripherique = models.CharField(_('Champ rétinien périphérique'), max_length=30, choices=ChampRetinienPeripherique, blank=True)
-    vaissaux = models.CharField(_('Vaissaux'), max_length=30, choices=Vaisseaux, blank=True)
+    papille = models.CharField(_('Papille'), max_length=30, choices=Papille.choices)
+    macula = models.CharField(_('Macula'), max_length=30, choices=Macula.choices)
+    retinien_peripherique = models.CharField(_('Champ rétinien périphérique'), max_length=30, choices=ChampRetinienPeripherique.choices)
+    vaissaux = models.CharField(_('Vaissaux'), max_length=30, choices=Vaisseaux.choices)
 
     class Meta:
         verbose_name = _('Segment antérieur (SA)')
@@ -218,12 +225,12 @@ class Perimetry(TimeStampedModel):
     pbo = models.CharField(_('PBO'), max_length=30,
                            choices=PerimetrieBinoculaire,
                            null=True)
-    limite_superieure = models.FloatField(_('Limite supérieure (en degré)'), null=True)
-    limite_inferieure = models.FloatField(_('Limite inférieure (en degré)'), null=True)
-    limite_temporale_droit = models.FloatField(_('Limite Temporale  droite'), null=True)
-    limite_temporale_gauche = models.FloatField(_('Limite Temporale gauche'), null=True)
-    limite_horizontal = models.FloatField(_('Limite Horizontal'), null=True)
-    score_esternmen = models.FloatField(_('Score d’Estermen (pourcentage)'), null=True)
+    limite_superieure = models.FloatField(_('Limite supérieure (en degré)'))
+    limite_inferieure = models.FloatField(_('Limite inférieure (en degré)'))
+    limite_temporale_droit = models.FloatField(_('Limite Temporale  droite'))
+    limite_temporale_gauche = models.FloatField(_('Limite Temporale gauche'))
+    limite_horizontal = models.FloatField(_('Limite Horizontal'))
+    score_esternmen = models.FloatField(_('Score d’Estermen (pourcentage)'))
 
     image = models.ImageField(_('Image'), upload_to='images/perimetries_binoculaire/')
     images = models.FileField(_('Images'), upload_to='images/perimetries_binoculaire/')
@@ -279,19 +286,22 @@ class TechnicalExamen(Base):
         Refraction, 
         on_delete=models.CASCADE, 
         null=True, 
-        blank=True
+        blank=True,
+        default=None
     )
     ocular_tension = models.OneToOneField(
         OcularTension, 
         on_delete=models.CASCADE, 
         null=True, 
-        blank=True
+        blank=True,
+        default=None
     )
     pachymetry = models.OneToOneField(
         Pachymetry, 
         on_delete=models.CASCADE, 
         null=True, 
-        blank=True
+        blank=True,
+        default=None,
     )
     is_completed = models.BooleanField(_('Examen technique complété'), default=False)
 
@@ -306,8 +316,8 @@ class TechnicalExamen(Base):
     def clean(self):
         super().clean()
         is_completed = self.completed()
-        if not is_completed:
-            raise ValidationError('tous les champs sont obligatoires.')
+        # if not is_completed:
+        #     raise ValidationError('tous les champs sont obligatoires.')
 
     def save(self, *args, **kwargs):
         # Déterminez si l'examen technique est complet
@@ -324,7 +334,7 @@ class ClinicalExamen(Base):
     perimetry = models.OneToOneField(Perimetry, on_delete=models.CASCADE)
     og = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='og')
     od = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='od')
-    bp_sup = models.OneToOneField(BpSuP, on_delete=models.CASCADE)
+    bp_sup = models.OneToOneField(BpSuP, on_delete=models.CASCADE, null=True, default=None, blank=True)
     is_completed = models.BooleanField(_('Examen clinique complété'), default=False)
 
     class Meta:
@@ -332,7 +342,7 @@ class ClinicalExamen(Base):
         verbose_name_plural = _('Examens cliniques')
 
     def clean(self):
-        if not all([self.conclusion, self.perimetry, self.og, self.od, self.bp_sup]):
+        if not all([self.conclusion, self.perimetry, self.og, self.od]):
             raise ValidationError(_("Tous les composants cliniques doivent être présents"))
 
 
@@ -360,6 +370,7 @@ class Examens(Base):
         unique_together = ('patient', 'visite')
         verbose_name = _('Examen global')
         verbose_name_plural = _('Examens globaux')
+        ordering = ['visite', '-created']
 
     def __str__(self):
         return f'Examen de {self.patient.get_full_name()} - Visite {self.get_visite_display()}'

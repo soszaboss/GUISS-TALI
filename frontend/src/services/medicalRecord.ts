@@ -1,10 +1,29 @@
 import type { ID, Response, PaginationResponse } from "@/types/_models"
-import type { HealthRecord } from "@/types/medicalRecord"
+import type { HealthRecord, DriverExperience, Antecedent } from "@/types/medicalRecord"
 import type { AxiosResponse } from "axios"
 import axios from "axios"
 
 const API_URL = import.meta.env.VITE_APP_API_URL
-const MEDICAL_RECORD_URL = `${API_URL}/medical-records/`
+const MEDICAL_RECORD_URL = `${API_URL}/health-records/`
+const DRIVER_EXPERIENCE_URL = `${MEDICAL_RECORD_URL}driver-experiences/`
+const ANTECEDENT_URL = `${MEDICAL_RECORD_URL}antecedents/`
+
+
+const createAntecedent = (data: Antecedent) => {
+  return axios.post(ANTECEDENT_URL, data).then(res => res.data)
+}
+
+const updateAntecedent = (data: Antecedent) => {
+  return axios.patch(`${ANTECEDENT_URL}${data.id}/`, data).then(res => res.data)
+}
+
+const createDriverExperience = (data: DriverExperience) => {
+  return axios.post(DRIVER_EXPERIENCE_URL, data).then(res => res.data)
+}
+
+const updateDriverExperience = (data: DriverExperience) => {
+  return axios.patch(`${DRIVER_EXPERIENCE_URL}${data.id}/`, data).then(res => res.data)
+}
 
 const getMedicalRecords = (query: string): Promise<PaginationResponse<HealthRecord>> => {
   return axios
@@ -15,6 +34,11 @@ const getMedicalRecords = (query: string): Promise<PaginationResponse<HealthReco
 const getMedicalRecordById = (id: ID): Promise<HealthRecord | undefined> => {
   return axios
     .get(`${MEDICAL_RECORD_URL}${id}/`)
+    .then((response: AxiosResponse<HealthRecord | undefined>) => response.data)
+}
+const getMedicalRecordByPatientId = (id: ID): Promise<HealthRecord | undefined> => {
+  return axios
+    .get(`${MEDICAL_RECORD_URL}patient/${id}/`)
     .then((response: AxiosResponse<HealthRecord | undefined>) => response.data)
 }
 
@@ -40,6 +64,15 @@ const deleteSelectedMedicalRecords = (recordIds: Array<ID>): Promise<void> => {
   return axios.all(requests).then(() => {})
 }
 
+const syncHealthRecord = (
+  patientId: number,
+  visite: number
+): Promise<HealthRecord | undefined> => {
+  return axios
+    .get(`${MEDICAL_RECORD_URL}visite/${visite}/patient/${patientId}/`)
+    .then((response: AxiosResponse<HealthRecord | undefined>) => response.data)
+}
+
 export {
   getMedicalRecords,
   getMedicalRecordById,
@@ -47,4 +80,10 @@ export {
   updateMedicalRecord,
   deleteMedicalRecord,
   deleteSelectedMedicalRecords,
+  getMedicalRecordByPatientId,
+  createDriverExperience,
+  updateDriverExperience,
+  createAntecedent,
+  updateAntecedent,
+  syncHealthRecord
 }

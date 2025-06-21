@@ -44,58 +44,46 @@ export interface Pachymetry {
 }
 
 export interface TechnicalExamen {
-  id?: ID
-  visual_acuity?: VisualAcuity
-  refraction?: Refraction
-  ocular_tension?: OcularTension
-  pachymetry?: Pachymetry
-  visite?: number
-  is_completed?: boolean
-  patient?: number
+  id: ID
+  visual_acuity: VisualAcuity
+  refraction: Refraction
+  ocular_tension: OcularTension
+  pachymetry: Pachymetry
+  visite: number
+  is_completed: boolean
+  patient: number
 }
 
-export const initialTechnicalExamen: TechnicalExamen = {
-  id: null,
+export const initTechnicalData = {
   visual_acuity: {
-    id: null,
-    avsc_od: 0,
-    avsc_og: 0,
-    avsc_dg: 0,
-    avac_od: 0,
-    avac_og: 0,
-    avac_dg: 0,
-    created: "",
-    modified: "",
+    avsc_od: "",
+    avsc_og: "",
+    avsc_odg: "",
+    avac_od: "",
+    avac_og: "",
+    avac_odg: "",
   },
   refraction: {
-    id: null,
-    od_s: 0,
-    og_s: 0,
-    od_c: 0,
-    og_c: 0,
-    od_a: 0,
-    og_a: 0,
-    dp: 0,
-    created: "",
-    modified: "",
+    od_s: "",
+    og_s: "",
+    od_c: "",
+    og_c: "",
+    od_a: "",
+    og_a: "",
+    dp: "",
   },
   ocular_tension: {
-    id: null,
-    od: 0,
-    og: 0,
+    od: "",
+    og: "",
     ttt_hypotonisant: false,
     ttt_hypotonisant_value: "",
-    created: "",
-    modified: "",
   },
   pachymetry: {
-    id: null,
-    od: 0,
-    og: 0,
-    created: "",
-    modified: "",
+    od: "",
+    og: "",
   },
-  visite: 1,
+  // PAS de id ici !
+  visite: undefined,
   is_completed: false,
-  patient: 0,
+  patient: undefined,
 }

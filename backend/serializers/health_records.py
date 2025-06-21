@@ -5,6 +5,7 @@ from apps.health_record.models import Antecedent, DriverExperience, HealthRecord
 
 from django.core.exceptions import ValidationError
 
+from serializers.patients import ConducteurSerializer
 from selector.health_record import AntecedentSelector, DriverExperienceSelector, HealthRecordSelector
 
 from serializers.examens import ExamensSerializer
@@ -43,29 +44,29 @@ class AntecedentSerializer(serializers.ModelSerializer):
 
 class HealthRecordSerializer(serializers.ModelSerializer):
     antecedant = AntecedentSerializer(required=False)
-    driver_experience = DriverExperienceSerializer(required=False)
+    driver_experience = DriverExperienceSerializer(many=True, read_only=True)
     examens = ExamensSerializer(many=True, read_only=True)
-
+    patient = ConducteurSerializer(read_only=True)
     class Meta:
         model = HealthRecord
         fields = '__all__'
         read_only_fields = ('patient',)
 
-    def create(self, validated_data):
-        request = self.context.get('request')
-        patient = request.user.patient if hasattr(request.user, 'patient') else None
+    # def create(self, validated_data):
+        # request = self.context.get('request')
+        # patient = request.user.patient if hasattr(request.user, 'patient') else None
 
-        antecedent_data = validated_data.pop('antecedant', None)
-        driver_data = validated_data.pop('driver_experience', None)
-        examen_ids = self.initial_data.get('examen_ids', [])
+        # antecedent_data = validated_data.pop('antecedant', None)
+        # driver_data = validated_data.pop('driver_experience', None)
+        # examen_ids = self.initial_data.get('examen_ids', [])
 
-        health_record = HealthRecordService.create_or_update_health_record(
-            patient_id=patient.id,
-            antecedent_data=antecedent_data,
-            driver_exp_data=driver_data,
-            examen_ids=examen_ids
-        )
-        return health_record
+        # health_record = HealthRecordService.create_or_update_health_record(
+        #     patient_id=patient.id,
+        #     antecedent_data=antecedent_data,
+        #     driver_exp_data=driver_data,
+        #     examen_ids=examen_ids
+        # )
+        # return health_record
 
 # ----------------------------
 # COMPLEX SERIALIZERS WITH SELECTORS

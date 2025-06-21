@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions, parsers
+from rest_framework import viewsets, permissions, parsers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -8,94 +8,78 @@ from .models import (
 
 from serializers.examens import (
     ExamensSerializer, TechnicalExamenSerializer, ClinicalExamenSerializer,
-    VisualAcuitySerializer, BpSuPSerializer
+    BpSuPSerializer
 )
 
-from services.examens import (
-    ExamenService, TechnicalExamenService,
-    ClinicalExamenService
-)
-
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-
+from services.examens import ExamenService
 
 class ExamensViewSet(viewsets.ModelViewSet):
     queryset = Examens.objects.all()
     serializer_class = ExamensSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(
-        description="Liste tous les examens avec possibilité de filtrage par patient et visite",
-        parameters=[
-            OpenApiParameter(name='patient', description='Filtrer par ID patient', required=False, type=int),
-            OpenApiParameter(name='visite', description='Filtrer par numéro de visite', required=False, type=int)
-        ]
-    )
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        
-        patient_id = request.query_params.get('patient')
-        if patient_id:
-            queryset = queryset.filter(patient_id=patient_id)
-            
-        visite = request.query_params.get('visite')
-        if visite:
-            queryset = queryset.filter(visite=visite)
-            
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        examen_id = self.get_object().id
+        try:
+            ExamenService.delete_examen_complet(examen_id)
+            return Response('', status=status.HTTP_204_NO_CONTENT)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Erreur lors de la suppression de l'examen {examen_id}: {str(e)}")
+            return Response({"detail": f"Erreur lors de la suppression : {str(e)}"}, status=500)
 
-    @extend_schema(
-        description="Crée un nouvel examen",
-        request=ExamensSerializer,
-        responses={201: ExamensSerializer}
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
 
-    @action(detail=True, methods=['post'])
-    def complete(self, request, pk=None):
-        examen = self.get_object()
-        ExamenService.complete_examen(examen.id)
-        return Response({'status': 'examen completed'})
+    # @action(detail=True, methods=['post'])
+    # def complete(self, request, pk=None):
+    #     examen = self.get_object()
+    #     ExamenService.complete_examen(examen.id)
+    #     return Response({'status': 'examen completed'})
 
 class TechnicalExamenViewSet(viewsets.ModelViewSet):
     queryset = TechnicalExamen.objects.all()
     serializer_class = TechnicalExamenSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=True, methods=['patch'])
-    def update_visual_acuity(self, request, pk=None):
-        technical_examen = self.get_object()
-        serializer = VisualAcuitySerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        updated = TechnicalExamenService.update_visual_acuity(
-            technical_examen.id,
-            serializer.validated_data
-        )
-        return Response(VisualAcuitySerializer(updated).data)
+    @action(detail=False, methods=['post'], url_path='create-for-examen')
+    def create_for_tech_examen(self, request, examen_id=None):
+        examen_id = request.data.pop('examen_id', None)
+        if not examen_id:
+            return Response({'detail': 'examen_id est requis'}, status=400)
+
+        serializer = self.get_serializer(data=request.data, context={'examen_id': examen_id})
+        if not serializer.is_valid():
+            print("Serializer errors:", serializer.errors)
+            return Response(serializer.errors, status=400)
+
+        # Création réelle de l'objet
+        instance = serializer.save()
+
+        # Re-serialization pour l'affichage
+        response_serializer = self.get_serializer(instance)
+        return Response(response_serializer.data, status=201)
+
+
+    # permission_classes = [permissions.IsAuthenticated]
 
 class ClinicalExamenViewSet(viewsets.ModelViewSet):
     queryset = ClinicalExamen.objects.all()
     serializer_class = ClinicalExamenSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
+    # permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
 
-    @action(detail=True, methods=['post'])
-    def add_plaintes(self, request, pk=None):
-        clinical_examen = self.get_object()
-        try:
-            result = ClinicalExamenService.create_plaintes(
-                clinical_examen.id,
-                request.data
-            )
-            return Response(result, status=201)
-        except ValidationError as e:
-            return Response({'error': str(e)}, status=400)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+
 
 class BpSuPViewSet(viewsets.ModelViewSet):
     queryset = BpSuP.objects.all()
     serializer_class = BpSuPSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [parsers.MultiPartParser]
+    # permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]

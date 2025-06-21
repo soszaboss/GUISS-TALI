@@ -33,7 +33,7 @@ export function login(email: string, password: string):Promise<AuthModel | undef
 export function refreshToken(refresh: string): Promise<AuthModel | undefined> {
   return axios.post<AuthModel>(`${API_URL}/api/token/refresh/`, {
     refresh: refresh,
-  }).then((response: AxiosResponse<AuthModel>) => response.data).catch();
+  }).then((response: AxiosResponse<AuthModel>) => response.data);
 }
 
 export function blacklistToken(refresh: string): Promise<void> {

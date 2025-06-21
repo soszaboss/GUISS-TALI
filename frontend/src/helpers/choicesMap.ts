@@ -1,142 +1,163 @@
-// data/choicesMap.ts
-
 export const choicesMap = {
   VisiteChoices: [
-    { value: 1, label: 'First' },
-    { value: 2, label: 'Second' },
-    { value: 3, label: 'Third' },
+    { value: 1, label: 'FIRST' },
+    { value: 2, label: 'SECOND' },
+    { value: 3, label: 'THIRD' },
   ],
+
   Cornee: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Opacité Axe', label: 'Opacité - Axe' },
-    { value: 'Opacité Périphérie', label: 'Opacité - Périphérie' },
-    { value: 'Opacité Totale', label: 'Opacité - Totale' },
-    { value: 'Autre', label: 'Autre' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'OPACITE_AXE', label: 'OPACITE_AXE' },
+    { value: 'OPACITE_PERIPHERIE', label: 'OPACITE_PERIPHERIE' },
+    { value: 'OPACITE_TOTALE', label: 'OPACITE_TOTALE' },
+    { value: 'AUTRE', label: 'AUTRE' },
   ],
+
   ChambreAnterieureProfondeur: [
-    { value: 'Normale', label: 'Normale' },
-    { value: 'Réduite', label: 'Réduite' },
-    { value: 'Augmentée', label: 'Augmentée' },
-    { value: 'Asymétrique', label: 'Asymétrique' },
+    { value: 'NORMALE', label: 'NORMALE' },
+    { value: 'REDUITE', label: 'REDUITE' },
+    { value: 'AUGMENTEE', label: 'AUGMENTEE' },
+    { value: 'ASYMETRIQUE', label: 'ASYMETRIQUE' },
   ],
+
   ChambreAnterieureTransparence: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Anormale', label: 'Anormale' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'ANORMALE', label: 'ANORMALE' },
   ],
+
   Pupille: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Myosis', label: 'Myosis' },
-    { value: 'Mydriase', label: 'Mydriase' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'MYOSIS', label: 'MYOSIS' },
+    { value: 'MYDRIASE', label: 'MYDRIASE' },
   ],
+
   AxeVisuel: [
-    { value: 'Dégagé', label: 'Dégagé' },
-    { value: 'Obstrué', label: 'Obstrué' },
-    { value: 'Leucocorie', label: 'Leucocorie' },
+    { value: 'DEGAGE', label: 'DEGAGE' },
+    { value: 'OBSTRUE', label: 'OBSTRUE' },
+    { value: 'LEUCOCORIE', label: 'LEUCOCORIE' },
   ],
+
   Cristallin: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Opaque', label: 'Opaque' },
-    { value: 'Colobome', label: 'Colobome' },
-    { value: 'Aphakie', label: 'Aphakie' },
-    { value: 'Pseudophakie', label: 'Pseudophakie' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'OPAQUE', label: 'OPAQUE' },
+    { value: 'COLOBOME', label: 'COLOBOME' },
+    { value: 'APHAKIE', label: 'APHAKIE' },
+    { value: 'PSEUDOPHAKIE', label: 'PSEUDOPHAKIE' },
   ],
+
   Vitre: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Corps flottants', label: 'Corps flottants' },
-    { value: 'Hémorragie', label: 'Hémorragie' },
-    { value: 'Hyalite', label: 'Hyalite' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'CORPS_FLOTTANTS', label: 'CORPS_FLOTTANTS' },
+    { value: 'HEMORRAGIE', label: 'HEMORRAGIE' },
+    { value: 'HYALITE', label: 'HYALITE' },
     { value: 'PVR', label: 'PVR' },
-    { value: 'Autres', label: 'Autres' },
+    { value: 'AUTRES', label: 'AUTRES' },
   ],
+
   TypeAnomalie: [
-    { value: 'Pigments', label: 'Pigments' },
-    { value: 'Hyphéma', label: 'Hyphéma' },
-    { value: 'Hypopion', label: 'Hypopion' },
-    { value: 'Autre', label: 'Autre' },
+    { value: 'PIGMENTS', label: 'PIGMENTS' },
+    { value: 'HYPHEMA', label: 'HYPHEMA' },
+    { value: 'HYPOPION', label: 'HYPOPION' },
+    { value: 'AUTRE', label: 'AUTRE' },
   ],
+
   QuantiteAnomalie: [
-    { value: 'Minime', label: 'Minime' },
-    { value: 'Atteignant air pupillaire', label: 'Atteignant air pupillaire' },
-    { value: 'Recouvrant pupille', label: 'Recouvrant pupille' },
+    { value: 'MINIME', label: 'MINIME' },
+    { value: 'ATTEIGNANT_AIR_PUPILLAIRE', label: 'ATTEIGNANT_AIR_PUPILLAIRE' },
+    { value: 'RECOUVRANT_PUPILLE', label: 'RECOUVRANT_PUPILLE' },
   ],
+
   RPM: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Lent', label: 'Lent' },
-    { value: 'Aboli', label: 'Aboli' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'LENT', label: 'LENT' },
+    { value: 'ABOLI', label: 'ABOLI' },
   ],
+
   Iris: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Iridodonésis', label: 'Iridodonésis' },
-    { value: 'Rubéose', label: 'Rubéose' },
-    { value: 'Synéchies', label: 'Synéchies' },
-    { value: 'Autres', label: 'Autres' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'IRIDODONESIS', label: 'IRIDODONESIS' },
+    { value: 'RUBEOSE', label: 'RUBEOSE' },
+    { value: 'SYNECHIES', label: 'SYNECHIES' },
+    { value: 'AUTRES', label: 'AUTRES' },
   ],
+
   Macula: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Cicatrice', label: 'Cicatrice' },
-    { value: 'Œdème', label: 'Œdème' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'CICATRICE', label: 'CICATRICE' },
+    { value: 'OEDEME', label: 'OEDEME' },
     { value: 'DMLA', label: 'DMLA' },
   ],
+
   ChampRetinienPeripherique: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Cicatrice', label: 'Cicatrice' },
-    { value: 'Œdème', label: 'Œdème' },
-    { value: 'Hémorragie', label: 'Hémorragie' },
-    { value: 'Exudats', label: 'Exudats' },
-    { value: 'Autre', label: 'Autre' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'CICATRICE', label: 'CICATRICE' },
+    { value: 'OEDEME', label: 'OEDEME' },
+    { value: 'HEMORRAGIE', label: 'HEMORRAGIE' },
+    { value: 'EXUDATS', label: 'EXUDATS' },
+    { value: 'AUTRE', label: 'AUTRE' },
   ],
+
   Vaisseaux: [
-    { value: 'Normaux', label: 'Normaux' },
-    { value: 'Artériosclérose', label: 'Artériosclérose' },
+    { value: 'NORMAUX', label: 'NORMAUX' },
+    { value: 'ARTERIOSCLEROSE', label: 'ARTERIOSCLEROSE' },
     { value: 'OVR', label: 'OVR' },
     { value: 'OAR', label: 'OAR' },
-    { value: 'Néovaisseux', label: 'Néovaisseux' },
+    { value: 'NEOVAISSEUX', label: 'NEOVAISSEUX' },
   ],
+
   PositionCristallin: [
-    { value: 'Normale', label: 'Normale' },
-    { value: 'Ectopie', label: 'Ectopie' },
-    { value: 'Luxation/subluxation antérieure', label: 'Luxation/subluxation antérieure' },
-    { value: 'Luxation/subluxation postérieure', label: 'Luxation/subluxation postérieure' },
+    { value: 'NORMALE', label: 'NORMALE' },
+    { value: 'ECTOPIE', label: 'ECTOPIE' },
+    { value: 'LUXATION_SUBLUXATION_ANTERIEURE', label: 'LUXATION_SUBLUXATION_ANTERIEURE' },
+    { value: 'LUXATION_SUBLUXATION_POSTERIEURE', label: 'LUXATION_SUBLUXATION_POSTERIEURE' },
   ],
+
   Papille: [
-    { value: 'Normale', label: 'Normale' },
-    { value: 'Excavation élargie', label: 'Excavation élargie' },
-    { value: 'Atrophie', label: 'Atrophie' },
-    { value: 'Œdème', label: 'Œdème' },
-    { value: 'Dysmorphie', label: 'Dysmorphie' },
-    { value: 'Autres', label: 'Autres' },
+    { value: 'NORMALE', label: 'NORMALE' },
+    { value: 'EXCAVATION_ELARGIE', label: 'EXCAVATION_ELARGIE' },
+    { value: 'ATROPHIE', label: 'ATROPHIE' },
+    { value: 'OEDEME', label: 'OEDEME' },
+    { value: 'DYSMORPHIE', label: 'DYSMORPHIE' },
+    { value: 'AUTRES', label: 'AUTRES' },
   ],
+
   PerimetrieBinoculaire: [
-    { value: 'Normal', label: 'Normal' },
-    { value: 'Scotome central', label: 'Scotome central' },
-    { value: 'Scotome périphérique', label: 'Scotome périphérique' },
-    { value: 'Amputation', label: 'Amputation' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'SCOTOME_CENTRAL', label: 'SCOTOME_CENTRAL' },
+    { value: 'SCOTOME_PERIPHERIQUE', label: 'SCOTOME_PERIPHERIQUE' },
+    { value: 'AMPUTATION', label: 'AMPUTATION' },
   ],
+
   SegmentChoices: [
-    { value: 'NORMAL', label: 'Normal' },
-    { value: 'PRESENCE LESION', label: 'Presence lesion' },
-    { value: 'REMANIEMENT TOTAL', label: 'Remanement total' },
+    { value: 'NORMAL', label: 'NORMAL' },
+    { value: 'PRESENCE_LESION', label: 'PRESENCE_LESION' },
+    { value: 'REMANIEMENT_TOTAL', label: 'REMANIEMENT_TOTAL' },
   ],
+
   DommageChoices: [
-    { value: 'corporel', label: 'Corporel' },
-    { value: 'materiel', label: 'Matériel' },
+    { value: 'CORPOREL', label: 'CORPOREL' },
+    { value: 'MATERIEL', label: 'MATERIEL' },
   ],
+
   DegatChoices: [
-    { value: 'important', label: 'Important' },
-    { value: 'modéré', label: 'Modéré' },
-    { value: 'léger', label: 'Léger' },
+    { value: 'IMPORTANT', label: 'IMPORTANT' },
+    { value: 'MODERE', label: 'MODERE' },
+    { value: 'LEGER', label: 'LEGER' },
   ],
+
   AddictionTypeChoices: [
-    { value: 'tabagisme', label: 'Tabagisme' },
-    { value: 'alcool', label: 'Alcool' },
-    { value: 'telephone', label: 'Téléphone portable' },
-    { value: 'other', label: 'Autres' },
+    { value: 'TABAGISME', label: 'TABAGISME' },
+    { value: 'ALCOOL', label: 'ALCOOL' },
+    { value: 'TELEPHONE', label: 'TELEPHONE' },
+    { value: 'OTHER', label: 'OTHER' },
   ],
+
   FamilialChoices: [
-    { value: 'cecité', label: 'Cécité' },
-    { value: 'gpao', label: 'GPAO' },
-    { value: 'other', label: 'Autres' },
+    { value: 'CECITE', label: 'CECITE' },
+    { value: 'GPAO', label: 'GPAO' },
+    { value: 'OTHER', label: 'OTHER' },
   ],
+
   HypotonisantValue: [
     { value: 'BBLOQUANTS', label: 'BBLOQUANTS' },
     { value: 'IAC', label: 'IAC' },
@@ -145,33 +166,25 @@ export const choicesMap = {
     { value: 'AUTRES', label: 'AUTRES' },
   ],
 
-Symptomes: [
-        { value: 'AUCUN', label: 'Aucun' },
-        { value: 'BAV', label: 'BAV' },
-        { value: 'ROUGEUR', label: 'ROUGEUR' },
-        { value: 'DOULEUR', label: 'DOULEUR' },
-        { value: 'DIPLOPIE', label: 'DIPLOPIE' },
-        { value: 'STARBISME', label: 'STARBISME' },
-        { value: 'NYSTAGMUS', label: 'NYSTAGMUS' },
-        { value: 'PTOSIS', label: 'PTOSIS' },
-        { value: 'AUTRES', label: 'AUTRES' },
-    ],
+  Symptomes: [
+    { value: 'AUCUN', label: 'AUCUN' },
+    { value: 'BAV', label: 'BAV' },
+    { value: 'ROUGEUR', label: 'ROUGEUR' },
+    { value: 'DOULEUR', label: 'DOULEUR' },
+    { value: 'DIPLOPIE', label: 'DIPLOPIE' },
+    { value: 'STARBISME', label: 'STARBISME' },
+    { value: 'NYSTAGMUS', label: 'NYSTAGMUS' },
+    { value: 'PTOSIS', label: 'PTOSIS' },
+    { value: 'AUTRES', label: 'AUTRES' },
+  ],
 
-    CompatibiliteChoices: [
-        { value: 'compatible', label: 'Compatible' },
-        { value: 'incompatible', label: 'Incompatible' },
-        { value: 'a_risque', label: 'À risque' },
-    ],
+  TypeVehicule: [
+    { value: 'LOURD', label: 'LOURD' },
+    { value: 'LEGER', label: 'LEGER' },
+  ],
 
-    TypeVehicule: [
-      {value: 'lourd', label: 'Lourd'},
-      {value: 'leger', label: 'Léger'}
-    ],
-
-    RV: [
-      {value: '6 mois', label: '6 Mois'},
-      {value: 'moins 6 mois', label: 'Moins de 6 mois'}
-    ]
-
+  RV: [
+    { value: '6_MOIS', label: '6_MOIS' },
+    { value: 'MOINS_6_MOIS', label: 'MOINS_6_MOIS' },
+  ],
 }
-

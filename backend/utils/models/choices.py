@@ -3,176 +3,179 @@ from django.utils.translation import gettext_lazy as _
 
 
 class VisiteChoices(models.IntegerChoices):
-    FIRST = 1, _('First')
-    SECOND = 2, _('Second')
-    THIRD = 3, _('Third')
+    FIRST = 1, _('FIRST')
+    SECOND = 2, _('SECOND')
+    THIRD = 3, _('THIRD')
 
 
 class Cornee(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    OPACITE_AXE = "Opacité Axe", _("Opacité - Axe")
-    OPACITE_PERIPHERIE = "Opacité Périphérie", _("Opacité - Périphérie")
-    OPACITE_TOTALE = "Opacité Totale", _("Opacité - Totale")
-    AUTRE = "Autre", _("Autre")
+    NORMAL = "NORMAL", _("NORMAL")
+    OPACITE_AXE = "OPACITE_AXE", _("OPACITE_AXE")
+    OPACITE_PERIPHERIE = "OPACITE_PERIPHERIE", _("OPACITE_PERIPHERIE")
+    OPACITE_TOTALE = "OPACITE_TOTALE", _("OPACITE_TOTALE")
+    AUTRE = "AUTRE", _("AUTRE")
 
 
 class ChambreAnterieureProfondeur(models.TextChoices):
-    NORM = "Normale", _("Normale")
-    REDUITE = "Réduite", _("Réduite")
-    AUGMENTEE = "Augmentée", _("Augmentée")
-    ASYMETRIQUE = "Asymétrique", _("Asymétrique")
+    NORMALE = "NORMALE", _("NORMALE")
+    REDUITE = "REDUITE", _("REDUITE")
+    AUGMENTEE = "AUGMENTEE", _("AUGMENTEE")
+    ASYMETRIQUE = "ASYMETRIQUE", _("ASYMETRIQUE")
 
 
 class ChambreAnterieureTransparence(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    ANORMALE = "Anormale", _("Anormale")
+    NORMAL = "NORMAL", _("NORMAL")
+    ANORMALE = "ANORMALE", _("ANORMALE")
 
 
 class Pupille(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    MYOSIS = "Myosis", _("Myosis")
-    MYDRIASE = "Mydriase", _("Mydriase")
+    NORMAL = "NORMAL", _("NORMAL")
+    MYOSIS = "MYOSIS", _("MYOSIS")
+    MYDRIASE = "MYDRIASE", _("MYDRIASE")
 
 
 class AxeVisuel(models.TextChoices):
-    DEGAGE = "Dégagé", _("Dégagé")
-    OBSTRUE = "Obstrué", _("Obstrué")
-    LEUCOCORIE = "Leucocorie", _("Leucocorie")
+    DEGAGE = "DEGAGE", _("DEGAGE")
+    OBSTRUE = "OBSTRUE", _("OBSTRUE")
+    LEUCOCORIE = "LEUCOCORIE", _("LEUCOCORIE")
 
 
 class Cristallin(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    OPAQUE = "Opaque", _("Opaque")
-    COLOBOME = "Colobome", _("Colobome")
-    APHAKIE = "Aphakie", _("Aphakie")
-    PSEUDOPHAKIE = "Pseudophakie", _("Pseudophakie")
+    NORMAL = "NORMAL", _("NORMAL")
+    OPAQUE = "OPAQUE", _("OPAQUE")
+    COLOBOME = "COLOBOME", _("COLOBOME")
+    APHAKIE = "APHAKIE", _("APHAKIE")
+    PSEUDOPHAKIE = "PSEUDOPHAKIE", _("PSEUDOPHAKIE")
 
 
 class Vitre(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    FLOTTANTS = "Corps flottants", _("Corps flottants")
-    HEMORRAGIE = "Hémorragie", _("Hémorragie")
-    HYALITE = "Hyalite", _("Hyalite")
+    NORMAL = "NORMAL", _("NORMAL")
+    CORPS_FLOTTANTS = "CORPS_FLOTTANTS", _("CORPS_FLOTTANTS")
+    HEMORRAGIE = "HEMORRAGIE", _("HEMORRAGIE")
+    HYALITE = "HYALITE", _("HYALITE")
     PVR = "PVR", _("PVR")
-    AUTRES = "Autres", _("Autres")
+    AUTRES = "AUTRES", _("AUTRES")
 
 
 class TypeAnomalie(models.TextChoices):
-    PIGMENTS = "Pigments", _("Pigments")
-    HYPHEMA = "Hyphéma", _("Hyphéma")
-    HYPOPION = "Hypopion", _("Hypopion")
-    AUTRE = "Autre", _("Autre")
+    PIGMENTS = "PIGMENTS", _("PIGMENTS")
+    HYPHEMA = "HYPHEMA", _("HYPHEMA")
+    HYPOPION = "HYPOPION", _("HYPOPION")
+    AUTRE = "AUTRE", _("AUTRE")
 
 
 class QuantiteAnomalie(models.TextChoices):
-    MINIME = "Minime", _("Minime")
-    ATTEIGNANT_AIR_PUPILLAIRE = "Atteignant air pupillaire", _("Atteignant air pupillaire")
-    RECOUVRANT_PUPILLE = "Recouvrant pupille", _("Recouvrant pupille")
+    MINIME = "MINIME", _("MINIME")
+    ATTEIGNANT_AIR_PUPILLAIRE = "ATTEIGNANT_AIR_PUPILLAIRE", _("ATTEIGNANT_AIR_PUPILLAIRE")
+    RECOUVRANT_PUPILLE = "RECOUVRANT_PUPILLE", _("RECOUVRANT_PUPILLE")
 
 
 class RPM(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    LENT = "Lent", _("Lent")
-    ABOLI = "Aboli", _("Aboli")
+    NORMAL = "NORMAL", _("NORMAL")
+    LENT = "LENT", _("LENT")
+    ABOLI = "ABOLI", _("ABOLI")
 
 
 class Iris(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    IRIDODONESIS = "Iridodonésis", _("Iridodonésis")
-    RUBEUSE = "Rubéose", _("Rubéose")
-    SYNECHIES = "Synéchies", _("Synéchies")
-    AUTRES = "Autres", _("Autres")
+    NORMAL = "NORMAL", _("NORMAL")
+    IRIDODONESIS = "IRIDODONESIS", _("IRIDODONESIS")
+    RUBEUSE = "RUBEOSE", _("RUBEOSE")
+    SYNECHIES = "SYNECHIES", _("SYNECHIES")
+    AUTRES = "AUTRES", _("AUTRES")
 
 
 class Macula(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    CICATRICE = "Cicatrice", _("Cicatrice")
-    OEDEME = "Œdème", _("Œdème")
+    NORMAL = "NORMAL", _("NORMAL")
+    CICATRICE = "CICATRICE", _("CICATRICE")
+    OEDEME = "OEDEME", _("OEDEME")
     DMLA = "DMLA", _("DMLA")
 
 
 class ChampRetinienPeripherique(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    CICATRICE = "Cicatrice", _("Cicatrice")
-    OEDEME = "Œdème", _("Œdème")
-    HEMORRAGIE = "Hémorragie", _("Hémorragie")
-    EXUDATS = "Exudats", _("Exudats")
-    AUTRE = "Autre", _("Autre")
+    NORMAL = "NORMAL", _("NORMAL")
+    CICATRICE = "CICATRICE", _("CICATRICE")
+    OEDEME = "OEDEME", _("OEDEME")
+    HEMORRAGIE = "HEMORRAGIE", _("HEMORRAGIE")
+    EXUDATS = "EXUDATS", _("EXUDATS")
+    AUTRE = "AUTRE", _("AUTRE")
 
 
 class Vaisseaux(models.TextChoices):
-    NORMAUX = "Normaux", _("Normaux")
-    ARTERIOSCLEROSE = "Artériosclérose", _("Artériosclérose")
+    NORMAUX = "NORMAUX", _("NORMAUX")
+    ARTERIOSCLEROSE = "ARTERIOSCLEROSE", _("ARTERIOSCLEROSE")
     OVR = "OVR", _("OVR")
     OAR = "OAR", _("OAR")
-    NEOVAISSEUX = "Néovaisseux", _("Néovaisseux")
+    NEOVAISSEUX = "NEOVAISSEUX", _("NEOVAISSEUX")
 
 
 class PositionCristallin(models.TextChoices):
-    NORMALE = "Normale", _("Normale")
-    ECTOPIE = "Ectopie", _("Ectopie")
-    LUXATION_ANTERIEURE = "Luxation/subluxation antérieure", _("Luxation/subluxation antérieure")
-    LUXATION_POSTERIEURE = "Luxation/subluxation postérieure", _("Luxation/subluxation postérieure")
+    NORMALE = "NORMALE", _("NORMALE")
+    ECTOPIE = "ECTOPIE", _("ECTOPIE")
+    LUXATION_ANTERIEURE = "LUXATION_SUBLUXATION_ANTERIEURE", _("LUXATION_SUBLUXATION_ANTERIEURE")
+    LUXATION_POSTERIEURE = "LUXATION_SUBLUXATION_POSTERIEURE", _("LUXATION_SUBLUXATION_POSTERIEURE")
 
 
 class Papille(models.TextChoices):
-    NORMALE = "Normale", _("Normale")
-    EXCAVATION_ELARGIE = "Excavation élargie", _("Excavation élargie")
-    ATROPHIE = "Atrophie", _("Atrophie")
-    OEDEME = "Œdème", _("Œdème")
-    DYSMORPHIE = "Dysmorphie", _("Dysmorphie")
-    AUTRES = "Autres", _("Autres")
+    NORMALE = "NORMALE", _("NORMALE")
+    EXCAVATION_ELARGIE = "EXCAVATION_ELARGIE", _("EXCAVATION_ELARGIE")
+    ATROPHIE = "ATROPHIE", _("ATROPHIE")
+    OEDEME = "OEDEME", _("OEDEME")
+    DYSMORPHIE = "DYSMORPHIE", _("DYSMORPHIE")
+    AUTRES = "AUTRES", _("AUTRES")
 
 
 class PerimetrieBinoculaire(models.TextChoices):
-    NORMAL = "Normal", _("Normal")
-    SCOTOME_CENTRAL = "Scotome central", _("Scotome central")
-    SCOTOME_PERIPHERIQUE = "Scotome périphérique", _("Scotome périphérique")
-    AMPUTATION = "Amputation", _("Amputation")
+    NORMAL = "NORMAL", _("NORMAL")
+    SCOTOME_CENTRAL = "SCOTOME_CENTRAL", _("SCOTOME_CENTRAL")
+    SCOTOME_PERIPHERIQUE = "SCOTOME_PERIPHERIQUE", _("SCOTOME_PERIPHERIQUE")
+    AMPUTATION = "AMPUTATION", _("AMPUTATION")
 
 
 class SegmentChoices(models.TextChoices):
-    NORMAL = 'NORMAL', _('Normal')
-    PRESENCE_LESION = 'PRESENCE LESION', _('Presence lesion')
-    REMANIEMENT_TOTAL = 'REMANIEMENT TOTAL', _('Remanement total')
+    NORMAL = "NORMAL", _("NORMAL")
+    PRESENCE_LESION = "PRESENCE_LESION", _("PRESENCE_LESION")
+    REMANIEMENT_TOTAL = "REMANIEMENT_TOTAL", _("REMANIEMENT_TOTAL")
 
 
 class DommageChoices(models.TextChoices):
-    CORPOREL = "corporel", _("Corporel")
-    MATERIEL = "materiel", _("Matériel")
+    CORPOREL = "CORPOREL", _("CORPOREL")
+    MATERIEL = "MATERIEL", _("MATERIEL")
+
 
 class DegatChoices(models.TextChoices):
-    IMPORTANT = "important", _("Important")
-    MODERE = "modéré", _("Modéré")
-    LEGER = "léger", _("Léger")
+    IMPORTANT = "IMPORTANT", _("IMPORTANT")
+    MODERE = "MODERE", _("MODERE")
+    LEGER = "LEGER", _("LEGER")
+
 
 class AddictionTypeChoices(models.TextChoices):
-    TABAGISME = "tabagisme", _("Tabagisme")
-    ALCOOL = "alcool", _("Alcool")
-    TELEPHONE = "telephone", _("Téléphone portable")
-    OTHER = "other", _("Autres")
+    TABAGISME = "TABAGISME", _("TABAGISME")
+    ALCOOL = "ALCOOL", _("ALCOOL")
+    TELEPHONE = "TELEPHONE", _("TELEPHONE")
+    OTHER = "OTHER", _("OTHER")
+
 
 class FamilialChoices(models.TextChoices):
-    CECITE = "cecité", _("Cécité")
-    GPAO = "gpao", _("GPAO")
-    OTHER = "other", _("Autres")
+    CECITE = "CECITE", _("CECITE")
+    GPAO = "GPAO", _("GPAO")
+    OTHER = "OTHER", _("OTHER")
 
 
 class HypotonisantValue(models.TextChoices):
-    BBLOQUANTS = 'BBLOQUANTS', _('BBLOQUANTS')
-    IAC = 'IAC', _('IAC')
-    PROSTAGLANDINES = 'PROSTAGLANDINES', _('PROSTAGLANDINES')
-    PILOCARPINE = 'PILOCARPINE', _('PILOCARPINE')
-    AUTRES = ('AUTRES', _('AUTRES'))
+    BBLOQUANTS = "BBLOQUANTS", _("BBLOQUANTS")
+    IAC = "IAC", _("IAC")
+    PROSTAGLANDINES = "PROSTAGLANDINES", _("PROSTAGLANDINES")
+    PILOCARPINE = "PILOCARPINE", _("PILOCARPINE")
+    AUTRES = "AUTRES", _("AUTRES")
 
 
 class Symptomes(models.TextChoices):
-    AUCUN = 'AUCUN', _('Aucun')
-    BAV = 'BAV', _('BAV')
-    ROUGEUR = 'ROUGEUR', _('ROUGEUR')
-    DOULEUR = 'DOULEUR', _('DOULEUR')
-    DIPLOPIE = 'DIPLOPIE', _('DIPLOPIE')
-    STARBISME = 'STARBISME', _('STARBISME')
-    NYSTAGMUS = 'NYSTAGMUS', _('NYSTAGMUS')
-    PTOSIS = 'PTOSIS', _('PTOSIS')
-    AUTRES = 'AUTRES', _('AUTRES')
+    AUCUN = "AUCUN", _("AUCUN")
+    BAV = "BAV", _("BAV")
+    ROUGEUR = "ROUGEUR", _("ROUGEUR")
+    DOULEUR = "DOULEUR", _("DOULEUR")
+    DIPLOPIE = "DIPLOPIE", _("DIPLOPIE")
+    STARBISME = "STARBISME", _("STARBISME")
+    NYSTAGMUS = "NYSTAGMUS", _("NYSTAGMUS")
+    PTOSIS = "PTOSIS", _("PTOSIS")
+    AUTRES = "AUTRES", _("AUTRES")
