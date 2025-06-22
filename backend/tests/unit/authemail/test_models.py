@@ -50,7 +50,6 @@ class TestSignupCodeModel:
             phone_number="+221786543443"
         )
         signup_code = SignupCodeFactory(user=user)
-        print(f"Vérification que l'utilisateur est verifié: {signup_code.user.is_verified}")
         assert not signup_code.user.is_verified
 
         # Vérification via le manager

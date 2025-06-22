@@ -27,4 +27,3 @@ class Command(BaseCommand):
             with transaction.atomic():
                 health_record = HealthRecordFactory()
                 health_record.save()
-        print('Successfully created {} record'.format(count))

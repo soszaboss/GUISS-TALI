@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.patients.models import Conducteur
-from services.health_records import DriverExperienceService, HealthRecordService
+from services.health_records import AntecedentService, DriverExperienceService, HealthRecordService
 from .models import HealthRecord, Antecedent, DriverExperience
 
 from serializers.health_records import (
@@ -72,12 +72,57 @@ class AntecedentViewSet(viewsets.ModelViewSet):
     queryset = Antecedent.objects.all()
     serializer_class = AntecedentSerializer
     # permission_classes = [permissions.IsAuthenticated]
-
+    @action(detail=False, methods=['post'], url_path='create-for-patient')
+    def create_or_update_for_patient(self, request):
+        patient_id = request.data.get('patient')
+        if not patient_id:
+            return Response({"detail": "patient est requis"}, status=400)
+        print(request.data)
+        try:
+            antecedent = AntecedentService.create_or_update_antecedent(
+                patient_id=patient_id,
+                data=request.data
+            )
+            health_record = HealthRecordService.create_or_update_health_record(
+                patient_id=patient_id,
+                antecedent_id=antecedent.id,
+                driver_exp_ids=None
+            )
+            health_record.save()
+            serializer = self.get_serializer(antecedent)
+            return Response(serializer.data, status=200)
+        except Exception as e:
+            print(f"Error creating/updating antecedent: {str(e)}")
+            return Response({"detail": str(e)}, status=500)
 
 class DriverExperienceViewSet(viewsets.ModelViewSet):
     queryset = DriverExperience.objects.all()
     serializer_class = DriverExperienceSerializer
     # permission_classes = [permissions.IsAuthenticated]
+    @action(detail=False, methods=['post'], url_path='create-for-patient')
+    def create_or_update_for_patient(self, request):
+        patient_id = request.data.get('patient')
+        visite = request.data.get('visite')
+        print(request.data)
+        if not patient_id or not visite:
+            return Response({"detail": "patient et visite sont requis"}, status=400)
+        
+        try:
+            driver_exp = DriverExperienceService.create_or_update_driver_experience(
+                patient_id=patient_id,
+                visite=visite,
+                data=request.data
+            )
+            health_record = HealthRecordService.create_or_update_health_record(
+                patient_id=patient_id,
+                driver_exp_ids=[driver_exp.id]
+            )
+            health_record.save()
+            serializer = self.get_serializer(driver_exp)
+            return Response(serializer.data, status=200)
+        except Exception as e:
+            print(f"Error creating/updating driver experience: {str(e)}")
+            return Response({"detail": str(e)}, status=500)
 
 class StatsAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -17,7 +17,6 @@ def validate_conducteur_data(data: dict):
             })
 
     # Vérifie que "autre_type_permis" est renseigné si le type est "Autres à préciser"
-    # print(f"autre permis: {data.get("autre_type_permis", None)}")
     if data.get("type_permis") == "Autres à préciser" and not data.get("autre_type_permis", None):
         raise ValidationError({
             'autre_type_permis': _("You must specify the license type if 'Other' is selected.")

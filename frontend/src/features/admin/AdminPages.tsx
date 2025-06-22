@@ -67,20 +67,6 @@ export const adminPlatformRoutes: RouteObject[] = [
         ]
     },
     {
-        path: 'settings',
-        lazy: async () => {
-            const module = await import('./pages/settings/global/page');
-            return { Component: module.default };
-        }
-    },
-    {
-        path: 'logs',
-        lazy: async () => {
-            const module = await import('./pages/logs/page');
-            return { Component: module.default };
-        }
-    },
-    {
         path: 'patients',
         lazy: async () => {
             const module = await import('./pages/patients/page');

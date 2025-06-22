@@ -6,9 +6,8 @@ import { ClinicalExam } from "./ClinicalExam"
 import { DrivingExperience } from "./DrivingExperience"
 import { useAuth } from "@/hooks/auth/Auth"
 import type { Antecedent as AntecedentModel, DriverExperience} from "@/types/medicalRecord"
-import type { ClinicalExamen } from "@/types/examensClinic"
+import { defaultClinicalExamValues, type ClinicalExamen } from "@/types/examensClinic"
 import { initTechnicalData, type TechnicalExamen } from "@/types/examenTechniques"
-import { Antecedent } from "./Antecedent"
 
 type extraProps = {
   patientID?: number
@@ -23,23 +22,21 @@ type MedicalVisitProps = {
   extra?: extraProps
 }
 
-export function MedicalVisit({ extra, driving_experience, technical_examen, clinical_examen, antecedent }: MedicalVisitProps) {
+export function MedicalVisit({ extra, driving_experience, technical_examen, clinical_examen }: MedicalVisitProps) {
   const {currentUser} = useAuth()
   const role = currentUser?.role?.toLocaleLowerCase()
   // Onglet actif
-  const [activeTab, setActiveTab] = useState("antecedent")
+  const [activeTab, setActiveTab] = useState("driving")
 
   // États pour chaque sous-formulaire (adapte selon ta structure)
   const [technicalData] = useState(technical_examen || initTechnicalData)
-  const [clinicalData] = useState(clinical_examen || undefined)
+  const [clinicalData] = useState(clinical_examen || defaultClinicalExamValues)
   const [drivingData] = useState(driving_experience || undefined)
-  const [antecedentData] = useState(antecedent || undefined)
 
   // États pour l'édition et le statut d'enregistrement
   const canEditTechnical = role === "technician" || role === "admin"
   const canEditClinical = role === "doctor" || role === "admin"
   const canEditDriving = role === "doctor" || role === "admin"
-const canEditAntecedent = role === "doctor" || role === "admin"
 
 
   return (
@@ -48,21 +45,16 @@ const canEditAntecedent = role === "doctor" || role === "admin"
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-4 mb-6">
           {/* <TabsTrigger value="history">Antécédents médicaux</TabsTrigger> */}
-          <TabsTrigger value="antecedent">Antecedents</TabsTrigger>
           <TabsTrigger value="driving">Expérience de conduite</TabsTrigger>
           <TabsTrigger value="technical">Examen technique</TabsTrigger>
           <TabsTrigger value="clinical">Examen clinique</TabsTrigger>
         </TabsList>
-        <TabsContent value="antecedent">
-          <Antecedent
-            canEdit={canEditAntecedent}
-            antecedentData={antecedentData}
-          />
-        </TabsContent>
         <TabsContent value="driving">
           <DrivingExperience
             driverExperienceData={drivingData}
             canEdit={canEditDriving}
+            visiteID={extra?.visitID}
+            patientID={extra?.patientID}
           />
         </TabsContent>
         <TabsContent value="technical">
@@ -78,6 +70,9 @@ const canEditAntecedent = role === "doctor" || role === "admin"
           <ClinicalExam
             clinicalData={clinicalData}
             canEditClinical={canEditClinical}
+            examenID={extra?.examenID}
+            visiteID={extra?.visitID}
+            patientID={extra?.patientID}
           />
         </TabsContent>
       </Tabs>

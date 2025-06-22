@@ -8,11 +8,11 @@ export interface Antecedent {
   antecedents_medico_chirurgicaux: string
   pathologie_ophtalmologique: string
   addiction: boolean
-  type_addiction: "TABAGISME" | "ALCOOL" | "TELEPHONE" | "OTHER"
-  autre_addiction_detail: string
-  tabagisme_detail: string
-  familial: "CECITÉ" | "GPAO" | "OTHER"
-  autre_familial_detail: string
+  type_addiction?: "TABAGISME" | "ALCOOL" | "TELEPHONE" | "OTHER"
+  autre_addiction_detail?: string
+  tabagisme_detail?: string
+  familial?: "CECITE" | "GPAO" | "OTHER"
+  autre_familial_detail?: string
   patient?: ID
 }
 
@@ -24,7 +24,7 @@ export type DriverExperience = {
   nombre_accidents: number
   tranche_horaire: string
   dommage: "CORPOREL" | "MATERIEL"
-  degat: "IMPORTANT" | "MODÉRÉ" | "LÉGER"
+  degat: "IMPORTANT" | "MODERE" | "LEGER"
   date_visite?: string
 }
 
@@ -71,3 +71,16 @@ export interface HealthRecord {
 //   risky_patient: false,
 //   patient: initConducteur,
 // }
+
+export const defaultAntecedentValues: Antecedent = {
+  id: 0,
+  antecedents_medico_chirurgicaux:'',
+  pathologie_ophtalmologique:'',
+  addiction: false,
+  type_addiction: undefined,
+  autre_addiction_detail:undefined,
+  tabagisme_detail:undefined,
+  familial: undefined,
+  autre_familial_detail:undefined,
+  patient: undefined,
+}

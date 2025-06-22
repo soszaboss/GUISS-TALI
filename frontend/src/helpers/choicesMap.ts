@@ -7,9 +7,9 @@ export const choicesMap = {
 
   Cornee: [
     { value: 'NORMAL', label: 'NORMAL' },
-    { value: 'OPACITE_AXE', label: 'OPACITE_AXE' },
-    { value: 'OPACITE_PERIPHERIE', label: 'OPACITE_PERIPHERIE' },
-    { value: 'OPACITE_TOTALE', label: 'OPACITE_TOTALE' },
+    { value: 'OPACITE_AXE', label: 'OPACITE AXE' },
+    { value: 'OPACITE_PERIPHERIE', label: 'OPACITE PERIPHERIE' },
+    { value: 'OPACITE_TOTALE', label: 'OPACITE TOTALE' },
     { value: 'AUTRE', label: 'AUTRE' },
   ],
 
@@ -47,8 +47,8 @@ export const choicesMap = {
 
   Vitre: [
     { value: 'NORMAL', label: 'NORMAL' },
-    { value: 'CORPS_FLOTTANTS', label: 'CORPS_FLOTTANTS' },
-    { value: 'HEMORRAGIE', label: 'HEMORRAGIE' },
+    { value: 'CORPS_FLOTTANTS', label: 'CORPS FLOTTANTS' },
+    { value: 'HEMORRAGIE', label: 'HEMORRAGIE'},
     { value: 'HYALITE', label: 'HYALITE' },
     { value: 'PVR', label: 'PVR' },
     { value: 'AUTRES', label: 'AUTRES' },
@@ -63,8 +63,8 @@ export const choicesMap = {
 
   QuantiteAnomalie: [
     { value: 'MINIME', label: 'MINIME' },
-    { value: 'ATTEIGNANT_AIR_PUPILLAIRE', label: 'ATTEIGNANT_AIR_PUPILLAIRE' },
-    { value: 'RECOUVRANT_PUPILLE', label: 'RECOUVRANT_PUPILLE' },
+    { value: 'ATTEIGNANT_AIR_PUPILLAIRE', label: 'ATTEIGNANT AIR PUPILLAIRE' },
+    { value: 'RECOUVRANT_PUPILLE', label: 'RECOUVRANT PUPILLE' },
   ],
 
   RPM: [
@@ -108,13 +108,13 @@ export const choicesMap = {
   PositionCristallin: [
     { value: 'NORMALE', label: 'NORMALE' },
     { value: 'ECTOPIE', label: 'ECTOPIE' },
-    { value: 'LUXATION_SUBLUXATION_ANTERIEURE', label: 'LUXATION_SUBLUXATION_ANTERIEURE' },
-    { value: 'LUXATION_SUBLUXATION_POSTERIEURE', label: 'LUXATION_SUBLUXATION_POSTERIEURE' },
+    { value: 'LUXATION_SUBLUXATION_ANTERIEURE', label: 'LUXATION SUBLUXATION ANTERIEURE' },
+    { value: 'LUXATION_SUBLUXATION_POSTERIEURE', label: 'LUXATION SUBLUXATION POSTERIEURE' },
   ],
 
   Papille: [
     { value: 'NORMALE', label: 'NORMALE' },
-    { value: 'EXCAVATION_ELARGIE', label: 'EXCAVATION_ELARGIE' },
+    { value: 'EXCAVATION_ELARGIE', label: 'EXCAVATION ELARGIE' },
     { value: 'ATROPHIE', label: 'ATROPHIE' },
     { value: 'OEDEME', label: 'OEDEME' },
     { value: 'DYSMORPHIE', label: 'DYSMORPHIE' },
@@ -123,15 +123,15 @@ export const choicesMap = {
 
   PerimetrieBinoculaire: [
     { value: 'NORMAL', label: 'NORMAL' },
-    { value: 'SCOTOME_CENTRAL', label: 'SCOTOME_CENTRAL' },
-    { value: 'SCOTOME_PERIPHERIQUE', label: 'SCOTOME_PERIPHERIQUE' },
+    { value: 'SCOTOME_CENTRAL', label: 'SCOTOME CENTRAL' },
+    { value: 'SCOTOME_PERIPHERIQUE', label: 'SCOTOME PERIPHERIQUE' },
     { value: 'AMPUTATION', label: 'AMPUTATION' },
   ],
 
   SegmentChoices: [
     { value: 'NORMAL', label: 'NORMAL' },
-    { value: 'PRESENCE_LESION', label: 'PRESENCE_LESION' },
-    { value: 'REMANIEMENT_TOTAL', label: 'REMANIEMENT_TOTAL' },
+    { value: 'PRESENCE_LESION', label: 'PRESENCE LESION' },
+    { value: 'REMANIEMENT_TOTAL', label: 'REMANIEMENT TOTAL' },
   ],
 
   DommageChoices: [
@@ -184,7 +184,7 @@ export const choicesMap = {
   ],
 
   RV: [
-    { value: '6_MOIS', label: '6_MOIS' },
-    { value: 'MOINS_6_MOIS', label: 'MOINS_6_MOIS' },
+    { value: '6_MOIS', label: '6 MOIS' },
+    { value: 'MOINS_6_MOIS', label: 'MOINS 6 MOIS' },
   ],
 }

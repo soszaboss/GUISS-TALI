@@ -59,7 +59,6 @@ export function TechnicalExam({
   technicalData,
   canEditTechnical,
   onSuccess,
-  technicianName,
   examenID,
   visiteID,
   patientID
@@ -70,7 +69,6 @@ export function TechnicalExam({
   patientID?: number
   canEditTechnical: boolean
   onSuccess?: (data: any) => void
-  technicianName?: string
 }) {
   // Toujours lecture seule par défaut, même si l'utilisateur a le droit
   const [editMode, setEditMode] = React.useState(false)
@@ -145,9 +143,6 @@ export function TechnicalExam({
       <CardHeader>
         <CardTitle className="flex items-center">
           Examen technique
-          <span className="ml-2 text-sm font-normal text-gray-500">
-            (Rempli par le technicien: {technicianName || "Non assigné"})
-          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>

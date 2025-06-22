@@ -13,6 +13,7 @@ technical_examen_create = TechnicalExamenViewSet.as_view({'post': 'create_for_te
 tech_examen_detail = TechnicalExamenViewSet.as_view({'patch': 'partial_update'})
 
 clinical_examen_detail = ClinicalExamenViewSet.as_view({'patch': 'partial_update'})
+create_clinical_examen = ClinicalExamenViewSet.as_view({'post': 'create_for_examen'})
 
 bp_sup_create = BpSuPViewSet.as_view({'post': 'create'})
 bp_sup_detail = BpSuPViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})
@@ -29,7 +30,8 @@ urlpatterns = [
     
     # Clinical Examens
     path('clinical-examens/<int:pk>/', clinical_examen_detail, name='clinical-examen-detail'),
-    
+    path('clinical-examens/create/<int:examen_id>/', create_clinical_examen, name='create-for-clinical-examen'),
+
     # BP Supplementary
     path('bp-supplementary/', bp_sup_create, name='bp-sup-create'),
     path('bp-supplementary/<int:pk>/', bp_sup_detail, name='bp-sup-detail'),

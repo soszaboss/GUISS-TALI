@@ -3,8 +3,6 @@ import type React from "react"
 
 import {
   Users,
-  ClipboardList,
-  Settings,
   User,
   FileCheck,
   Home,
@@ -52,7 +50,6 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
   const [usersSubmenuOpen, setUsersSubmenuOpen] = useState(false)
-  const [settingsSubmenuOpen, setSettingsSubmenuOpen] = useState(false)
   const [patientsSubmenuOpen, setPatientsSubmenuOpen] = useState(false)
 
   return (
@@ -130,35 +127,6 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
                 icon={<User size={16} />}
                 title="Liste des patients"
                 active={pathname === "/admin/patients"}
-              />
-            </div>
-          )}
-        </div>
-
-        <SidebarItem
-          href="/admin/logs"
-          icon={<ClipboardList size={20} />}
-          title="Journal d'activité"
-          active={pathname === "/admin/logs"}
-        />
-
-        <div>
-          <SidebarItem
-            href="#"
-            icon={<Settings size={20} />}
-            title="Paramètres"
-            active={pathname.startsWith("/admin/settings")}
-            hasSubmenu={true}
-            isSubmenuOpen={settingsSubmenuOpen}
-            onClick={() => setSettingsSubmenuOpen(!settingsSubmenuOpen)}
-          />
-          {settingsSubmenuOpen && isOpen && (
-            <div className="ml-6 mt-1 space-y-1">
-              <SidebarItem
-                href="/admin/settings"
-                icon={<Settings size={16} />}
-                title="Paramètres globaux"
-                active={pathname === "/admin/settings/global"}
               />
             </div>
           )}

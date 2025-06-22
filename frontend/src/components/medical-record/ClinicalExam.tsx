@@ -11,44 +11,54 @@ import { Button } from "@/components/ui/button"
 import { Save, Pencil, AlertTriangle } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
 import { createClinicalExam, updateClinicalExam } from "@/services/clinicalExamen"
-import type { ClinicalExamen } from "@/types/examensClinic"
 import { toast } from "sonner"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { choicesMap } from "@/helpers/choicesMap"
+import { defaultClinicalExamValues } from "@/types/examensClinic"
 
 // Schéma Zod corrigé pour correspondre à l'API et aux types
 const clinicalExamSchema = z.object({
-  id: z.any().optional(),
+  id: z.any().optional().nullable(),
   perimetry: z.object({
-    id: z.any(),
-    pbo: z.string(),
-    limite_superieure: z.number(),
-    limite_inferieure: z.number(),
-    limite_temporale_droit: z.number(),
-    limite_temporale_gauche: z.number(),
-    limite_horizontal: z.number(),
-    score_esternmen: z.number(),
-    image: z.string().optional(),
-    images: z.string().optional(),
-    created: z.string().optional(),
-    modified: z.string().optional(),
+    pbo: z.string().min(1, "Veuillez sélectionner une valeur pour le champ PBO"),
+    limite_superieure: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite supérieure" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite supérieure" }),
+    limite_inferieure: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite inférieure" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite inférieure" }),
+    limite_temporale_droit: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite temporale droite" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite temporale droite" }),
+    limite_temporale_gauche: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite temporale gauche" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite temporale gauche" }),
+    limite_horizontal: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite horizontale" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite horizontale" }),
+    score_esternmen: z.preprocess(
+      val => val === "" ? undefined : Number(val),
+      z.number({ invalid_type_error: "Veuillez insérer une valeur pour le score d'Esterman" })
+    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour le score d'Esterman" }),
+    image: z.union([z.string(), z.instanceof(File)]).optional(),
+    images: z.union([z.string(), z.instanceof(File)]).optional(),
   }),
   bp_sup: z.object({
-    id: z.any(),
-    retinographie: z.string().optional(),
-    oct: z.string().optional(),
-    autres: z.string().optional(),
-    created: z.string().optional(),
-    modified: z.string().optional(),
+    retinographie: z.union([z.string(), z.instanceof(File)]).optional(),
+    oct: z.union([z.string(), z.instanceof(File)]).optional(),
+    autres: z.union([z.string(), z.instanceof(File)]).optional(),
   }),
   od: z.object({
-    id: z.any(),
     plaintes: z.object({
-      id: z.any(),
-      eye_symptom: z.string(),
+      eye_symptom: z.string().min(1, "Veuillez sélectionner un symptôme"),
       diplopie: z.boolean(),
       diplopie_type: z.string().nullable().optional(),
       strabisme: z.boolean(),
@@ -57,46 +67,37 @@ const clinicalExamSchema = z.object({
       nystagmus_eye: z.string().nullable().optional(),
       ptosis: z.boolean(),
       ptosis_eye: z.string().nullable().optional(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
     }),
     bp_sg_anterieur: z.object({
-      id: z.any(),
-      segment: z.string(),
-      cornee: z.string(),
-      profondeur: z.string(),
-      transparence: z.string(),
+      segment: z.string().min(1, "Veuillez sélectionner un segment"),
+      cornee: z.string().min(1, "Veuillez sélectionner une cornée"),
+      profondeur: z.string().min(1, "Veuillez sélectionner une profondeur"),
+      transparence: z.string().min(1, "Veuillez sélectionner une transparence"),
       type_anomalie_value: z.string().nullable().optional(),
       quantite_anomalie: z.string().nullable().optional(),
-      pupille: z.string(),
-      axe_visuel: z.string(),
-      rpm: z.string(),
-      iris: z.string(),
-      cristallin: z.string(),
-      position_cristallin: z.string(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
+      pupille: z.string().min(1, "Veuillez sélectionner une pupille"),
+      axe_visuel: z.string().min(1, "Veuillez sélectionner un axe visuel"),
+      rpm: z.string().min(1, "Veuillez sélectionner un RPM"),
+      iris: z.string().min(1, "Veuillez sélectionner un iris"),
+      cristallin: z.string().min(1, "Veuillez sélectionner un cristallin"),
+      position_cristallin: z.string().min(1, "Veuillez sélectionner une position du cristallin"),
     }),
     bp_sg_posterieur: z.object({
-      id: z.any(),
-      segment: z.string(),
-      vitre: z.string(),
-      retine: z.number(),
-      papille: z.string(),
-      macula: z.string(),
-      retinien_peripherique: z.string(),
-      vaissaux: z.string(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
+      segment: z.string().min(1, "Veuillez sélectionner un segment"),
+      vitre: z.string().min(1, "Veuillez sélectionner un vitré"),
+      retine: z.preprocess(
+        val => val === "" ? undefined : Number(val),
+        z.number({ invalid_type_error: "Veuillez insérer une valeur pour la rétine" })
+      ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la rétine" }),
+      papille: z.string().min(1, "Veuillez sélectionner une papille"),
+      macula: z.string().min(1, "Veuillez sélectionner une macula"),
+      retinien_peripherique: z.string().min(1, "Veuillez sélectionner un champ rétinien périphérique"),
+      vaissaux: z.string().min(1, "Veuillez sélectionner des vaisseaux"),
     }),
-    created: z.string().optional(),
-    modified: z.string().optional(),
   }),
   og: z.object({
-    id: z.any(),
     plaintes: z.object({
-      id: z.any(),
-      eye_symptom: z.string(),
+      eye_symptom: z.string().min(1, "Veuillez sélectionner un symptôme"),
       diplopie: z.boolean(),
       diplopie_type: z.string().nullable().optional(),
       strabisme: z.boolean(),
@@ -105,68 +106,65 @@ const clinicalExamSchema = z.object({
       nystagmus_eye: z.string().nullable().optional(),
       ptosis: z.boolean(),
       ptosis_eye: z.string().nullable().optional(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
     }),
     bp_sg_anterieur: z.object({
-      id: z.any(),
-      segment: z.string(),
-      cornee: z.string(),
-      profondeur: z.string(),
-      transparence: z.string(),
+      segment: z.string().min(1, "Veuillez sélectionner un segment"),
+      cornee: z.string().min(1, "Veuillez sélectionner une cornée"),
+      profondeur: z.string().min(1, "Veuillez sélectionner une profondeur"),
+      transparence: z.string().min(1, "Veuillez sélectionner une transparence"),
       type_anomalie_value: z.string().nullable().optional(),
       quantite_anomalie: z.string().nullable().optional(),
-      pupille: z.string(),
-      axe_visuel: z.string(),
-      rpm: z.string(),
-      iris: z.string(),
-      cristallin: z.string(),
-      position_cristallin: z.string(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
+      pupille: z.string().min(1, "Veuillez sélectionner une pupille"),
+      axe_visuel: z.string().min(1, "Veuillez sélectionner un axe visuel"),
+      rpm: z.string().min(1, "Veuillez sélectionner un RPM"),
+      iris: z.string().min(1, "Veuillez sélectionner un iris"),
+      cristallin: z.string().min(1, "Veuillez sélectionner un cristallin"),
+      position_cristallin: z.string().min(1, "Veuillez sélectionner une position du cristallin"),
     }),
     bp_sg_posterieur: z.object({
-      id: z.any(),
-      segment: z.string(),
-      vitre: z.string(),
-      retine: z.number(),
-      papille: z.string(),
-      macula: z.string(),
-      retinien_peripherique: z.string(),
-      vaissaux: z.string(),
-      created: z.string().optional(),
-      modified: z.string().optional(),
+      segment: z.string().min(1, "Veuillez sélectionner un segment"),
+      vitre: z.string().min(1, "Veuillez sélectionner un vitré"),
+      retine: z.preprocess(
+        val => val === "" ? undefined : Number(val),
+        z.number({ invalid_type_error: "Veuillez insérer une valeur pour la rétine" })
+      ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la rétine" }),
+      papille: z.string().min(1, "Veuillez sélectionner une papille"),
+      macula: z.string().min(1, "Veuillez sélectionner une macula"),
+      retinien_peripherique: z.string().min(1, "Veuillez sélectionner un champ rétinien périphérique"),
+      vaissaux: z.string().min(1, "Veuillez sélectionner des vaisseaux"),
     }),
-    created: z.string().optional(),
-    modified: z.string().optional(),
   }),
-  visite: z.number(),
-  is_completed: z.boolean(),
-  patient: z.any(),
   conclusion: z.object({
-    id: z.any(),
-    vision: z.enum(["compatible", "incompatible", "a_risque"]).nullable(),
+    vision: z.enum(["compatible", "incompatible", "a_risque"], {
+      required_error: "Veuillez sélectionner une compatibilité de la vision"
+    }).nullable(),
     cat: z.string().nullable(),
     traitement: z.string().nullable(),
     observation: z.string().nullable(),
     rv: z.boolean(),
-    created: z.string().optional(),
-    modified: z.string().optional(),
   }),
-  created: z.string().optional(),
-  modified: z.string().optional(),
-})
+});
+// Helper pour accéder aux erreurs imbriquées
+function getError(errors: any, path: string) {
+  return path.split('.').reduce((acc, key) => acc?.[key], errors)
+}
 
 export function ClinicalExam({
   clinicalData,
   canEditClinical,
   onSuccess,
+  examenID,
+  visiteID,
+  patientID
 }: {
-  clinicalData?: ClinicalExamen
+  clinicalData?: any
   canEditClinical: boolean
-  onSuccess?: (data: any) => void
+  onSuccess?: (data: any) => void,
+  examenID?: number
+  visiteID?: number
+  patientID?: number
 }) {
-  const [editMode, setEditMode] = React.useState(false)
+  const [editMode, setEditMode] = React.useState(!clinicalData)
   const [preview, setPreview] = React.useState<{ [key: string]: string }>({})
   const {
     register,
@@ -174,26 +172,37 @@ export function ClinicalExam({
     control,
     setValue,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     reset,
   } = useForm({
-    defaultValues: clinicalData,
+    defaultValues: clinicalData ?? defaultClinicalExamValues,
     resolver: zodResolver(clinicalExamSchema),
-    mode: "onBlur",
+    mode: "onTouched",
+    reValidateMode: "onChange",
   })
 
   React.useEffect(() => {
+  if (clinicalData) {
     reset(clinicalData)
-  }, [clinicalData, reset])
+  }
+}, [clinicalData, reset])
 
   const mutation = useMutation({
-    mutationFn: async (data: ClinicalExamen) => {
+    mutationFn: async (data: any) => {
       if (data.id) {
         const formData = buildClinicalExamFormData(data)
         return await updateClinicalExam(data.id, formData)
       } else {
-        const formData = buildClinicalExamFormData(data)
-        return await createClinicalExam(formData)
+        const formData = buildClinicalExamFormData({
+          ...data,
+          visite: visiteID,
+          patient: patientID,
+          examen_id: examenID,
+        })
+        if (typeof examenID === "undefined") {
+          throw new Error("examenID est requis pour créer un examen clinique")
+        }
+        return await createClinicalExam(examenID, formData)
       }
     },
     onSuccess: (data) => {
@@ -207,6 +216,7 @@ export function ClinicalExam({
   })
 
   const onSubmit = (data: any) => {
+    console.log("[DEBUG] FormData envoyé pour ClinicalExamen:", data)
     mutation.mutate(data)
   }
 
@@ -235,94 +245,94 @@ export function ClinicalExam({
       }))
     }
   }
-function buildClinicalExamFormData(data: ClinicalExamen): FormData {
-  const formData = new FormData();
+  function buildClinicalExamFormData(data: any): FormData {
+    const formData = new FormData();
 
-  // Champs simples
-  formData.append("visite", String(data.visite));
-  formData.append("is_completed", data.is_completed ? "true" : "false");
-  formData.append("patient", String(data.patient));
+    // Champs simples
+    formData.append("visite", String(data.visite));
+    formData.append("is_completed", data.is_completed ? "true" : "false");
+    formData.append("patient", String(data.patient));
 
-  // Conclusion
-  if (data.conclusion) {
-    Object.entries(data.conclusion).forEach(([key, value]) => {
-      if (typeof value === "boolean") {
-        formData.append(`conclusion.${key}`, value ? "true" : "false");
-      } else if (value !== undefined && value !== null && typeof value !== "object") {
-        formData.append(`conclusion.${key}`, String(value));
-      }
-    });
-  }
-
-  // Périmétrie
-  if (data.perimetry) {
-    Object.entries(data.perimetry).forEach(([key, value]) => {
-      if (key === "image" && value instanceof File) {
-        formData.append("perimetry.image", value);
-      } else if (key === "images" && value instanceof File) {
-        formData.append("perimetry.images", value);
-      } else if (
-        key !== "image" &&
-        key !== "images" &&
-        value !== undefined &&
-        value !== null &&
-        typeof value !== "object"
-      ) {
-        formData.append(`perimetry.${key}`, String(value));
-      }
-    });
-  }
-
-  // bp_sup (examens complémentaires)
-  if (data.bp_sup) {
-    ["retinographie", "oct", "autres"].forEach((field) => {
-      const value = (data.bp_sup as any)[field];
-      if (value instanceof File) {
-        formData.append(`bp_sup.${field}`, value);
-      }
-      // NE RIEN ENVOYER si ce n'est pas un fichier
-    });
-  }
-
-  // Pour od et og
-  ["od", "og"].forEach((eye) => {
-    const eyeData = (data as any)[eye];
-    if (eyeData) {
-      // plaintes
-      if (eyeData.plaintes) {
-        Object.entries(eyeData.plaintes).forEach(([key, value]) => {
-          if (typeof value === "boolean") {
-            formData.append(`${eye}.plaintes.${key}`, value ? "true" : "false");
-          } else if (value !== undefined && value !== null && typeof value !== "object") {
-            formData.append(`${eye}.plaintes.${key}`, String(value));
-          }
-        });
-      }
-      // bp_sg_anterieur
-      if (eyeData.bp_sg_anterieur) {
-        Object.entries(eyeData.bp_sg_anterieur).forEach(([key, value]) => {
-          if (typeof value === "boolean") {
-            formData.append(`${eye}.bp_sg_anterieur.${key}`, value ? "true" : "false");
-          } else if (value !== undefined && value !== null && typeof value !== "object") {
-            formData.append(`${eye}.bp_sg_anterieur.${key}`, String(value));
-          }
-        });
-      }
-      // bp_sg_posterieur
-      if (eyeData.bp_sg_posterieur) {
-        Object.entries(eyeData.bp_sg_posterieur).forEach(([key, value]) => {
-          if (typeof value === "boolean") {
-            formData.append(`${eye}.bp_sg_posterieur.${key}`, value ? "true" : "false");
-          } else if (value !== undefined && value !== null && typeof value !== "object") {
-            formData.append(`${eye}.bp_sg_posterieur.${key}`, String(value));
-          }
-        });
-      }
+    // Conclusion
+    if (data.conclusion) {
+      Object.entries(data.conclusion).forEach(([key, value]) => {
+        if (typeof value === "boolean") {
+          formData.append(`conclusion.${key}`, value ? "true" : "false");
+        } else if (value !== undefined && value !== null && typeof value !== "object") {
+          formData.append(`conclusion.${key}`, String(value));
+        }
+      });
     }
-  });
 
-  return formData;
-}
+    // Périmétrie
+    if (data.perimetry) {
+      Object.entries(data.perimetry).forEach(([key, value]) => {
+        if (key === "image" && value instanceof File) {
+          formData.append("perimetry.image", value);
+        } else if (key === "images" && value instanceof File) {
+          formData.append("perimetry.images", value);
+        } else if (
+          key !== "image" &&
+          key !== "images" &&
+          value !== undefined &&
+          value !== null &&
+          typeof value !== "object"
+        ) {
+          formData.append(`perimetry.${key}`, String(value));
+        }
+      });
+    }
+
+    // bp_sup (examens complémentaires)
+    if (data.bp_sup) {
+      ["retinographie", "oct", "autres"].forEach((field) => {
+        const value = (data.bp_sup as any)[field];
+        if (value instanceof File) {
+          formData.append(`bp_sup.${field}`, value);
+        }
+        // NE RIEN ENVOYER si ce n'est pas un fichier
+      });
+    }
+
+    // Pour od et og
+    ["od", "og"].forEach((eye) => {
+      const eyeData = (data as any)[eye];
+      if (eyeData) {
+        // plaintes
+        if (eyeData.plaintes) {
+          Object.entries(eyeData.plaintes).forEach(([key, value]) => {
+            if (typeof value === "boolean") {
+              formData.append(`${eye}.plaintes.${key}`, value ? "true" : "false");
+            } else if (value !== undefined && value !== null && typeof value !== "object") {
+              formData.append(`${eye}.plaintes.${key}`, String(value));
+            }
+          });
+        }
+        // bp_sg_anterieur
+        if (eyeData.bp_sg_anterieur) {
+          Object.entries(eyeData.bp_sg_anterieur).forEach(([key, value]) => {
+            if (typeof value === "boolean") {
+              formData.append(`${eye}.bp_sg_anterieur.${key}`, value ? "true" : "false");
+            } else if (value !== undefined && value !== null && typeof value !== "object") {
+              formData.append(`${eye}.bp_sg_anterieur.${key}`, String(value));
+            }
+          });
+        }
+        // bp_sg_posterieur
+        if (eyeData.bp_sg_posterieur) {
+          Object.entries(eyeData.bp_sg_posterieur).forEach(([key, value]) => {
+            if (typeof value === "boolean") {
+              formData.append(`${eye}.bp_sg_posterieur.${key}`, value ? "true" : "false");
+            } else if (value !== undefined && value !== null && typeof value !== "object") {
+              formData.append(`${eye}.bp_sg_posterieur.${key}`, String(value));
+            }
+          });
+        }
+      }
+    });
+
+    return formData;
+  }
   // Pour l'affichage du texte RV
   const rvValue = watch("conclusion.rv")
   // Fonction pour rendre les onglets pour une section
@@ -363,6 +373,10 @@ function buildClinicalExamFormData(data: ClinicalExamen): FormData {
               ))}
             </SelectContent>
           </Select>
+          {/* Affichage de l'erreur pour les selects */}
+          {getError(errors, name)?.message && (
+            <span className="text-red-500 text-xs">{getError(errors, name)?.message}</span>
+          )}
         </div>
       )}
     />
@@ -387,7 +401,15 @@ const api_url = import.meta.env.VITE_APP_API_URL
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} autoComplete="off">
+        <form className="space-y-6" onSubmit={handleSubmit(
+  (data) => { 
+    console.log("SUBMIT OK", data); 
+    onSubmit(data); 
+  },
+  (errors) => {
+    console.log("SUBMIT ERRORS", errors);
+  }
+)} autoComplete="off">
           {/* Plaintes */}
           <Card>
             <CardHeader>
@@ -438,6 +460,12 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
+                        {/* Erreur diplopie_type */}
+                        {getError(errors, `${eye}.plaintes.diplopie_type`)?.message && (
+                          <span className="text-red-500 text-xs">
+                            {getError(errors, `${eye}.plaintes.diplopie_type`)?.message}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -474,6 +502,12 @@ const api_url = import.meta.env.VITE_APP_API_URL
                               </Select>
                             )}
                           />
+                        )}
+                        {/* Erreur strabisme_eye */}
+                        {getError(errors, `${eye}.plaintes.strabisme_eye`)?.message && (
+                          <span className="text-red-500 text-xs">
+                            {getError(errors, `${eye}.plaintes.strabisme_eye`)?.message}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -512,6 +546,12 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
+                        {/* Erreur nystagmus_eye */}
+                        {getError(errors, `${eye}.plaintes.nystagmus_eye`)?.message && (
+                          <span className="text-red-500 text-xs">
+                            {getError(errors, `${eye}.plaintes.nystagmus_eye`)?.message}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -548,6 +588,12 @@ const api_url = import.meta.env.VITE_APP_API_URL
                               </Select>
                             )}
                           />
+                        )}
+                        {/* Erreur ptosis_eye */}
+                        {getError(errors, `${eye}.plaintes.ptosis_eye`)?.message && (
+                          <span className="text-red-500 text-xs">
+                            {getError(errors, `${eye}.plaintes.ptosis_eye`)?.message}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -664,9 +710,8 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.RPM,
                       isDisabled
                     )}
-                    
                   </div>
-              )
+                )
               })}
             </CardContent>
           </Card>
@@ -702,6 +747,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       {...register(`${eye}.bp_sg_posterieur.retine`)}
                       disabled={isDisabled}
                     />
+                    {getError(errors, `${eye}.bp_sg_posterieur.retine`)?.message && (
+                      <span className="text-red-500 text-xs">
+                        {getError(errors, `${eye}.bp_sg_posterieur.retine`)?.message}
+                      </span>
+                    )}
                   </div>
 
                   {renderSelect(
@@ -743,7 +793,7 @@ const api_url = import.meta.env.VITE_APP_API_URL
           {/* Examens complémentaires */}
           <Card>
             <CardHeader>
-              <CardTitle>Examens complémentaires</CardTitle>
+              <CardTitle>Biomicroscopie (examens complémentaires)</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["retinographie", "oct", "autres"].map((field) => (
@@ -753,14 +803,14 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   {preview[`bp_sup_${field}`] && (
                     <div className="flex items-center gap-2 mt-2">
                       <img
-                        src={`${api_url}${preview[`bp_sup_${field}`]}`}
+                        src={preview[`bp_sup_${field}`]}
                         alt={field}
                         className="w-20 h-20 object-cover rounded border"
                       />
                       <Button
                         type="button"
                         variant="outline"
-                          onClick={() => {
+                        onClick={() => {
                           setValue(`bp_sup.${field}` as any, "")
                           setPreview((prev) => ({ ...prev, [`bp_sup_${field}`]: "" }))
                         }}
@@ -835,6 +885,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.limite_superieure")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.limite_superieure")?.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limite_inferieure">Limite inférieure</Label>
@@ -844,6 +899,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.limite_inferieure")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.limite_inferieure")?.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limite_temporale_droit">Limite temporale droit</Label>
@@ -853,6 +913,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.limite_temporale_droit")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.limite_temporale_droit")?.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limite_temporale_gauche">Limite temporale gauche</Label>
@@ -862,6 +927,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.limite_temporale_gauche")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.limite_temporale_gauche")?.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="limite_horizontal">Limite horizontale</Label>
@@ -871,6 +941,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.limite_horizontal")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.limite_horizontal")?.message}
+                  </span>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="score_esternmen">Score d'Esterman</Label>
@@ -880,6 +955,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   disabled={isDisabled}
                   type="number"
                 />
+                {getError(errors, "perimetry.score_esternmen")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "perimetry.score_esternmen")?.message}
+                  </span>
+                )}
               </div>
                {/* Image périmétrie */}
               <div className="space-y-2">
@@ -905,7 +985,7 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   </div>
                 )}
                 {/* Aperçu si image déjà enregistrée (URL) */}
-                {!preview.perimetry_image && typeof watch("perimetry.image") === "string" && watch("perimetry.image") && watch("perimetry.image") && (
+                {!preview.perimetry_image && typeof watch("perimetry.image") === "string" && watch("perimetry.image") && (
                   <div className="flex items-center gap-2">
                     <img
                       src={`${api_url}${watch("perimetry.image")}`}
@@ -1006,6 +1086,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   {...register("conclusion.cat")}
                   disabled={isDisabled}
                 />
+                {getError(errors, "conclusion.cat")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "conclusion.cat")?.message}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -1015,6 +1100,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   {...register("conclusion.traitement")}
                   disabled={isDisabled}
                 />
+                {getError(errors, "conclusion.traitement")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "conclusion.traitement")?.message}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -1024,6 +1114,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   {...register("conclusion.observation")}
                   disabled={isDisabled}
                 />
+                {getError(errors, "conclusion.observation")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "conclusion.observation")?.message}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2 flex items-center">
@@ -1049,6 +1144,11 @@ const api_url = import.meta.env.VITE_APP_API_URL
                         : ""}
                   </span>
                 </Label>
+                {getError(errors, "conclusion.rv")?.message && (
+                  <span className="text-red-500 text-xs ml-2">
+                    {getError(errors, "conclusion.rv")?.message}
+                  </span>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -330,21 +330,16 @@ class ClinicalExamen(Base):
     """
     Examen clinique (biomicroscopie, périmétrie, conclusion, etc.)
     """
-    conclusion = models.OneToOneField(Conclusion, on_delete=models.CASCADE)
-    perimetry = models.OneToOneField(Perimetry, on_delete=models.CASCADE)
-    og = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='og')
-    od = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='od')
+    conclusion = models.OneToOneField(Conclusion, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    perimetry = models.OneToOneField(Perimetry, on_delete=models.CASCADE, null=True, blank=True, default=None)
+    og = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='og', null=True, blank=True, default=None)
+    od = models.ForeignKey(EyeSide, on_delete=models.CASCADE, related_name='od', null=True, blank=True, default=None)
     bp_sup = models.OneToOneField(BpSuP, on_delete=models.CASCADE, null=True, default=None, blank=True)
     is_completed = models.BooleanField(_('Examen clinique complété'), default=False)
 
     class Meta:
         verbose_name = _('Examen clinique')
         verbose_name_plural = _('Examens cliniques')
-
-    def clean(self):
-        if not all([self.conclusion, self.perimetry, self.og, self.od]):
-            raise ValidationError(_("Tous les composants cliniques doivent être présents"))
-
 
 class Examens(Base):
     """

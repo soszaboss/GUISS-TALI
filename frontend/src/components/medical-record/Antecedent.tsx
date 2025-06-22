@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Save, Pencil, AlertTriangle } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
-import type { Antecedent } from "@/types/medicalRecord"
+import { defaultAntecedentValues, type Antecedent } from "@/types/medicalRecord"
 import { updateAntecedent, createAntecedent } from "@/services/medicalRecord"
 
 // Schéma Zod pour Antecedent
@@ -18,11 +18,11 @@ const antecedentSchema = z.object({
   id: z.any().optional(),
   antecedents_medico_chirurgicaux: z.string().min(1, "Champ requis"),
   pathologie_ophtalmologique: z.string().min(1, "Champ requis"),
-  addiction: z.boolean(),
-  type_addiction: z.enum(["TABAGISME", "ALCOOL", "TELEPHONE", "OTHER"]),
+  addiction: z.boolean().default(false),
+  type_addiction: z.enum(["TABAGISME", "ALCOOL", "TELEPHONE", "OTHER"]).optional(),
   autre_addiction_detail: z.string().optional(),
   tabagisme_detail: z.string().optional(),
-  familial: z.enum(["CECITÉ", "GPAO", "OTHER"]),
+  familial: z.enum(["CECITE", "GPAO", "OTHER"]),
   autre_familial_detail: z.string().optional(),
   patient: z.any().optional(),
 })
@@ -31,9 +31,11 @@ export function Antecedent({
   antecedentData,
   canEdit,
   onSuccess,
+  patient
 }: {
   antecedentData?: Antecedent
   canEdit: boolean
+  patient?: number
   onSuccess?: (data: any) => void
 }) {
   const [editMode, setEditMode] = React.useState(false)
@@ -44,8 +46,8 @@ export function Antecedent({
     reset,
     watch,
   } = useForm({
-    defaultValues: antecedentData,
-    resolver: zodResolver(antecedentSchema),
+    defaultValues: antecedentData || defaultAntecedentValues,
+    resolver: zodResolver(antecedentSchema) as any,
     mode: "onBlur",
   })
 
@@ -59,7 +61,10 @@ export function Antecedent({
       if (data.id) {
         return await updateAntecedent(data)
       } else {
-        return await createAntecedent(data)
+        return await createAntecedent({
+          ...data,
+          patient: patient
+        })
       }
     },
     onSuccess: (data) => {
@@ -145,6 +150,7 @@ export function Antecedent({
                     disabled={isDisabled}
                     className="w-full border rounded px-2 py-1"
                   >
+                    <option value=""></option>
                     <option value="TABAGISME">Tabagisme</option>
                     <option value="ALCOOL">Alcool</option>
                     <option value="TELEPHONE">Téléphone</option>
@@ -192,7 +198,7 @@ export function Antecedent({
                 disabled={isDisabled}
                 className="w-full border rounded px-2 py-1"
               >
-                <option value="CECITÉ">Cécité</option>
+                <option value="CECITE">Cécité</option>
                 <option value="GPAO">GPAO</option>
                 <option value="OTHER">Autre</option>
               </select>

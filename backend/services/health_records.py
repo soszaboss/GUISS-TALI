@@ -18,7 +18,7 @@ class DriverExperienceService:
             'tranche_horaire': data.get('tranche_horaire', None),
             'dommage': data.get('dommage'),
             'degat': data.get('degat'),
-            'date_visite': data.get('date_visite', None)
+            'date_visite': data.get('date_visite', None) if data.get('date_visite') and data.get('date_visite') != '' else None
         }
         driver_exp, created = DriverExperience.objects.update_or_create(
             patient=patient,
@@ -105,14 +105,14 @@ class HealthRecordService:
             }
         )
         
-        if examen_ids and created:
+        if examen_ids:
             examens = Examens.objects.filter(pk__in=examen_ids, patient=patient)
-            health_record.examens.set(examens)
+            health_record.examens.add(*examens)
 
-        if driver_exp_ids and created:
-            driver_experiene = DriverExperience.objects.filter(pk__in=driver_exp_ids, patient=patient)
-            health_record.driver_experience.set(driver_experiene)
-        
+        if driver_exp_ids:
+            driver_experience = DriverExperience.objects.filter(pk__in=driver_exp_ids, patient=patient)
+            health_record.driver_experience.add(*driver_experience)
+
         return health_record
 
     @staticmethod

@@ -14,25 +14,41 @@ import type { DriverExperience } from "@/types/medicalRecord"
 import { createDriverExperience, updateDriverExperience } from "@/services/medicalRecord"
 
 // Schéma Zod basé sur le serializer fourni
+// Schéma Zod adapté avec messages d'erreur en français et contrôle des dropdowns
 const driverExperienceSchema = z.object({
   id: z.number().optional().nullable(),
-  visite: z.number(),
-  km_parcourus: z.number(),
-  nombre_accidents: z.number(),
-  tranche_horaire: z.string(),
-  dommage: z.enum(["CORPOREL", "MATERIEL"]),
-  degat: z.enum(["IMPORTANT", "MODÉRÉ", "LÉGER"]),
-  date_visite: z.string().optional()
+  km_parcourus: z.preprocess(
+    val => val === "" ? undefined : Number(val),
+    z.number({ invalid_type_error: "Veuillez saisir un nombre de kilomètres parcourus" })
+  ).refine(val => !isNaN(val), { message: "Veuillez saisir un nombre de kilomètres parcourus" }),
+  nombre_accidents: z.preprocess(
+    val => val === "" ? undefined : Number(val),
+    z.number({ invalid_type_error: "Veuillez saisir un nombre d'accidents" })
+  ).refine(val => !isNaN(val), { message: "Veuillez saisir un nombre d'accidents" }),
+  tranche_horaire: z.string().min(1, "Veuillez renseigner la tranche horaire"),
+  dommage: z.enum(["CORPOREL", "MATERIEL"], {
+    required_error: "Veuillez sélectionner un type de dommage",
+    invalid_type_error: "Veuillez sélectionner un type de dommage"
+  }),
+  degat: z.enum(["IMPORTANT", "MODERE", "LEGER"], {
+    required_error: "Veuillez sélectionner un niveau de dégât",
+    invalid_type_error: "Veuillez sélectionner un niveau de dégât"
+  }),
+  date_visite: z.string().optional().nullable()
 })
 
 export function DrivingExperience({
   driverExperienceData,
   canEdit,
   onSuccess,
+  visiteID,
+  patientID
 }: {
   driverExperienceData?: DriverExperience
   canEdit: boolean
   onSuccess?: (data: any) => void
+  visiteID?: number
+  patientID?: number
 }) {
   const [editMode, setEditMode] = React.useState(false)
   const {
@@ -56,7 +72,11 @@ export function DrivingExperience({
       if (data.id) {
         return await updateDriverExperience(data)
       } else {
-        return await createDriverExperience(data)
+        return await createDriverExperience({
+          ...data,
+          visite: visiteID,
+          patient: patientID
+        })
       }
     },
     onSuccess: (data) => {
@@ -92,18 +112,6 @@ export function DrivingExperience({
 
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="visite">Visite</Label>
-              <Input
-                id="visite"
-                type="number"
-                {...register("visite")}
-                disabled={isDisabled}
-              />
-              {errors.visite && (
-                <span className="text-red-500 text-xs">{errors.visite.message as string}</span>
-              )}
-            </div>
             <div className="space-y-2">
               <Label htmlFor="km_parcourus">Km parcourus</Label>
               <Input

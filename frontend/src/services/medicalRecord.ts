@@ -10,7 +10,7 @@ const ANTECEDENT_URL = `${MEDICAL_RECORD_URL}antecedents/`
 
 
 const createAntecedent = (data: Antecedent) => {
-  return axios.post(ANTECEDENT_URL, data).then(res => res.data)
+  return axios.post(`${ANTECEDENT_URL}create/`, data).then(res => res.data)
 }
 
 const updateAntecedent = (data: Antecedent) => {
@@ -18,7 +18,7 @@ const updateAntecedent = (data: Antecedent) => {
 }
 
 const createDriverExperience = (data: DriverExperience) => {
-  return axios.post(DRIVER_EXPERIENCE_URL, data).then(res => res.data)
+  return axios.post(`${DRIVER_EXPERIENCE_URL}create/`, data).then(res => res.data)
 }
 
 const updateDriverExperience = (data: DriverExperience) => {

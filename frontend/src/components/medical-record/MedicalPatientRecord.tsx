@@ -9,6 +9,8 @@ import { QUERIES } from "@/helpers/crud-helper/consts"
 import { getMedicalRecordByPatientId, syncHealthRecord } from "@/services/medicalRecord"
 import { deleteExamen } from "@/services/examens"
 import { toast } from "sonner"
+import { Antecedent } from "./Antecedent"
+import { useAuth } from "@/hooks/auth/Auth"
 
 // Modal générique
 function ConfirmationModal({
@@ -68,6 +70,9 @@ export default function MedicalPatientRecord() {
   const [deleteModal, setDeleteModal] = useState<{ open: boolean, examenId?: number, visiteNumber?: number }>({ open: false })
   const [addModal, setAddModal] = useState(false)
   const [selectedVisit, setSelectedVisit] = useState<number | null>(null)
+  const { currentUser } = useAuth()
+  const role = currentUser?.role?.toLocaleLowerCase()
+  const canEditAntecedent = role === "doctor" || role === "admin"
 
   const {
     data: medicalRecord,
@@ -186,9 +191,12 @@ export default function MedicalPatientRecord() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-8 bg-gray-50 rounded-lg p-1">
+        <TabsList className="grid grid-cols-3 mb-8 bg-gray-50 rounded-lg p-1">
           <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow">
             Informations générales
+          </TabsTrigger>
+          <TabsTrigger value="antecedent" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow">
+            Antecédents
           </TabsTrigger>
           <TabsTrigger value="visits" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow">
             Visites
@@ -424,6 +432,16 @@ export default function MedicalPatientRecord() {
             })}
           </div>
         </TabsContent>
+
+        {/* Onglet Antecédents */}
+       <TabsContent value="antecedent">
+          <Antecedent
+            canEdit={canEditAntecedent}
+            antecedentData={medicalRecord?.antecedant}
+            patient={medicalRecord?.patient?.id ?? undefined}
+          />
+        </TabsContent>
+
       </Tabs>
     </div>
   )

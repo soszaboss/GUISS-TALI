@@ -26,7 +26,6 @@ class ExamensViewSet(viewsets.ModelViewSet):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(f"Erreur lors de la suppression de l'examen {examen_id}: {str(e)}")
             return Response({"detail": f"Erreur lors de la suppression : {str(e)}"}, status=500)
 
 
@@ -48,7 +47,6 @@ class TechnicalExamenViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data, context={'examen_id': examen_id})
         if not serializer.is_valid():
-            print("Serializer errors:", serializer.errors)
             return Response(serializer.errors, status=400)
 
         # Création réelle de l'objet
@@ -75,6 +73,18 @@ class ClinicalExamenViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=400)
         self.perform_update(serializer)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'], url_path='create-for-examen')
+    def create_for_examen(self, request, examen_id, *args, **kwargs):
+        request.data.pop('examen_id', None)
+        if not examen_id:
+            return Response({'detail': 'examen_id est requis'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data, context={'examen_id': examen_id})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 

@@ -26,4 +26,3 @@ class Command(BaseCommand):
         for i in range(count):
             user = ProfileFactory()
             user.save()
-        print('Successfully created {} users'.format(count))

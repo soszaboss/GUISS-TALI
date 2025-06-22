@@ -65,17 +65,20 @@ class ExamenService:
         except driver_experience.DoesNotExist:
             pass
         return {"detail": f"Examen #{examen_id} et ses dépendances supprimés avec succès."}
+
 class ClinicalExamenService:
     """
     Service pour la gestion des examens cliniques
     """
 
     @staticmethod
+    @transaction.atomic
     def init_clinical_examen(examen_id):
+        print(f"Initializing clinical examen for examen_id: {examen_id}")
         examen = Examens.objects.get(pk=examen_id)
         if examen.clinical_examen:
             return examen.clinical_examen
-            
+        print(f"Creating new clinical examen for patient: {examen.patient}, visite: {examen.visite}") 
         clinical_examen = ClinicalExamen.objects.create(
             patient=examen.patient,
             visite=examen.visite
@@ -85,6 +88,7 @@ class ClinicalExamenService:
         return clinical_examen
 
     @staticmethod
+    @transaction.atomic
     def create_plaintes(clinical_examen_id, data):
         clinical_examen = ClinicalExamen.objects.get(pk=clinical_examen_id)
         plaintes = Plaintes.objects.create(**data)
@@ -92,6 +96,7 @@ class ClinicalExamenService:
         return plaintes
 
     @staticmethod
+    @transaction.atomic
     def update_eye_side(eye_side_id, data):
         eye = EyeSide.objects.get(pk=eye_side_id)
         for field, value in data.items():
@@ -100,6 +105,7 @@ class ClinicalExamenService:
         return eye
 
     @staticmethod
+    @transaction.atomic
     def update_segment_anterior(eye_side_id, data):
         eye = EyeSide.objects.get(pk=eye_side_id)
         if eye.bp_sg_anterieur:
@@ -113,6 +119,7 @@ class ClinicalExamenService:
         return eye.bp_sg_anterieur
 
     @staticmethod
+    @transaction.atomic
     def update_segment_posterior(eye_side_id, data):
         eye = EyeSide.objects.get(pk=eye_side_id)
         if eye.bp_sg_posterieur:
@@ -126,6 +133,7 @@ class ClinicalExamenService:
         return eye.bp_sg_posterieur
 
     @staticmethod
+    @transaction.atomic
     def update_perimetry(clinical_examen_id, data, replace=False):
         exam = ClinicalExamen.objects.get(pk=clinical_examen_id)
 
@@ -145,6 +153,7 @@ class ClinicalExamenService:
         return exam.perimetry
 
     @staticmethod
+    @transaction.atomic
     def update_bp_sup(clinical_examen_id, data, replace=False):
         exam = ClinicalExamen.objects.get(pk=clinical_examen_id)
 
@@ -165,6 +174,7 @@ class ClinicalExamenService:
         return exam.bp_sup
     
     @staticmethod
+    @transaction.atomic
     def create_or_update_eye_side(clinical_examen_id, side: str, data: dict):
         """
         Crée ou met à jour og / od pour un examen clinique.
@@ -221,6 +231,7 @@ class ClinicalExamenService:
         return getattr(clinical_examen, side)
     
     @staticmethod
+    @transaction.atomic
     def complete_clinical_examen(clinical_examen_id):
         exam = ClinicalExamen.objects.get(pk=clinical_examen_id)
         exam.is_completed = all([
@@ -242,12 +253,9 @@ class TechnicalExamenService:
     @transaction.atomic
     def init_technical_examen(examen_id):
         examen = Examens.objects.select_related('technical_examen').get(pk=examen_id)
-        print(f"Initialisation de l'examen technique pour l'examen ID: {examen_id}")
 
         if examen.technical_examen:
             return examen.technical_examen
-
-        print(f"Aucun examen technique trouvé pour l'examen ID: {examen_id}. Création d'un nouvel examen technique.")
 
         try:
             defaults = {
@@ -262,14 +270,8 @@ class TechnicalExamenService:
                 visite=examen.visite,
                 defaults=defaults
             )
-            print(f"Examen technique créé: {technical_examen.id}, créé: {created}")
         except Exception as e:
-            print(f"ERREUR lors de la création du TechnicalExamen: {e}")
             raise
-
-
-        print(f"Examen technique créé: {technical_examen.id}, créé: {created}")
-
         examen.technical_examen = technical_examen
         examen.save(update_fields=["technical_examen"])
 

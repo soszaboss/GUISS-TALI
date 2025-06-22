@@ -26,4 +26,3 @@ class Command(BaseCommand):
         for i in range(count):
             patient = VehiculeFactory()
             patient.save()
-        print('Successfully created {} patients'.format(count))

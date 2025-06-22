@@ -43,7 +43,7 @@ export const initProfile: Profile = {
   last_name: '',
   avatar: '',
   birthday: null,
-  gender: null,
+  gender: 1,
   address: '',
   city: '',
   zip: null as number | null,

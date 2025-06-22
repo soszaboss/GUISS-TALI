@@ -1,4 +1,5 @@
 # serializers.py
+from django.http import QueryDict
 from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
@@ -95,6 +96,8 @@ class BiomicroscopySegmentPosterieurSerializer(serializers.ModelSerializer):
 
 
 class PerimetrySerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False, allow_null=True)
+    images = serializers.FileField(required=False, allow_null=True)
     class Meta:
         model = Perimetry
         fields = '__all__'
@@ -104,9 +107,17 @@ class ConclusionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conclusion
         fields = '__all__'
+        extra_kwargs = {
+            'categorie': {'required': False, 'allow_null': True},
+            'traitementegorie': {'required': False, 'allow_null': True},
+            'observationegorie': {'required': False, 'allow_null': True}
+        }
 
 
 class BpSuPSerializer(serializers.ModelSerializer):
+    retinographie = serializers.ImageField(required=False, allow_null=True)
+    oct = serializers.ImageField(required=False, allow_null=True)
+    autres = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = BpSuP
         fields = '__all__'
@@ -154,8 +165,6 @@ class TechnicalExamenSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         examen_id = self.context.get('examen_id')
-        print("VALIDATED DATA =>", validated_data)
-        print("examen_id =>", examen_id)
         technical_examen = TechnicalExamenService.init_technical_examen(examen_id)
         nested_fields = {
             'visual_acuity': TechnicalExamenService.update_visual_acuity,
@@ -204,9 +213,12 @@ class ClinicalExamenSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         request = self.context.get('request')
-        files = request.FILES if request else {}
+        files = request.FILES if request and hasattr(request, 'FILES') else {}
 
-        data = data.copy() if hasattr(data, 'copy') else dict(data)
+        if isinstance(data, QueryDict):
+            data = dict(data.lists())
+        else:
+            data = dict(data)
 
         nested_data = {}
 
@@ -216,92 +228,67 @@ class ClinicalExamenSerializer(serializers.ModelSerializer):
             dct[keys[-1]] = value
 
         for key, value in data.items():
-            keys = key.split('.')
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            assign_nested(nested_data, keys, value)
+            assign_nested(nested_data, key.split('.'), value)
 
-        # ➤ Ajout fichiers perimetry
-        peri_data = nested_data.get('perimetry', {})
+        # Fichiers perimetry
+        perimetry_data = nested_data.get('perimetry', {})
         for field in ['image', 'images']:
-            file_key = f'perimetry.{field}'
-            if file_key in files:
-                peri_data[field] = files[file_key]
-            elif isinstance(peri_data.get(field), str):
-                # Keep existing path
-                continue
-            else:
-                peri_data.pop(field, None)
-        nested_data['perimetry'] = peri_data
+            file_obj = files.get(f'perimetry.{field}') or files.get(field)
+            if file_obj:
+                perimetry_data[field] = file_obj
+        nested_data['perimetry'] = perimetry_data
 
-        # ➤ Ajout fichiers bp_sup
+        # Fichiers bp_sup
         bp_sup_data = nested_data.get('bp_sup', {})
         for field in ['retinographie', 'oct', 'autres']:
-            if field in files:
-                bp_sup_data[field] = files[field]
-            elif isinstance(bp_sup_data.get(field), str):
-                continue
-            else:
-                bp_sup_data.pop(field, None)
+            file_obj = files.get(f'bp_sup.{field}') or files.get(field)
+            if file_obj:
+                bp_sup_data[field] = file_obj
         nested_data['bp_sup'] = bp_sup_data
 
-        # ➤ Normalisation des booléens
+        # Normalisation booleens
         def normalize_booleans(d):
-            for key, value in d.items():
-                if isinstance(value, dict):
-                    normalize_booleans(value)
-                elif isinstance(value, str):
-                    if value.lower() == 'true':
-                        d[key] = True
-                    elif value.lower() == 'false':
-                        d[key] = False
-
+            for k, v in d.items():
+                if isinstance(v, dict):
+                    normalize_booleans(v)
+                elif isinstance(v, str):
+                    if v.lower() == "true":
+                        d[k] = True
+                    elif v.lower() == "false":
+                        d[k] = False
         normalize_booleans(nested_data)
 
-        print("NESTED DATA =>", nested_data)
         return super().to_internal_value(nested_data)
 
     def create(self, validated_data):
+        examen_id = self.context.get('examen_id')
+        if not examen_id:
+            raise serializers.ValidationError("examen_id est requis dans le contexte")
+
         bp_sup_data = validated_data.pop('bp_sup', None)
-        clinical_examen = ClinicalExamenService.init_clinical_examen(
-            examen_id=validated_data.pop('examen_id')
-        )
+        perimetry_data = validated_data.pop('perimetry', None)
+        conclusion_data = validated_data.pop('conclusion', None)
+        og_data = validated_data.pop('og', None)
+        od_data = validated_data.pop('od', None)
 
-        for side in ['og', 'od']:
-            eye_data = validated_data.pop(side, None)
-            if eye_data:
-                ClinicalExamenService.create_or_update_eye_side(clinical_examen.id, side, eye_data)
+        clinical_examen = ClinicalExamenService.init_clinical_examen(examen_id)
 
-        if 'conclusion' in validated_data:
-            ConclusionService.update_conclusion(clinical_examen.id, validated_data.pop('conclusion'))
-
-        if 'perimetry' in validated_data:
-            ClinicalExamenService.update_perimetry(clinical_examen.id, validated_data.pop('perimetry'))
-
+        # Ajout progressif
+        if og_data:
+            ClinicalExamenService.create_or_update_eye_side(clinical_examen.id, 'og', og_data)
+        if od_data:
+            ClinicalExamenService.create_or_update_eye_side(clinical_examen.id, 'od', od_data)
+        if conclusion_data:
+            ConclusionService.update_conclusion(clinical_examen.id, conclusion_data)
+        if perimetry_data:
+            ClinicalExamenService.update_perimetry(clinical_examen.id, perimetry_data)
         if bp_sup_data:
             ClinicalExamenService.update_bp_sup(clinical_examen.id, bp_sup_data)
 
-        clinical_examen.save()
+        clinical_examen.refresh_from_db()
         return clinical_examen
-
-    def update(self, instance, validated_data):
-        if 'og' in validated_data:
-            ClinicalExamenService.create_or_update_eye_side(instance.id, 'og', validated_data.pop('og'))
-
-        if 'od' in validated_data:
-            ClinicalExamenService.create_or_update_eye_side(instance.id, 'od', validated_data.pop('od'))
-
-        if 'conclusion' in validated_data:
-            ConclusionService.update_conclusion(instance.id, validated_data.pop('conclusion'))
-
-        if 'perimetry' in validated_data:
-            ClinicalExamenService.update_perimetry(instance.id, validated_data.pop('perimetry'), replace=True)
-
-        if 'bp_sup' in validated_data:
-            ClinicalExamenService.update_bp_sup(instance.id, validated_data.pop('bp_sup'), replace=True)
-
-        instance.save()
-        return instance
 
 class ExamensSerializer(serializers.ModelSerializer):
     technical_examen = TechnicalExamenSerializer(required=False)

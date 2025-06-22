@@ -22,9 +22,9 @@ const getClinicalExamById = (id: ID): Promise<ClinicalExamen | undefined> => {
     .then((response: AxiosResponse<ClinicalExamen | undefined>) => response.data)
 }
 
-const createClinicalExam = (exam: FormData): Promise<ClinicalExamen | undefined> => {
+const createClinicalExam = (examenID:number, exam: FormData): Promise<ClinicalExamen | undefined> => {
   return axios
-    .post(`${CLINICAL_EXAM_URL}`, exam)
+    .post(`${CLINICAL_EXAM_URL}create/${examenID}/`, exam)
     .then((response: AxiosResponse<ClinicalExamen | undefined>) => response.data)
 }
 
