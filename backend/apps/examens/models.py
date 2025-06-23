@@ -209,9 +209,9 @@ class BiomicroscopySegmentPosterieur(TimeStampedModel):
 
 # BP supplementary items
 class BpSuP(TimeStampedModel):
-    retinographie = models.ImageField(upload_to='media/images/biomicroscopie/retinographie/')
-    oct = models.ImageField(upload_to='media/images/biomicroscopie/oct/')
-    autres = models.ImageField(upload_to='media/images/biomicroscopie/autres/')
+    retinographie = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/retinographie/', null=True, blank=True)
+    oct = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/oct/', null=True, blank=True)
+    autres = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/autres/', null=True, blank=True)
 
 # A model for each examen's eye
 class EyeSide(TimeStampedModel):
@@ -232,8 +232,8 @@ class Perimetry(TimeStampedModel):
     limite_horizontal = models.FloatField(_('Limite Horizontal'))
     score_esternmen = models.FloatField(_('Score d’Estermen (pourcentage)'))
 
-    image = models.ImageField(_('Image'), upload_to='images/perimetries_binoculaire/')
-    images = models.FileField(_('Images'), upload_to='images/perimetries_binoculaire/')
+    image = models.ImageField(_('Image'), upload_to=f'{MEDIA}perimetries_binoculaire/', null=True, blank=True)
+    images = models.FileField(_('Images'), upload_to=f'{MEDIA}perimetries_binoculaire/', null=True, blank=True)
     class Meta:
         verbose_name = _('Périmétrie binoculaire')
         verbose_name_plural = _('Périmétries binoculaires')
