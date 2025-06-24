@@ -149,9 +149,7 @@ export function AdminUsersList() {
                 <SelectContent>
                   <SelectItem value="all">Tous les rôles</SelectItem>
                   <SelectItem value="ADMIN">Administrateur</SelectItem>
-                  <SelectItem value="DOCTOR">Médecin</SelectItem>
-                  <SelectItem value="TECHNICIAN">Technicien</SelectItem>
-                  <SelectItem value="ASSISTANT">Assistant</SelectItem>
+                  <SelectItem value="EMPLOYEE">Employé</SelectItem>
                 </SelectContent>
               </Select>
               {/* <Select value={statusFilter} onValueChange={setStatusFilter}>

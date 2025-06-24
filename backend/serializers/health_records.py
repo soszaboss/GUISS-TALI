@@ -6,7 +6,6 @@ from apps.health_record.models import Antecedent, DriverExperience, HealthRecord
 from django.core.exceptions import ValidationError
 
 from serializers.patients import ConducteurSerializer
-from selector.health_record import AntecedentSelector, DriverExperienceSelector, HealthRecordSelector
 
 from serializers.examens import ExamensSerializer
 
@@ -68,33 +67,3 @@ class HealthRecordSerializer(serializers.ModelSerializer):
         # )
         # return health_record
 
-# ----------------------------
-# COMPLEX SERIALIZERS WITH SELECTORS
-# ----------------------------
-
-class PatientMedicalHistorySerializer(serializers.Serializer):
-    health_record = HealthRecordSerializer()
-    stats = serializers.SerializerMethodField()
-    evolution = serializers.SerializerMethodField()
-
-    def get_stats(self, obj):
-        return DriverExperienceSelector.get_driver_stats(obj.patient.id)
-
-    def get_evolution(self, obj):
-        return HealthRecordSelector.get_patient_evolution_stats(obj.patient.id)
-
-
-class RiskPatientSerializer(serializers.ModelSerializer):
-    risk_factors = serializers.SerializerMethodField()
-    last_examen = serializers.SerializerMethodField()
-
-    class Meta:
-        model = HealthRecord
-        fields = ['id', 'patient', 'risky_patient', 'risk_factors', 'last_examen']
-
-    def get_risk_factors(self, obj):
-        return AntecedentSelector.get_antecedents_with_risk_factors()
-
-    def get_last_examen(self, obj):
-        last_examen = obj.examens.order_by('-visite').first()
-        return ExamensSerializer(last_examen).data if last_examen else None

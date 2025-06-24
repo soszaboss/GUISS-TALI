@@ -3,9 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     HealthRecordViewSet,
     AntecedentViewSet,
-    DriverExperienceViewSet,
-    StatsAPIView
-)
+    DriverExperienceViewSet
+    )
 
 # Séparation explicite des vues
 health_record_list = HealthRecordViewSet.as_view({'get': 'list'})

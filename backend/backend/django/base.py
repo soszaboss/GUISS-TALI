@@ -35,7 +35,6 @@ LOCAL_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.authemail.apps.AuthemailConfig',
     'apps.patients.apps.PatientsConfig',
-    'apps.appointment.apps.AppointmentConfig',
     'apps.examens.apps.ClinicalExamenConfig',
     'apps.health_record.apps.HealthRecordConfig',
 ]

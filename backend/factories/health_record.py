@@ -26,7 +26,11 @@ class DriverExperienceFactory(DjangoModelFactory):
     tranche_horaire = "Journée"
     dommage = DommageChoices.CORPOREL
     degat = DegatChoices.LEGER
-    date_visite = factory.LazyFunction(datetime.now().date) 
+    date_visite = date_visite = factory.Faker(
+        "date_between",
+        start_date="-12M",
+        end_date="today"
+    )
 
 class AntecedentFactory(DjangoModelFactory):
     class Meta:

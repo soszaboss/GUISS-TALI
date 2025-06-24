@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Edit, Plus, FileText, Loader2, Trash2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { getPatientById } from "@/services/patientsService"
 import { getVehicules, createVehicule, updateVehicule, deleteVehicule } from "@/services/vehiculesService"
@@ -243,24 +242,27 @@ export function PatientDetails() {
             </Button>
             <h1 className="text-2xl font-bold">Fiche Patient</h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate(`/${role}/patients/medical-record/${patient.id}`)}>
-              <FileText className="mr-2 h-4 w-4" />
-              Cahier Médical
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setItemIdForUpdate(patient.id)
-                navigate(`/${role}/patients/edit`)
-              }}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Modifier
-            </Button>
-          </div>
+          {
+            role !== 'admin' && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate(`/${role}/patients/medical-record/${patient.id}`)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Cahier Médical
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setItemIdForUpdate(patient.id)
+                  navigate(`/${role}/patients/edit`)
+                }}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </div>
+            )
+          }
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar avec photo et infos de base */}
           <div className="lg:col-span-1">
@@ -277,17 +279,6 @@ export function PatientDetails() {
                   <h2 className="text-xl font-semibold mb-1">
                     {patient.first_name} {patient.last_name}
                   </h2>
-                  <Badge
-                    variant={patient.status === "active" ? "default" : "secondary"}
-                    className={
-                      patient.status === "active"
-                        ? "bg-green-100 text-green-800 hover:bg-green-100"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-100"
-                    }
-                  >
-                    {patient.status === "active" ? "Actif" : "Inactif"}
-                  </Badge>
-
                   <div className="w-full mt-6 space-y-3">
                     <div>
                       <p className="text-sm text-gray-500">Sexe</p>

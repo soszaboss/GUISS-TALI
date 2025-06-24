@@ -72,7 +72,7 @@ export default function MedicalPatientRecord() {
   const [selectedVisit, setSelectedVisit] = useState<number | null>(null)
   const { currentUser } = useAuth()
   const role = currentUser?.role?.toLocaleLowerCase()
-  const canEditAntecedent = role === "doctor" || role === "admin"
+  const canEditAntecedent = role === "employee"
 
   const {
     data: medicalRecord,

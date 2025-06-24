@@ -19,7 +19,7 @@ class TestUserCreateService:
         user = user_create(
             email=email,
             password="securepass",
-            role=User.Role.DOCTOR,
+            role=User.Role.EMPLOYEE,
             phone_number=generer_numero_senegalais()
         )
         assert isinstance(user, User)
