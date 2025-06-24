@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { choicesMap } from "@/helpers/choicesMap"
+import { choicesMap } from "@/helpers/ChoicesMap"
 import { defaultClinicalExamValues } from "@/types/examensClinic"
 
 // Schéma Zod corrigé pour correspondre à l'API et aux types

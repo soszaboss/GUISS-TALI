@@ -33,7 +33,7 @@ const profileSchema = z.object({
 const userSchema = z.object({
   email: z.string().email({ message: "Email invalide" }),
   phone_number: z.string().min(8, "Numéro requis"),
-  role: z.enum(['admin', 'doctor', 'technician', 'assistant']),
+  role: z.enum(['admin', 'employee']),
   profile: profileSchema,
 })
 
@@ -76,7 +76,7 @@ export default function AdminUserForm() {
       reset({
         email: data.email ?? "",
         phone_number: data.phone_number ?? "",
-        role: data.role ?? "assistant",
+        role: data.role ?? "employee",
         profile: {
           ...initProfile,
           ...data.profile,
@@ -199,9 +199,7 @@ export default function AdminUserForm() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin">Administrateur</SelectItem>
-                          <SelectItem value="doctor">Médecin</SelectItem>
-                          <SelectItem value="technician">Technicien</SelectItem>
-                          <SelectItem value="assistant">Assistant</SelectItem>
+                          <SelectItem value="employee">Employé</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.role && <span className="text-red-500 text-xs">{errors.role.message}</span>}

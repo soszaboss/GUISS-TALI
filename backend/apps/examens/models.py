@@ -49,6 +49,7 @@ class VisualAcuity(TimeStampedModel):
          self.full_clean()
          return super().save(**kwargs)
 
+
 # Refraction model
 class Refraction(TimeStampedModel):
     od_s = models.DecimalField(_('S OD'),  max_digits=5, decimal_places=3)
@@ -190,6 +191,7 @@ class BiomicroscopySegmentAnterieur(TimeStampedModel):
          self.full_clean()
          return super().save(**kwargs)
 
+
 # Segment Postérieur
 class BiomicroscopySegmentPosterieur(TimeStampedModel):
     segment = models.CharField(_('Segment'), max_length=20, choices=SegmentChoices.choices)
@@ -212,6 +214,7 @@ class BpSuP(TimeStampedModel):
     retinographie = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/retinographie/', null=True, blank=True)
     oct = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/oct/', null=True, blank=True)
     autres = models.ImageField(upload_to=f'{MEDIA}biomicroscopie/autres/', null=True, blank=True)
+
 
 # A model for each examen's eye
 class EyeSide(TimeStampedModel):
@@ -257,6 +260,7 @@ class Perimetry(TimeStampedModel):
          self.full_clean()
          return super().save(**kwargs)
 
+
 # Conclusion model
 class Conclusion(TimeStampedModel):
     vision = models.CharField(_('Conclusion sur la conduite'), max_length=50,
@@ -273,7 +277,7 @@ class Conclusion(TimeStampedModel):
     class Meta:
         verbose_name = _('Conclusion')
         verbose_name_plural = _('Conclusions')
-        
+
 
 class TechnicalExamen(Base):
     visual_acuity = models.OneToOneField(
@@ -340,6 +344,7 @@ class ClinicalExamen(Base):
     class Meta:
         verbose_name = _('Examen clinique')
         verbose_name_plural = _('Examens cliniques')
+
 
 class Examens(Base):
     """

@@ -36,14 +36,14 @@ class TestUserListSelector:
         assert set(result) == set(users)
 
     @pytest.mark.parametrize("role, expected_count", [
-        (User.Role.DOCTOR, 2),
-        (User.Role.ASSIST, 1),
+        (User.Role.EMPLOYEE, 2),
+        (User.Role.ADMIN, 1),
         ("INVALID_ROLE", 0),
     ])
     def test_filter_users_by_role(self, role, expected_count):
         """✅ Filtre les utilisateurs par rôle."""
-        UserFactory.create_batch(2, role=User.Role.DOCTOR)
-        UserFactory(role=User.Role.ASSIST)
+        UserFactory.create_batch(2, role=User.Role.EMPLOYEE)
+        UserFactory(role=User.Role.ADMIN)
         result = user_list(filters={"role": role})
         assert len(result) == expected_count
 

@@ -19,6 +19,7 @@ import { QUERIES } from "@/helpers/crud-helper/consts"
 import { stringifyRequestQuery } from "@/helpers/crud-helper/helpers"
 import { useListView } from "@/hooks/_ListViewProvider"
 import { useAuth } from "@/hooks/auth/Auth"
+import { anonymizeName } from "@/helpers/anonymaseFullName"
 
 export function PatientsList() {
   const navigate = useNavigate()
@@ -28,6 +29,8 @@ export function PatientsList() {
   const { currentUser } = useAuth()
   const { results = [], count = 0, next, previous } = usePatientQueryResponsePagination()
   const isLoading = usePatientQueryResponseLoading()
+  const role = currentUser?.role
+
   const mutation = useMutation({
     mutationFn: (id: ID) => deletePatient(id!.toString()),
     mutationKey: [QUERIES.PATIENTS_LIST, "deletePatient"],
@@ -95,7 +98,8 @@ export function PatientsList() {
     }
     updateState({ offset: newOffset })
   }
-  const role = currentUser?.role
+
+
   // Actions
   const handleViewPatient = (id: ID) => {
     if (id !== undefined) {
@@ -180,7 +184,8 @@ export function PatientsList() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
+                    <TableHead>N°</TableHead>
+                    <TableHead>Nom Complet</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Type de permis</TableHead>
@@ -193,9 +198,14 @@ export function PatientsList() {
                     results.map((patient) => (
                       <TableRow key={patient.id}>
                         <TableCell className="font-medium">
-                          {patient.first_name} {patient.last_name}
+                          {patient.numero_permis}
                         </TableCell>
-                        <TableCell>{patient.email}</TableCell>
+                        <TableCell >
+                          {anonymizeName(`${patient.first_name} ${patient.last_name}`)}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {patient.email ? patient.email : <span className="italic text-gray-400">Non renseigné</span>}
+                        </TableCell>
                         <TableCell>{patient.phone_number}</TableCell>
                         <TableCell>{patient.type_permis}</TableCell>
                         <TableCell>{patient.service}</TableCell>

@@ -34,9 +34,9 @@ export function MedicalVisit({ extra, driving_experience, technical_examen, clin
   const [drivingData] = useState(driving_experience || undefined)
 
   // États pour l'édition et le statut d'enregistrement
-  const canEditTechnical = role === "technician" || role === "admin"
-  const canEditClinical = role === "doctor" || role === "admin"
-  const canEditDriving = role === "doctor" || role === "admin"
+  const canEditTechnical = role === "employee"
+  const canEditClinical = role === "at-risk-patient"
+  const canEditDriving = role === "at-risk-patient"
 
 
   return (

@@ -1,7 +1,7 @@
 import type { ID } from "./_models"
 import type { Response } from "./_models"
 
-export type UserRole = 'admin' | 'doctor' | 'technician' | 'assistant';
+export type UserRole = 'admin' |'employee';
 
 export type Gender = 1 | 2;
 
@@ -55,7 +55,7 @@ export const initUser: User = {
   id: null,
   email: '',
   phone_number: '',
-  role: 'assistant', // Default role
+  role: 'employee', // Default role
   is_staff: false,
   is_active: true,
   is_verified: true,

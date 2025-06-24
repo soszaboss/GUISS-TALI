@@ -11,7 +11,6 @@ from apps.examens.models import (
     Plaintes, BiomicroscopySegmentAnterieur, BiomicroscopySegmentPosterieur,
     Perimetry, Conclusion, BpSuP, EyeSide
 )
-from apps.health_record.models import HealthRecord
 
 from services.examens import (
     ExamenService,
@@ -20,7 +19,6 @@ from services.examens import (
     ConclusionService
 )
 
-from selector.health_record import HealthRecordSelector
 
 class VisualAcuitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -328,27 +326,3 @@ class ExamensSerializer(serializers.ModelSerializer):
         
         examen.save()
         return examen
-
-# class HealthRecordSerializer(serializers.ModelSerializer):
-#     examens = ExamensSerializer(many=True, read_only=True)
-#     antecedant = serializers.PrimaryKeyRelatedField(read_only=True)
-#     driver_experience = serializers.PrimaryKeyRelatedField(read_only=True)
-
-#     class Meta:
-#         model = HealthRecord
-#         fields = '__all__'
-#         read_only_fields = ('risky_patient',)
-
-#     def to_representation(self, instance):
-#         # Utilisation des selectors pour une représentation optimisée
-#         representation = super().to_representation(instance)
-#         full_record = HealthRecordSelector.get_full_health_record(instance.patient_id)
-        
-#         if full_record:
-#             representation.update({
-#                 'examens': ExamensSerializer(full_record.examens.all(), many=True).data,
-#                 'antecedant': full_record.antecedant.id if full_record.antecedant else None,
-#                 'driver_experience': full_record.driver_experience.id if full_record.driver_experience else None
-#             })
-        
-#         return representation

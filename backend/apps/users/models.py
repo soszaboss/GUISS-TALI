@@ -83,9 +83,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class Role(models.TextChoices):
         ADMIN = 'admin', _('Administrator')
-        DOCTOR = 'doctor', _('Doctor')
-        TECHNICAL = 'technician', _('Technician')
-        ASSIST = 'assistant', _('Assistant')
+        EMPLOYEE = 'employee', _('Employee')
 
     email = models.EmailField(
         _('email address'),

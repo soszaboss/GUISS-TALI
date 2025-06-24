@@ -13,12 +13,8 @@ from serializers.health_records import (
     HealthRecordSerializer, 
     AntecedentSerializer,
     DriverExperienceSerializer,
-    PatientMedicalHistorySerializer,
 )
 
-from selector.health_record import (
-    MedicalStatsSelector
-)
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
@@ -123,11 +119,3 @@ class DriverExperienceViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(f"Error creating/updating driver experience: {str(e)}")
             return Response({"detail": str(e)}, status=500)
-
-class StatsAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    @extend_schema(responses={200: None})
-    def get(self, request):
-        stats = MedicalStatsSelector.get_global_medical_stats()
-        return Response(stats)
