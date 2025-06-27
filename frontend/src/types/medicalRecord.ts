@@ -1,58 +1,43 @@
 import type { ID } from "./_models"
 import type { Examens } from "./examens"
-import {type Conducteur } from "./patientsModels"
+import type { Conducteur } from "./patientsModels"
 
+// Types exacts pour les choix
+export type AddictionType = "TABAGISME" | "ALCOOL" | "TELEPHONE" | "OTHER"
+export type FamilialType = "CECITE" | "GPAO" | "GLAUCOME" | "OTHER"
+export type DommageType =  "MODERE" | "IMPORTANT"
+export type EtatConducteurType = "ACTIF" | "INACTIF" | "DECEDE" | "PERTE_DE_VUE"
 
 export interface Antecedent {
-  id: ID
+  id?: ID
   antecedents_medico_chirurgicaux: string
   pathologie_ophtalmologique: string
   addiction: boolean
-  type_addiction?: "TABAGISME" | "ALCOOL" | "TELEPHONE" | "OTHER"
+  type_addiction: AddictionType[]
   autre_addiction_detail?: string
   tabagisme_detail?: string
-  familial?: "CECITE" | "GPAO" | "OTHER"
+  familial: FamilialType[]
   autre_familial_detail?: string
   patient?: ID
 }
 
 export type DriverExperience = {
-  id?: ID
+  id?: number | null
   patient?: ID
-  visite: number
-  km_parcourus: number
-  nombre_accidents: number
-  tranche_horaire: string
-  dommage: "CORPOREL" | "MATERIEL"
-  degat: "IMPORTANT" | "MODERE" | "LEGER"
-  date_visite?: string
+  visite?: number
+  etat_conducteur: "ACTIF" | "INACTIF" | "DECEDE" | "PERTE_DE_VUE"
+  deces_cause?: string | null
+  inactif_cause?: string | null
+  km_parcourus?: number | null
+  nombre_accidents?: number | null
+  tranche_horaire?: string | null
+  corporel_dommage: boolean
+  corporel_dommage_type?: "LEGER" | "MODERE" | "IMPORTANT" | null
+  materiel_dommage: boolean
+  materiel_dommage_type?: "LEGER" | "MODERE" | "IMPORTANT" | null
+  date_visite?: string | null
+  date_dernier_accident?: string | null
 }
-
-// export const initialAntecedent: Antecedent = {
-//   id: 0,
-//   antecedents_medico_chirurgicaux: "",
-//   pathologie_ophtalmologique: "",
-//   addiction: false,
-//   type_addiction: "",
-//   autre_addiction_detail: "",
-//   tabagisme_detail: "",
-//   familial: "",
-//   autre_familial_detail: "",
-//   patient: 0,
-// }
-
-
-// export const initialDriverExperience: DriverExperience = {
-//   id: 0,
-//   visite: 0,
-//   km_parcourus: null,
-//   nombre_accidents: 0,
-//   tranche_horaire: "",
-//   dommage: "",
-//   degat: "",
-//   date_visite: "",
-//   patient: 0,
-// }
 
 export interface HealthRecord {
   id: ID
@@ -63,24 +48,35 @@ export interface HealthRecord {
   patient: Conducteur
 }
 
-// export const initialHealthRecord: HealthRecord = {
-//   id: 0,
-//   antecedant: initialAntecedent,
-//   driver_experience: [],
-//   examens: [],
-//   risky_patient: false,
-//   patient: initConducteur,
-// }
-
+// Valeurs par défaut pour un antécédent
 export const defaultAntecedentValues: Antecedent = {
   id: 0,
-  antecedents_medico_chirurgicaux:'',
-  pathologie_ophtalmologique:'',
+  antecedents_medico_chirurgicaux: '',
+  pathologie_ophtalmologique: '',
   addiction: false,
-  type_addiction: undefined,
-  autre_addiction_detail:undefined,
-  tabagisme_detail:undefined,
-  familial: undefined,
-  autre_familial_detail:undefined,
+  type_addiction: [],
+  autre_addiction_detail: '',
+  tabagisme_detail: '',
+  familial: [],
+  autre_familial_detail: '',
   patient: undefined,
+}
+
+// Valeurs par défaut pour une expérience de conduite
+export const defaultDriverExperienceValues: DriverExperience = {
+  id: null,
+  patient: null,
+  visite: undefined,
+  etat_conducteur: "ACTIF",
+  deces_cause: null,
+  inactif_cause: null,
+  km_parcourus: null,
+  nombre_accidents: null,
+  tranche_horaire: null,
+  corporel_dommage: false,
+  corporel_dommage_type: null,
+  materiel_dommage: false,
+  materiel_dommage_type: null,
+  date_visite: undefined,
+  date_dernier_accident: undefined,
 }

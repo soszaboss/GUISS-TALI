@@ -1,4 +1,3 @@
-# tests/services/test_examen_services.py
 import pytest
 from django.core.exceptions import ValidationError
 from services.examens import (
@@ -26,8 +25,6 @@ from utils.models.choices import VisiteChoices
 
 @pytest.mark.django_db
 class TestExamenService:
-    """Tests pour ExamenService"""
-
     def test_create_examen_success(self):
         patient = ConducteurFactory()
         examen = ExamenService.create_examen(patient, VisiteChoices.FIRST)
@@ -42,11 +39,8 @@ class TestExamenService:
 
     def test_get_or_create_examen(self):
         patient = ConducteurFactory()
-        # Premier appel - création
         examen, created = ExamenService.get_or_create_examen(patient, VisiteChoices.FIRST)
         assert created is True
-        
-        # Deuxième appel - récupération
         same_examen, created = ExamenService.get_or_create_examen(patient, VisiteChoices.FIRST)
         assert created is False
         assert examen.id == same_examen.id
@@ -58,8 +52,6 @@ class TestExamenService:
 
 @pytest.mark.django_db
 class TestTechnicalExamenService:
-    """Tests pour TechnicalExamenService"""
-
     def test_init_technical_examen_new(self):
         examen = ExamensFactory()
         technical_examen = TechnicalExamenService.init_technical_examen(examen.id)
@@ -76,12 +68,12 @@ class TestTechnicalExamenService:
     def test_update_visual_acuity_create(self):
         technical_examen = TechnicalExamenFactory()
         data = {
-            'avsc_od': '1.234',
-            'avsc_og': '2.345',
-            'avsc_odg': '0.345',
-            'avac_od': '3.456',
-            'avac_og': '4.567',
-            'avac_odg': '8.567'
+            'avsc_od': 1.234,
+            'avsc_og': 2.345,
+            'avsc_odg': 0.345,
+            'avac_od': 3.456,
+            'avac_og': 4.567,
+            'avac_odg': 8.567
         }
         va = TechnicalExamenService.update_visual_acuity(technical_examen.id, data)
         assert float(va.avsc_od) == 1.234
@@ -89,56 +81,31 @@ class TestTechnicalExamenService:
         assert technical_examen.visual_acuity == va
 
     def test_update_visual_acuity_update(self):
-        va = VisualAcuityFactory(avsc_od='0.0')
+        va = VisualAcuityFactory(avsc_od=0.0)
         technical_examen = TechnicalExamenFactory(visual_acuity=va)
-        data = {'avsc_od': '1.234'}
+        data = {'avsc_od': 1.234}
         updated_va = TechnicalExamenService.update_visual_acuity(technical_examen.id, data)
         assert float(updated_va.avsc_od) == 1.234
         assert updated_va.id == va.id
 
     def test_complete_technical_examen(self):
-        # Cas incomplet
         technical_examen = TechnicalExamenFactory()
         with pytest.raises(ValidationError):
             technical_examen.visual_acuity.delete()
             technical_examen.save()
-            result = TechnicalExamenService.complete_technical_examen(technical_examen.id)
-
-        # Cas complet
+            TechnicalExamenService.complete_technical_examen(technical_examen.id)
         technical_examen = TechnicalExamenFactory()
         result = TechnicalExamenService.complete_technical_examen(technical_examen.id)
         assert result.is_completed is True
 
 @pytest.mark.django_db
 class TestClinicalExamenService:
-    """Tests pour ClinicalExamenService"""
-
     def test_init_clinical_examen_new(self):
         examen = ExamensFactory()
         clinical_examen = ClinicalExamenService.init_clinical_examen(examen.id)
         assert clinical_examen is not None
         examen.refresh_from_db()
         assert examen.clinical_examen == clinical_examen
-
-    # def test_create_plaintes_success(self):
-    #     clinical_examen = ClinicalExamenFactory()
-    #     data = {
-    #         'od':{
-    #             'eye_symptom': 'BAV',
-    #             'diplopie': False
-    #         },
-    #         'og':{
-    #         'eye_symptom': 'AUCUN',
-    #         'diplopie': False
-    #         }
-    #     }
-    #     clinical_examen.og.delete()
-    #     clinical_examen.od.delete()
-    #     plaintes = ClinicalExamenService.create_plaintes(clinical_examen.id, data)
-    #     assert plaintes.od_symptom == 'BAV'
-    #     clinical_examen.refresh_from_db()
-    #     assert clinical_examen.og.plaintes == plaintes
-    #     assert clinical_examen.od.plaintes == plaintes
 
     def test_create_plaintes_already_exists(self):
         clinical_examen = ClinicalExamenFactory(og=EyeSideFactory(), od=EyeSideFactory())
@@ -148,25 +115,21 @@ class TestClinicalExamenService:
     def test_update_segment_anterior_create(self):
         eye_side = EyeSideFactory()
         data = {
-            'cornee': 'Normal',
-            'pupille': 'Normal'
+            'cornee': 'NORMAL',
+            'pupille': 'NORMAL'
         }
         segment = ClinicalExamenService.update_segment_anterior(eye_side.id, data)
-        assert segment.cornee == 'Normal'
+        assert segment.cornee == 'NORMAL'
         eye_side.refresh_from_db()
         assert eye_side.bp_sg_anterieur == segment
 
     def test_complete_clinical_examen(self):
-
-        # Cas complet
         clinical_examen = ClinicalExamenFactory()
         result = ClinicalExamenService.complete_clinical_examen(clinical_examen.id)
         assert result.is_completed is True
 
 @pytest.mark.django_db
 class TestConclusionService:
-    """Tests pour ConclusionService"""
-
     def test_update_conclusion_create(self):
         clinical_examen = ClinicalExamenFactory()
         data = {
@@ -279,7 +242,6 @@ class TestClinicalExamenServiceExtras:
         data = {
             'segment': 'NORMAL',
             'vitre': 'NORMAL',
-            'retine': 1.0,
             'papille': 'NORMALE',
             'macula': 'NORMAL',
             'retinien_peripherique': 'NORMAL',
@@ -289,7 +251,6 @@ class TestClinicalExamenServiceExtras:
         assert seg.macula == 'NORMAL'
         eye_side.refresh_from_db()
         assert eye_side.bp_sg_posterieur == seg
-
 
     def test_update_segment_posterior_update(self):
         seg = BiomicroscopySegmentPosterieurFactory(macula='ALTÉRÉ')

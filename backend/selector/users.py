@@ -1,5 +1,9 @@
 from typing import Optional, List, Dict, Any
+
 from apps.users.models import User, Profile
+
+from django.db.models import Count
+
 
 
 def user_get(*, user_id: int) -> Optional[User]:
@@ -38,3 +42,28 @@ def profile_list(*, filters: Optional[Dict[str, Any]] = None) -> List[Profile]:
         qs = qs.filter(city__iexact=city)
 
     return qs
+
+def get_user_kpis():
+    return {
+        "total_users": User.objects.count(),
+        "admins": User.objects.filter(role="admin").count(),
+        "doctors": User.objects.filter(role="doctor").count(),
+        "technicians": User.objects.filter(role="technician").count(),
+        "employees": User.objects.filter(role="employee").count(),
+        "active_users": User.objects.filter(is_active=True).count(),
+        "inactive_users": User.objects.filter(is_active=False).count(),
+    }
+
+def get_user_roles_distribution():
+    return list(
+        User.objects.values("role").annotate(count=Count("id")).order_by("-count")
+    )
+
+def get_users_created_per_month():
+    from django.db.models.functions import TruncMonth
+    return list(
+        User.objects.annotate(month=TruncMonth("created"))
+        .values("month")
+        .annotate(count=Count("id"))
+        .order_by("month")
+    )

@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
+ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TechnicalExam } from "./TechnicalExam"
-import { ClinicalExam } from "./ClinicalExam"
 import { DrivingExperience } from "./DrivingExperience"
 import { useAuth } from "@/hooks/auth/Auth"
-import type { Antecedent as AntecedentModel, DriverExperience} from "@/types/medicalRecord"
-import { defaultClinicalExamValues, type ClinicalExamen } from "@/types/examensClinic"
-import { initTechnicalData, type TechnicalExamen } from "@/types/examenTechniques"
+import { defaultDriverExperienceValues, type Antecedent as AntecedentModel, type DriverExperience} from "@/types/medicalRecord"
+import { initialClinicalExamen, type ClinicalExamen } from "@/types/examensClinic"
+import { initialTechnicalExamen, type TechnicalExamen } from "@/types/examenTechniques"
+import { ClinicalExam } from "./ClinicalExam"
 
 type extraProps = {
   patientID?: number
@@ -29,14 +28,14 @@ export function MedicalVisit({ extra, driving_experience, technical_examen, clin
   const [activeTab, setActiveTab] = useState("driving")
 
   // États pour chaque sous-formulaire (adapte selon ta structure)
-  const [technicalData] = useState(technical_examen || initTechnicalData)
-  const [clinicalData] = useState(clinical_examen || defaultClinicalExamValues)
-  const [drivingData] = useState(driving_experience || undefined)
+  const [technicalData] = useState(technical_examen || initialTechnicalExamen)
+  const [clinicalData] = useState(clinical_examen || initialClinicalExamen)
+  const [drivingData] = useState(driving_experience || defaultDriverExperienceValues)
 
   // États pour l'édition et le statut d'enregistrement
-  const canEditTechnical = role === "technician" || role === "admin"
-  const canEditClinical = role === "doctor" || role === "admin"
-  const canEditDriving = role === "doctor" || role === "admin"
+  const canEditTechnical = role === "employee" || role === "technician"
+  const canEditClinical = role === "employee" || role === "doctor"
+  const canEditDriving = role === "employee" || role === "doctor"
 
 
   return (

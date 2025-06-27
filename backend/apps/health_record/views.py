@@ -13,12 +13,8 @@ from serializers.health_records import (
     HealthRecordSerializer, 
     AntecedentSerializer,
     DriverExperienceSerializer,
-    PatientMedicalHistorySerializer,
 )
 
-from selector.health_record import (
-    MedicalStatsSelector
-)
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
@@ -29,6 +25,7 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
     serializer_class = HealthRecordSerializer
     filterset_fields = ['risky_patient']
     filter_backends = [DjangoFilterBackend]
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=True, methods=['get'])
     def full_history(self, request, pk=None):
@@ -47,7 +44,7 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def sync_health_record(self, request, patient_id, visite):
         try:
-            HealthRecordService.create_or_update_health_record_with_exam_and_experience(
+            health_record = HealthRecordService.create_or_update_health_record_with_exam_and_experience(
                 patient_id=patient_id,
                 visite=visite
             )
@@ -68,16 +65,32 @@ class HealthRecordViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+    @action(detail=False, methods=['post'], url_path='set-risky')
+    def set_risky_patient(self, request):
+        patient_id = request.data.get('patient_id')
+        risky = request.data.get('risky_patient')
+        if not patient_id:
+            return Response({'detail': 'patient_id est requis'}, status=status.HTTP_400_BAD_REQUEST)
+        if risky is None:
+            return Response({'detail': 'risky_patient est requis (true ou false)'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            record = HealthRecord.objects.get(patient_id=patient_id)
+            record.risky_patient = bool(risky) if isinstance(risky, bool) else str(risky).lower() == "true"
+            record.save()
+            return Response({'status': f"Patient {'marqué' if record.risky_patient else 'démarqué'} comme à risque"}, status=status.HTTP_200_OK)
+        except HealthRecord.DoesNotExist:
+            return Response({'detail': 'Dossier médical introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
 class AntecedentViewSet(viewsets.ModelViewSet):
     queryset = Antecedent.objects.all()
     serializer_class = AntecedentSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     @action(detail=False, methods=['post'], url_path='create-for-patient')
     def create_or_update_for_patient(self, request):
         patient_id = request.data.get('patient')
         if not patient_id:
             return Response({"detail": "patient est requis"}, status=400)
-        print(request.data)
         try:
             antecedent = AntecedentService.create_or_update_antecedent(
                 patient_id=patient_id,
@@ -92,18 +105,16 @@ class AntecedentViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(antecedent)
             return Response(serializer.data, status=200)
         except Exception as e:
-            print(f"Error creating/updating antecedent: {str(e)}")
             return Response({"detail": str(e)}, status=500)
 
 class DriverExperienceViewSet(viewsets.ModelViewSet):
     queryset = DriverExperience.objects.all()
     serializer_class = DriverExperienceSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     @action(detail=False, methods=['post'], url_path='create-for-patient')
     def create_or_update_for_patient(self, request):
         patient_id = request.data.get('patient')
         visite = request.data.get('visite')
-        print(request.data)
         if not patient_id or not visite:
             return Response({"detail": "patient et visite sont requis"}, status=400)
         
@@ -121,13 +132,4 @@ class DriverExperienceViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(driver_exp)
             return Response(serializer.data, status=200)
         except Exception as e:
-            print(f"Error creating/updating driver experience: {str(e)}")
             return Response({"detail": str(e)}, status=500)
-
-class StatsAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    @extend_schema(responses={200: None})
-    def get(self, request):
-        stats = MedicalStatsSelector.get_global_medical_stats()
-        return Response(stats)

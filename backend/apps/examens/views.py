@@ -38,6 +38,7 @@ class ExamensViewSet(viewsets.ModelViewSet):
 class TechnicalExamenViewSet(viewsets.ModelViewSet):
     queryset = TechnicalExamen.objects.all()
     serializer_class = TechnicalExamenSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=['post'], url_path='create-for-examen')
     def create_for_tech_examen(self, request, examen_id=None):
@@ -62,7 +63,7 @@ class TechnicalExamenViewSet(viewsets.ModelViewSet):
 class ClinicalExamenViewSet(viewsets.ModelViewSet):
     queryset = ClinicalExamen.objects.all()
     serializer_class = ClinicalExamenSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [parsers.MultiPartParser, parsers.FormParser]
 
     def update(self, request, *args, **kwargs):
@@ -85,11 +86,8 @@ class ClinicalExamenViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-
-
 class BpSuPViewSet(viewsets.ModelViewSet):
     queryset = BpSuP.objects.all()
     serializer_class = BpSuPSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [parsers.MultiPartParser, parsers.FormParser]

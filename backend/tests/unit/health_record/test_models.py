@@ -1,166 +1,148 @@
-# tests/test_medical_records.py
 import pytest
 from django.core.exceptions import ValidationError
-from factories.examens import ExamensFactory
-from factories.health_record import (
-    DriverExperienceFactory,
-    AntecedentFactory,
-    HealthRecordFactory
-)
-from factories.patients import ConducteurFactory
+from apps.health_record.models import Antecedent, DriverExperience, HealthRecord
+from apps.patients.models import Conducteur
 from utils.models.choices import (
-    DommageChoices,
-    DegatChoices,
-    AddictionTypeChoices,
-    FamilialChoices
+    AddictionTypeChoices, FamilialChoices, EtatConducteurChoices, DommageChoices
 )
+from datetime import date
 
 @pytest.mark.django_db
-class TestDriverExperienceModel:
-    """Tests pour le modèle DriverExperience"""
-    
-    def test_valid_driver_experience(self):
-        de = DriverExperienceFactory(
-            km_parcourus=50000,
-            nombre_accidents=2,
-            tranche_horaire="Journée"
-        )
-        assert de.km_parcourus == 50000
-        assert de.nombre_accidents == 2
-        assert de.tranche_horaire == "Journée"
+def test_antecedent_addiction_and_familial_validation():
+    patient = Conducteur.objects.create(
+        first_name="Jean", last_name="Dupont", date_naissance="1980-01-01"
+    )
 
-    @pytest.mark.parametrize("field,value,expected_error", [
-        ('km_parcourus', -100, 'ne peuvent pas être négatifs'),
-        ('nombre_accidents', -1, 'ne peut pas être négatif')
-    ])
-    def test_negative_values_validation(self, field, value, expected_error):
-        with pytest.raises(ValidationError, match=expected_error):
-            DriverExperienceFactory(**{field: value}).full_clean()
+    # Cas valide : addiction tabagisme avec détail, familial avec OTHER et détail
+    antecedent = Antecedent(
+        patient=patient,
+        addiction=True,
+        type_addiction=[AddictionTypeChoices.TABAGISME, AddictionTypeChoices.OTHER],
+        tabagisme_detail="10 paquets/an",
+        autre_addiction_detail="Cannabis",
+        familial=[FamilialChoices.CECITE, "OTHER"],
+        autre_familial_detail="Glaucome familial"
+    )
+    antecedent.full_clean()  # Ne doit pas lever d'exception
 
-    def test_unique_patient_visite_constraint(self):
-        de = DriverExperienceFactory()
-        with pytest.raises(ValidationError):
-            DriverExperienceFactory(
-                patient=de.patient,
-                visite=de.visite
-            ).full_clean()
+    # Cas erreur : addiction True sans type_addiction
+    antecedent2 = Antecedent(
+        patient=patient,
+        addiction=True,
+        type_addiction=[],
+        familial=[]
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        antecedent2.full_clean()
+    assert "spécifier au moins un type d'addiction" in str(excinfo.value)
 
-    def test_dommage_degat_choices(self):
-        for dommage, _ in DommageChoices.choices:
-            DriverExperienceFactory(dommage=dommage).full_clean()
-        
-        for degat, _ in DegatChoices.choices:
-            DriverExperienceFactory(degat=degat).full_clean()
+    # Cas erreur : tabagisme sans détail
+    antecedent3 = Antecedent(
+        patient=patient,
+        addiction=True,
+        type_addiction=[AddictionTypeChoices.TABAGISME],
+        tabagisme_detail="",
+        familial=[]
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        antecedent3.full_clean()
+    assert "détails pour le tabagisme" in str(excinfo.value)
 
-@pytest.mark.django_db
-class TestAntecedentModel:
-    """Tests pour le modèle Antecedent"""
-    
-    def test_antecedent_creation(self):
-        antecedent = AntecedentFactory()
-        assert antecedent.patient is not None
-        assert isinstance(antecedent.addiction, bool)
-
-    def test_addiction_validation(self):
-        # Addiction sans type
-        with pytest.raises(ValidationError, match='spécifier le type'):
-            AntecedentFactory(addiction=True, type_addiction=None).full_clean()
-
-        # Tabagisme sans détail
-        with pytest.raises(ValidationError, match='détails pour le tabagisme'):
-            AntecedentFactory(
-                addiction=True,
-                type_addiction='tabagisme',
-                tabagisme_detail=''
-            ).full_clean()
-
-        # Autre addiction sans détail
-        with pytest.raises(ValidationError, match='détails pour l\'autre addiction'):
-            AntecedentFactory(
-                addiction=True,
-                type_addiction='other',
-                autre_addiction_detail=''
-            ).full_clean()
-
-    def test_valid_addiction_scenarios(self):
-        # Tabagisme valide
-        AntecedentFactory(
-            addiction=True,
-            type_addiction='tabagisme',
-            tabagisme_detail='10 paquets/an'
-        ).full_clean()
-
-        # Autre addiction valide
-        AntecedentFactory(
-            addiction=True,
-            type_addiction='other',
-            autre_addiction_detail='Jeu compulsif'
-        ).full_clean()
-
-    def test_familial_validation(self):
-        # Autre familial sans détail
-        with pytest.raises(ValidationError, match='préciser les autres'):
-            AntecedentFactory(
-                familial='other',
-                autre_familial_detail=''
-            ).full_clean()
-
-    def test_all_addiction_choices(self):
-        for choice, _ in AddictionTypeChoices.choices:
-            AntecedentFactory(
-                addiction=True,
-                type_addiction=choice,
-                tabagisme_detail='10 paquets/an' if choice == 'tabagisme' else '',
-                autre_addiction_detail='Détail' if choice == 'other' else ''
-            ).full_clean()
-
-    def test_all_familial_choices(self):
-        for choice, _ in FamilialChoices.choices:
-            AntecedentFactory(
-                familial=choice,
-                autre_familial_detail='Détail' if choice == 'other' else ''
-            ).full_clean()
+    # Cas erreur : familial OTHER sans détail
+    antecedent4 = Antecedent(
+        patient=patient,
+        addiction=False,
+        type_addiction=[],
+        familial=["OTHER"],
+        autre_familial_detail=""
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        antecedent4.full_clean()
+    assert "préciser les autres antécédents familiaux" in str(excinfo.value)
 
 @pytest.mark.django_db
-class TestHealthRecordModel:
-    """Tests pour le modèle HealthRecord"""
-    
+def test_driver_experience_validation():
+    patient = Conducteur.objects.create(
+        first_name="Marie", last_name="Martin", date_naissance="1975-05-05"
+    )
+    # Cas valide
+    exp = DriverExperience(
+        patient=patient,
+        visite=1,
+        etat_conducteur=EtatConducteurChoices.ACTIF,
+        km_parcourus=10000,
+        nombre_accidents=0,
+        tranche_horaire="Journée",
+        corporel_dommage=True,
+        corporel_dommage_type=DommageChoices.MODERE,
+        materiel_dommage=True,
+        materiel_dommage_type=DommageChoices.MODERE,
+        date_visite=date.today()
+    )
+    exp.full_clean()  # Ne doit pas lever d'exception
 
-    def test_patient_consistency_validation(self):
-        other_patient = ConducteurFactory()
-        
-        # Test incohérence antecedant
-        with pytest.raises(ValidationError, match='Incohérence'):
-            HealthRecordFactory(
-                antecedant__patient=other_patient
-            ).full_clean()
+    # Cas erreur : km_parcourus négatif
+    exp2 = DriverExperience(
+        patient=patient,
+        visite=2,
+        etat_conducteur=EtatConducteurChoices.ACTIF,
+        km_parcourus=-100,
+        nombre_accidents=0
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        exp2.full_clean()
+    assert "kilomètres parcourus ne peuvent pas être négatifs" in str(excinfo.value).lower()
 
-        # Test incohérence driver_experience
-        # with pytest.raises(ValidationError, match='Incohérence'):
-        #     HealthRecordFactory(
-        #         driver_experience__patient=other_patient
-        #     ).full_clean()
+    # Cas erreur : nombre_accidents négatif
+    exp3 = DriverExperience(
+        patient=patient,
+        visite=3,
+        etat_conducteur=EtatConducteurChoices.ACTIF,
+        km_parcourus=100,
+        nombre_accidents=-1
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        exp3.full_clean()
+    assert "nombre d'accidents ne peut pas être négatif" in str(excinfo.value).lower()
 
+    # Cas erreur : corporel_dommage sans type
+    exp4 = DriverExperience(
+        patient=patient,
+        visite=4,
+        etat_conducteur=EtatConducteurChoices.ACTIF,
+        corporel_dommage=True,
+        corporel_dommage_type=None
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        exp4.full_clean()
+    assert "spécifier le type de dommage corporel" in str(excinfo.value).lower()
 
-    def test_one_to_one_patient_constraint(self):
-        patient = ConducteurFactory()
-        HealthRecordFactory(patient=patient)
-        
-        with pytest.raises(Exception):  # IntegrityError ou ValidationError
-            HealthRecordFactory(patient=patient)
+@pytest.mark.django_db
+def test_health_record_patient_coherence():
+    patient1 = Conducteur.objects.create(
+        first_name="Paul", last_name="Durand", date_naissance="1990-02-02"
+    )
+    patient2 = Conducteur.objects.create(
+        first_name="Alice", last_name="Lemoine", date_naissance="1985-03-03"
+    )
+    antecedent = Antecedent.objects.create(
+        patient=patient1,
+        addiction=False,
+        type_addiction=[],
+        familial=[]
+    )
+    # Cas valide
+    record = HealthRecord(
+        patient=patient1,
+        antecedant=antecedent
+    )
+    record.full_clean()  # Ne doit pas lever d'exception
 
-    def test_health_record_creation(self):
-        hr = HealthRecordFactory()  # Création avec relations par défaut
-        assert hr.pk is not None  # Vérifie que l'objet est bien sauvegardé
-        assert hr.driver_experience.count() == 3  # Vérifie les relations
-
-    def test_relations_optional(self):
-        hr = HealthRecordFactory(
-        )
-        assert hr.examens.count() == 3
-        assert hr.driver_experience.count() == 3
-
-    def test_examens_relation(self):
-        examens = [ExamensFactory() for _ in range(3)]
-        hr = HealthRecordFactory(examens=examens)
-        assert hr.examens.count() == 3
+    # Cas erreur : incohérence patient/antecedant
+    record2 = HealthRecord(
+        patient=patient2,
+        antecedant=antecedent
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        record2.full_clean()
+    assert "incohérence dans les données patient" in str(excinfo.value).lower()

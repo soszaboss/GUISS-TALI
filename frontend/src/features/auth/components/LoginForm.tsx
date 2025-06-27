@@ -149,9 +149,10 @@ export function LoginForm() {
       <div
         className="hidden lg:block lg:w-1/2 bg-cover bg-center"
         style={{
-          backgroundImage: "url('https://i.pinimg.com/736x/db/cb/33/dbcb339d41ebda484d0a111643a69fe5.jpg')",
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('https://i.pinimg.com/736x/db/cb/33/dbcb339d41ebda484d0a111643a69fe5.jpg')`,
         }}
-      ></div>
+      >
+      </div>
     </div>
   )
 }

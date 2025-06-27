@@ -1,6 +1,7 @@
 import random
 import factory
 from factory import fuzzy
+from decimal import Decimal, ROUND_HALF_UP
 from factory.django import DjangoModelFactory, ImageField
 
 from apps.patients.models import Conducteur
@@ -21,8 +22,11 @@ from apps.examens.models import (
     Examens
 )
 from factories.patients import ConducteurFactory
-from utils.models.choices import RPM, AxeVisuel, ChambreAnterieureProfondeur, ChambreAnterieureTransparence, Cornee, Cristallin, HypotonisantValue, Iris, PositionCristallin, Pupille, QuantiteAnomalie, SegmentChoices, Symptomes, TypeAnomalie, VisiteChoices
+from utils.models.choices import RPM, AxeVisuel, ChambreAnterieureProfondeur, ChambreAnterieureTransparence, ChampRetinienPeripherique, Cornee, Cristallin, HypotonisantValue, Iris, Macula, Papille, PositionCristallin, Pupille, QuantiteAnomalie, SegmentChoices, Symptomes, TypeAnomalie, Vaisseaux, VisiteChoices, Vitre
 
+def random_decimal(min_val=-10.0, max_val=10.0, places=3):
+    value = Decimal(str(random.uniform(min_val, max_val)))
+    return value.quantize(Decimal('1.' + '0' * places), rounding=ROUND_HALF_UP)
 
 class BaseFactory(DjangoModelFactory):
     class Meta:
@@ -31,15 +35,6 @@ class BaseFactory(DjangoModelFactory):
     patient = factory.SubFactory(ConducteurFactory)
     visite = fuzzy.FuzzyChoice([v[0] for v in VisiteChoices.choices])
 
-    # @factory.post_generation
-    # def propagate_patient(self, create, extracted, **kwargs):
-    #     if not create:
-    #         return
-    #     for field in self._meta.model._meta.get_fields():
-    #         value = getattr(self, field.name, None)
-    #         if hasattr(value, "patient") and getattr(value, "patient", None) != self.patient:
-    #             value.patient = self.patient
-    #             value.save()
 
 class VisualAcuityFactory(DjangoModelFactory):
     class Meta:
@@ -56,14 +51,17 @@ class VisualAcuityFactory(DjangoModelFactory):
 class RefractionFactory(DjangoModelFactory):
     class Meta:
         model = Refraction
-    
-    od_s = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    od_c = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    od_a = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    og_s = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    og_c = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    og_a = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
-    dp = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
+
+    correction_optique = fuzzy.FuzzyChoice([True, False])
+    od_s = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    og_s = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    od_c = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    og_c = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    od_a = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    og_a = factory.LazyAttribute(lambda o: random_decimal() if o.correction_optique else None)
+    avog = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
+    avod = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
+    # dp = fuzzy.FuzzyDecimal(0.0, 10.0, precision=3)
 
 
 class PachymetryFactory(DjangoModelFactory):
@@ -72,6 +70,8 @@ class PachymetryFactory(DjangoModelFactory):
     
     od = fuzzy.FuzzyInteger(450, 600)
     og = fuzzy.FuzzyInteger(450, 600)
+    cto_od = fuzzy.FuzzyInteger(450, 600)
+    cto_og = fuzzy.FuzzyInteger(450, 600)
 
 
 # Factory pour OcularTension avec gestion du traitement hypotonisant
@@ -93,25 +93,25 @@ class OcularTensionFactory(DjangoModelFactory):
 class BiomicroscopySegmentAnterieurFactory(DjangoModelFactory):
     class Meta:
         model = BiomicroscopySegmentAnterieur
-    
-    cornee = fuzzy.FuzzyChoice([c[0] for c in Cornee.choices])
-    profondeur = fuzzy.FuzzyChoice([c[0] for c in ChambreAnterieureProfondeur.choices])
+
     segment = fuzzy.FuzzyChoice([c[0] for c in SegmentChoices.choices])
-    transparence = fuzzy.FuzzyChoice([c[0] for c in ChambreAnterieureTransparence.choices])
+    cornee = factory.LazyAttribute(lambda o: random.choice([c[0] for c in Cornee.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    profondeur = factory.LazyAttribute(lambda o: random.choice([c[0] for c in ChambreAnterieureProfondeur.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    transparence = factory.LazyAttribute(lambda o: random.choice([c[0] for c in ChambreAnterieureTransparence.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
     type_anomalie_value = factory.LazyAttribute(
         lambda o: random.choice([c[0] for c in TypeAnomalie.choices])
-        if o.transparence == ChambreAnterieureTransparence.ANORMALE else None
+        if o.segment == SegmentChoices.PRESENCE_LESION and o.transparence == ChambreAnterieureTransparence.ANORMALE else None
     )
     quantite_anomalie = factory.LazyAttribute(
         lambda o: random.choice([c[0] for c in QuantiteAnomalie.choices])
-        if o.transparence == ChambreAnterieureTransparence.ANORMALE else None
+        if o.segment == SegmentChoices.PRESENCE_LESION and o.transparence == ChambreAnterieureTransparence.ANORMALE else None
     )
-    pupille = fuzzy.FuzzyChoice([c[0] for c in Pupille.choices])
-    axe_visuel = fuzzy.FuzzyChoice([c[0] for c in AxeVisuel.choices])
-    rpm = fuzzy.FuzzyChoice([c[0] for c in RPM.choices])
-    iris = fuzzy.FuzzyChoice([c[0] for c in Iris.choices])
-    cristallin = fuzzy.FuzzyChoice([c[0] for c in Cristallin.choices])
-    position_cristallin = fuzzy.FuzzyChoice([c[0] for c in PositionCristallin.choices])
+    pupille = factory.LazyAttribute(lambda o: random.choice([c[0] for c in Pupille.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    axe_visuel = factory.LazyAttribute(lambda o: random.choice([c[0] for c in AxeVisuel.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    rpm = factory.LazyAttribute(lambda o: random.choice([c[0] for c in RPM.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    iris = factory.LazyAttribute(lambda o: random.choice([c[0] for c in Iris.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    cristallin = factory.LazyAttribute(lambda o: random.choice([c[0] for c in Cristallin.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
+    position_cristallin = factory.LazyAttribute(lambda o: random.choice([c[0] for c in PositionCristallin.choices]) if o.segment == SegmentChoices.PRESENCE_LESION else None)
 
 
 # Factory pour Plaintes avec conditions
@@ -143,13 +143,28 @@ class BiomicroscopySegmentPosterieurFactory(DjangoModelFactory):
     class Meta:
         model = BiomicroscopySegmentPosterieur
 
-    segment = 'NORMAL'
-    vitre = 'NORMAL'
-    retine = 1.0
-    papille = 'NORMALE'
-    macula = 'NORMAL'
-    retinien_peripherique = 'NORMAL'
-    vaissaux = 'NORMAUX'
+    segment = fuzzy.FuzzyChoice([c[0] for c in SegmentChoices.choices])
+    vitre = fuzzy.FuzzyChoice([c[0] for c in Vitre.choices])
+    papille = fuzzy.FuzzyChoice([c[0] for c in Papille.choices])
+    macula = fuzzy.FuzzyChoice([c[0] for c in Macula.choices])
+    retinien_peripherique = fuzzy.FuzzyChoice([c[0] for c in ChampRetinienPeripherique.choices])
+    vaissaux = fuzzy.FuzzyChoice([c[0] for c in Vaisseaux.choices])
+    cd_od = fuzzy.FuzzyDecimal(0.0, 10.0, precision=1)
+    cd_og = fuzzy.FuzzyDecimal(0.0, 10.0, precision=1)
+    observation = factory.Faker('sentence', nb_words=8)
+
+
+class ConclusionFactory(DjangoModelFactory):
+    class Meta:
+        model = Conclusion
+
+    vision = fuzzy.FuzzyChoice(['compatible', 'incompatible', 'a_risque'])
+    cat = factory.Faker('sentence', nb_words=6)
+    traitement = factory.Faker('sentence', nb_words=6)
+    observation = factory.Faker('sentence', nb_words=8)
+    rv = fuzzy.FuzzyChoice([True, False])
+    diagnostic_cim_10 = factory.Faker('bothify', text='CIM-10-###??')
+
 
 class BpSuPFactory(DjangoModelFactory):
     class Meta:
@@ -159,6 +174,7 @@ class BpSuPFactory(DjangoModelFactory):
     oct = ImageField(filename='oct.jpg')
     autres = ImageField(filename='autres.jpg')
 
+
 class EyeSideFactory(DjangoModelFactory):
     class Meta:
         model = EyeSide
@@ -166,6 +182,7 @@ class EyeSideFactory(DjangoModelFactory):
     plaintes = factory.SubFactory(PlaintesFactory)
     bp_sg_anterieur = factory.SubFactory(BiomicroscopySegmentAnterieurFactory)
     bp_sg_posterieur = factory.SubFactory(BiomicroscopySegmentPosterieurFactory)
+
 
 class PerimetryFactory(DjangoModelFactory):
     class Meta:
@@ -181,15 +198,6 @@ class PerimetryFactory(DjangoModelFactory):
     image = ImageField(filename='perimetry.jpg')
     images = ImageField(filename='perimetry_data.zip')
 
-class ConclusionFactory(DjangoModelFactory):
-    class Meta:
-        model = Conclusion
-    
-    vision = 'compatible'
-    cat = factory.Faker('text', max_nb_chars=200)
-    traitement = factory.Faker('text', max_nb_chars=200)
-    observation = factory.Faker('text', max_nb_chars=200)
-    rv = True
 
 class TechnicalExamenFactory(BaseFactory):
     class Meta:
@@ -201,6 +209,7 @@ class TechnicalExamenFactory(BaseFactory):
     pachymetry = factory.SubFactory(PachymetryFactory)
     is_completed = True
 
+
 class ClinicalExamenFactory(BaseFactory):
     class Meta:
         model = ClinicalExamen
@@ -211,6 +220,7 @@ class ClinicalExamenFactory(BaseFactory):
     od = factory.SubFactory(EyeSideFactory)
     bp_sup = factory.SubFactory(BpSuPFactory)
     is_completed = True
+
 
 class ExamensFactory(BaseFactory):
     class Meta:

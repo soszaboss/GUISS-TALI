@@ -16,135 +16,220 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { choicesMap } from "@/helpers/choicesMap"
-import { defaultClinicalExamValues } from "@/types/examensClinic"
+import { choicesMap } from "@/helpers/ChoicesMap"
+import { initialClinicalExamen } from "@/types/examensClinic"
 
-// Schéma Zod corrigé pour correspondre à l'API et aux types
 const clinicalExamSchema = z.object({
   id: z.any().optional().nullable(),
   perimetry: z.object({
     pbo: z.string().min(1, "Veuillez sélectionner une valeur pour le champ PBO"),
-    limite_superieure: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite supérieure" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite supérieure" }),
-    limite_inferieure: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite inférieure" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite inférieure" }),
-    limite_temporale_droit: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite temporale droite" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite temporale droite" }),
-    limite_temporale_gauche: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite temporale gauche" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite temporale gauche" }),
-    limite_horizontal: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour la limite horizontale" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la limite horizontale" }),
-    score_esternmen: z.preprocess(
-      val => val === "" ? undefined : Number(val),
-      z.number({ invalid_type_error: "Veuillez insérer une valeur pour le score d'Esterman" })
-    ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour le score d'Esterman" }),
-    image: z.union([z.string(), z.instanceof(File)]).optional(),
-    images: z.union([z.string(), z.instanceof(File)]).optional(),
-  }),
+    limite_superieure: z.coerce.number().nullable().optional(),
+    limite_inferieure: z.coerce.number().nullable().optional(),
+    limite_temporale_droit: z.coerce.number().nullable().optional(),
+    limite_temporale_gauche: z.coerce.number().nullable().optional(),
+    limite_horizontal: z.coerce.number().nullable().optional(),
+    score_esternmen: z.coerce.number().nullable().optional(),
+    image: z.union([z.string(), z.instanceof(File)]).nullable().optional(),
+    images: z.union([z.string(), z.instanceof(File)]).nullable().optional(),
+  }).optional(),
   bp_sup: z.object({
-    retinographie: z.union([z.string(), z.instanceof(File)]).optional(),
-    oct: z.union([z.string(), z.instanceof(File)]).optional(),
-    autres: z.union([z.string(), z.instanceof(File)]).optional(),
-  }),
+    retinographie: z.union([z.string(), z.instanceof(File)]).nullable().optional(),
+    oct: z.union([z.string(), z.instanceof(File)]).nullable().optional(),
+    autres: z.union([z.string(), z.instanceof(File)]).nullable().optional(),
+  }).optional(),
   od: z.object({
     plaintes: z.object({
       eye_symptom: z.string().min(1, "Veuillez sélectionner un symptôme"),
-      diplopie: z.boolean(),
+      diplopie: z.boolean().nullable().optional(),
       diplopie_type: z.string().nullable().optional(),
-      strabisme: z.boolean(),
+      strabisme: z.boolean().nullable().optional(),
       strabisme_eye: z.string().nullable().optional(),
-      nystagmus: z.boolean(),
+      nystagmus: z.boolean().nullable().optional(),
       nystagmus_eye: z.string().nullable().optional(),
-      ptosis: z.boolean(),
+      ptosis: z.boolean().nullable().optional(),
       ptosis_eye: z.string().nullable().optional(),
-    }),
+    }).optional(),
     bp_sg_anterieur: z.object({
-      segment: z.string().min(1, "Veuillez sélectionner un segment"),
-      cornee: z.string().min(1, "Veuillez sélectionner une cornée"),
-      profondeur: z.string().min(1, "Veuillez sélectionner une profondeur"),
-      transparence: z.string().min(1, "Veuillez sélectionner une transparence"),
+      segment: z.string({ required_error: "Ce champ est requis" }),
+      cornee: z.string().nullable().optional(),
+      profondeur: z.string().nullable().optional(),
+      transparence: z.string().nullable().optional(),
       type_anomalie_value: z.string().nullable().optional(),
       quantite_anomalie: z.string().nullable().optional(),
-      pupille: z.string().min(1, "Veuillez sélectionner une pupille"),
-      axe_visuel: z.string().min(1, "Veuillez sélectionner un axe visuel"),
-      rpm: z.string().min(1, "Veuillez sélectionner un RPM"),
-      iris: z.string().min(1, "Veuillez sélectionner un iris"),
-      cristallin: z.string().min(1, "Veuillez sélectionner un cristallin"),
-      position_cristallin: z.string().min(1, "Veuillez sélectionner une position du cristallin"),
-    }),
+      pupille: z.string().nullable().optional(),
+      axe_visuel: z.string().nullable().optional(),
+      rpm: z.string().nullable().optional(),
+      iris: z.string().nullable().optional(),
+      cristallin: z.string().nullable().optional(),
+      position_cristallin: z.string().nullable().optional(),
+    }).superRefine((data, ctx) => {
+      if (data.segment === "PRESENCE_LESION") {
+        [
+          "cornee",
+          "profondeur",
+          "transparence",
+          "pupille",
+          "axe_visuel",
+          "rpm",
+          "iris",
+          "cristallin",
+          "position_cristallin"
+        ].forEach(field => {
+          if (!(data as Record<string, unknown>)[field]) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Champ ${field} requis`,
+              path: [field],
+            })
+          }
+        })
+        if (data.transparence === "ANORMALE") {
+          if (!data.type_anomalie_value) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Type anomalie requis", path: ["type_anomalie_value"] })
+          if (!data.quantite_anomalie) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Quantité anomalie requise", path: ["quantite_anomalie"] })
+        }
+      }
+    }).optional(),
     bp_sg_posterieur: z.object({
-      segment: z.string().min(1, "Veuillez sélectionner un segment"),
-      vitre: z.string().min(1, "Veuillez sélectionner un vitré"),
-      retine: z.preprocess(
-        val => val === "" ? undefined : Number(val),
-        z.number({ invalid_type_error: "Veuillez insérer une valeur pour la rétine" })
-      ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la rétine" }),
-      papille: z.string().min(1, "Veuillez sélectionner une papille"),
-      macula: z.string().min(1, "Veuillez sélectionner une macula"),
-      retinien_peripherique: z.string().min(1, "Veuillez sélectionner un champ rétinien périphérique"),
-      vaissaux: z.string().min(1, "Veuillez sélectionner des vaisseaux"),
-    }),
-  }),
+      segment: z.string({ required_error: "Ce champ est requis" }),
+      vitre: z.string().nullable().optional(),
+      papille: z.string().nullable().optional(),
+      macula: z.string().nullable().optional(),
+      retinien_peripherique: z.string().nullable().optional(),
+      vaissaux: z.string().nullable().optional(),
+      cd_od: z.coerce.number().nullable().optional(),
+      cd_og: z.coerce.number().nullable().optional(),
+      observation: z.string().nullable().optional(),
+    }).superRefine((data, ctx) => {
+      if (data.segment === "PRESENCE_LESION") {
+        [
+          "vitre",
+          "papille",
+          "macula",
+          "retinien_peripherique",
+          "vaissaux",
+          "cd_od",
+          "cd_og",
+          "observation"
+        ].forEach(field => {
+          const value = (data as Record<string, unknown>)[field];
+          if (
+            (typeof value === "string" && !value) ||
+            (typeof value === "number" && (value === null || value === undefined))
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Champ ${field} requis`,
+              path: [field],
+            })
+          }
+        })
+      }
+    }).optional(),
+  }).optional(),
   og: z.object({
     plaintes: z.object({
       eye_symptom: z.string().min(1, "Veuillez sélectionner un symptôme"),
-      diplopie: z.boolean(),
+      diplopie: z.boolean().nullable().optional(),
       diplopie_type: z.string().nullable().optional(),
-      strabisme: z.boolean(),
+      strabisme: z.boolean().nullable().optional(),
       strabisme_eye: z.string().nullable().optional(),
-      nystagmus: z.boolean(),
+      nystagmus: z.boolean().nullable().optional(),
       nystagmus_eye: z.string().nullable().optional(),
-      ptosis: z.boolean(),
+      ptosis: z.boolean().nullable().optional(),
       ptosis_eye: z.string().nullable().optional(),
-    }),
+    }).optional(),
     bp_sg_anterieur: z.object({
-      segment: z.string().min(1, "Veuillez sélectionner un segment"),
-      cornee: z.string().min(1, "Veuillez sélectionner une cornée"),
-      profondeur: z.string().min(1, "Veuillez sélectionner une profondeur"),
-      transparence: z.string().min(1, "Veuillez sélectionner une transparence"),
+      segment: z.string({ required_error: "Ce champ est requis" }),
+      cornee: z.string().nullable().optional(),
+      profondeur: z.string().nullable().optional(),
+      transparence: z.string().nullable().optional(),
       type_anomalie_value: z.string().nullable().optional(),
       quantite_anomalie: z.string().nullable().optional(),
-      pupille: z.string().min(1, "Veuillez sélectionner une pupille"),
-      axe_visuel: z.string().min(1, "Veuillez sélectionner un axe visuel"),
-      rpm: z.string().min(1, "Veuillez sélectionner un RPM"),
-      iris: z.string().min(1, "Veuillez sélectionner un iris"),
-      cristallin: z.string().min(1, "Veuillez sélectionner un cristallin"),
-      position_cristallin: z.string().min(1, "Veuillez sélectionner une position du cristallin"),
-    }),
+      pupille: z.string().nullable().optional(),
+      axe_visuel: z.string().nullable().optional(),
+      rpm: z.string().nullable().optional(),
+      iris: z.string().nullable().optional(),
+      cristallin: z.string().nullable().optional(),
+      position_cristallin: z.string().nullable().optional(),
+    }).superRefine((data, ctx) => {
+      if (data.segment === "PRESENCE_LESION") {
+        [
+          "cornee",
+          "profondeur",
+          "transparence",
+          "pupille",
+          "axe_visuel",
+          "rpm",
+          "iris",
+          "cristallin",
+          "position_cristallin"
+        ].forEach(field => {
+          if (!(data as Record<string, unknown>)[field]) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Champ ${field} requis`,
+              path: [field],
+            })
+          }
+        })
+        if (data.transparence === "ANORMALE") {
+          if (!data.type_anomalie_value) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Type anomalie requis", path: ["type_anomalie_value"] })
+          if (!data.quantite_anomalie) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Quantité anomalie requise", path: ["quantite_anomalie"] })
+        }
+      }
+    }).optional(),
     bp_sg_posterieur: z.object({
-      segment: z.string().min(1, "Veuillez sélectionner un segment"),
-      vitre: z.string().min(1, "Veuillez sélectionner un vitré"),
-      retine: z.preprocess(
-        val => val === "" ? undefined : Number(val),
-        z.number({ invalid_type_error: "Veuillez insérer une valeur pour la rétine" })
-      ).refine(val => !isNaN(val), { message: "Veuillez insérer une valeur pour la rétine" }),
-      papille: z.string().min(1, "Veuillez sélectionner une papille"),
-      macula: z.string().min(1, "Veuillez sélectionner une macula"),
-      retinien_peripherique: z.string().min(1, "Veuillez sélectionner un champ rétinien périphérique"),
-      vaissaux: z.string().min(1, "Veuillez sélectionner des vaisseaux"),
-    }),
-  }),
+      segment: z.string({ required_error: "Ce champ est requis" }),
+      vitre: z.string().nullable().optional(),
+      papille: z.string().nullable().optional(),
+      macula: z.string().nullable().optional(),
+      retinien_peripherique: z.string().nullable().optional(),
+      vaissaux: z.string().nullable().optional(),
+      cd_od: z.coerce.number().nullable().optional(),
+      cd_og: z.coerce.number().nullable().optional(),
+      observation: z.string().nullable().optional(),
+    }).superRefine((data, ctx) => {
+      if (data.segment === "PRESENCE_LESION") {
+        [
+          "vitre",
+          "papille",
+          "macula",
+          "retinien_peripherique",
+          "vaissaux",
+          "cd_od",
+          "cd_og",
+          "observation"
+        ].forEach(field => {
+          const value = (data as Record<string, unknown>)[field];
+          if (
+            (typeof value === "string" && !value) ||
+            (typeof value === "number" && (value === null || value === undefined))
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Champ ${field} requis`,
+              path: [field],
+            })
+          }
+        })
+      }
+    }).optional(),
+  }).optional(),
   conclusion: z.object({
-    vision: z.enum(["compatible", "incompatible", "a_risque"], {
-      required_error: "Veuillez sélectionner une compatibilité de la vision"
-    }).nullable(),
-    cat: z.string().nullable(),
-    traitement: z.string().nullable(),
-    observation: z.string().nullable(),
-    rv: z.boolean(),
-  }),
-});
-// Helper pour accéder aux erreurs imbriquées
+    vision: z.enum(["compatible", "incompatible", "a_risque"]).nullable().optional(),
+    cat: z.string().nullable().optional(),
+    traitement: z.string().nullable().optional(),
+    observation: z.string().nullable().optional(),
+    rv: z.boolean().nullable().optional().default(false),
+    diagnostic_cim_10: z.string().nullable().optional(),
+  }).optional(),
+  visite: z.number().nullable().optional(),
+  is_completed: z.boolean().nullable().optional(),
+  patient: z.number().nullable().optional(),
+  created: z.string().nullable().optional(),
+  modified: z.string().nullable().optional(),
+})
+
 function getError(errors: any, path: string) {
   return path.split('.').reduce((acc, key) => acc?.[key], errors)
 }
@@ -175,17 +260,96 @@ export function ClinicalExam({
     formState: { isSubmitting, errors },
     reset,
   } = useForm({
-    defaultValues: clinicalData ?? defaultClinicalExamValues,
+    defaultValues: clinicalData ?? initialClinicalExamen,
     resolver: zodResolver(clinicalExamSchema),
     mode: "onTouched",
     reValidateMode: "onChange",
   })
 
   React.useEffect(() => {
-  if (clinicalData) {
-    reset(clinicalData)
-  }
-}, [clinicalData, reset])
+    if (clinicalData) {
+      reset(clinicalData)
+    }
+  }, [clinicalData, reset])
+
+  // Nettoyage automatique des champs dépendants
+  const odDiplopie = watch("od.plaintes.diplopie");
+  const odStrabisme = watch("od.plaintes.strabisme");
+  const odNystagmus = watch("od.plaintes.nystagmus");
+  const odPtosis = watch("od.plaintes.ptosis");
+  const ogDiplopie = watch("og.plaintes.diplopie");
+  const ogStrabisme = watch("og.plaintes.strabisme");
+  const ogNystagmus = watch("og.plaintes.nystagmus");
+  const ogPtosis = watch("og.plaintes.ptosis");
+  const odSegment = watch("od.bp_sg_anterieur.segment");
+  const odTransparence = watch("od.bp_sg_anterieur.transparence");
+  const ogSegment = watch("og.bp_sg_anterieur.segment");
+  const ogTransparence = watch("og.bp_sg_anterieur.transparence");
+  const bpSgPosterieurOdSegment = watch("od.bp_sg_posterieur.segment");
+  const bpSgPosterieurOgSegment = watch("og.bp_sg_posterieur.segment");
+
+  React.useEffect(() => {
+    ["od", "og"].forEach((eye) => {
+      const diplopie = watch(`${eye}.plaintes.diplopie`)
+      const strabisme = watch(`${eye}.plaintes.strabisme`)
+      const nystagmus = watch(`${eye}.plaintes.nystagmus`)
+      const ptosis = watch(`${eye}.plaintes.ptosis`)
+      if (!diplopie) setValue(`${eye}.plaintes.diplopie_type`, "")
+      if (!strabisme) setValue(`${eye}.plaintes.strabisme_eye`, "")
+      if (!nystagmus) setValue(`${eye}.plaintes.nystagmus_eye`, "")
+      if (!ptosis) setValue(`${eye}.plaintes.ptosis_eye`, "")
+  
+      const segment = watch(`${eye}.bp_sg_anterieur.segment`)
+      const bpSgPosterieurSegment = watch(`${eye}.bp_sg_posterieur.segment`)
+      const transparence = watch(`${eye}.bp_sg_anterieur.transparence`)
+      if (segment !== "PRESENCE_LESION") {
+        setValue(`${eye}.bp_sg_anterieur.cornee`, "")
+        setValue(`${eye}.bp_sg_anterieur.profondeur`, "")
+        setValue(`${eye}.bp_sg_anterieur.transparence`, "")
+        setValue(`${eye}.bp_sg_anterieur.type_anomalie_value`, "")
+        setValue(`${eye}.bp_sg_anterieur.quantite_anomalie`, "")
+        setValue(`${eye}.bp_sg_anterieur.pupille`, "")
+        setValue(`${eye}.bp_sg_anterieur.axe_visuel`, "")
+        setValue(`${eye}.bp_sg_anterieur.rpm`, "")
+        setValue(`${eye}.bp_sg_anterieur.iris`, "")
+        setValue(`${eye}.bp_sg_anterieur.cristallin`, "")
+        setValue(`${eye}.bp_sg_anterieur.position_cristallin`, "")
+      } else {
+        if (transparence !== "ANORMALE") {
+          setValue(`${eye}.bp_sg_anterieur.type_anomalie_value`, "")
+          setValue(`${eye}.bp_sg_anterieur.quantite_anomalie`, "")
+        }
+      }
+
+      if(bpSgPosterieurSegment !== "PRESENCE_LESION") {
+        setValue(`${eye}.bp_sg_posterieur.vitre`, "")
+        setValue(`${eye}.bp_sg_posterieur.papille`, "")
+        setValue(`${eye}.bp_sg_posterieur.macula`, "")
+        setValue(`${eye}.bp_sg_posterieur.retinien_peripherique`, "")
+        setValue(`${eye}.bp_sg_posterieur.vaissaux`, "")
+        setValue(`${eye}.bp_sg_posterieur.cd_od`, null)
+        setValue(`${eye}.bp_sg_posterieur.cd_og`, null)
+        setValue(`${eye}.bp_sg_posterieur.observation`, "")
+      }
+    })
+  }, [
+    odDiplopie,
+    odStrabisme,
+    odNystagmus,
+    odPtosis,
+    odSegment,
+    odTransparence,
+    ogDiplopie,
+    ogStrabisme,
+    ogNystagmus,
+    ogPtosis,
+    ogSegment,
+    ogTransparence,
+    bpSgPosterieurOdSegment,
+    bpSgPosterieurOgSegment,
+    setValue,
+    watch
+  ])
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -216,11 +380,59 @@ export function ClinicalExam({
   })
 
   const onSubmit = (data: any) => {
-    console.log("[DEBUG] FormData envoyé pour ClinicalExamen:", data)
     mutation.mutate(data)
   }
 
   const isDisabled = !editMode
+
+  function renderEyeTabs(section: string, content: (eye: "od" | "og") => React.ReactNode) {
+    return (
+      <Tabs defaultValue="od" className="w-full">
+        <TabsList>
+          <TabsTrigger value="od">OD (œil droit)</TabsTrigger>
+          <TabsTrigger value="og">OG (œil gauche)</TabsTrigger>
+        </TabsList>
+        <TabsContent value="od">{content("od")}</TabsContent>
+        <TabsContent value="og">{content("og")}</TabsContent>
+      </Tabs>
+    )
+  }
+
+  function renderSelect(
+    control: any,
+    name: string,
+    label: string,
+    options: { value: string; label: string }[],
+    isDisabled: boolean
+  ) {
+    return (
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <div className="space-y-2">
+            <Label>{label}</Label>
+            <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={isDisabled}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez..." />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {getError(errors, name)?.message && (
+              <span className="text-red-500 text-xs">{getError(errors, name)?.message}</span>
+            )}
+          </div>
+        )}
+      />
+    )
+  }
+
 
   // Gestion de l'aperçu des images pour bp_sup
   const handleBpSupImageChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
@@ -245,32 +457,30 @@ export function ClinicalExam({
       }))
     }
   }
+
+  const api_url = import.meta.env.VITE_APP_API_URL
+
+  // Construction du FormData pour l'API
   function buildClinicalExamFormData(data: any): FormData {
-    const formData = new FormData();
-
-    // Champs simples
-    formData.append("visite", String(data.visite));
-    formData.append("is_completed", data.is_completed ? "true" : "false");
-    formData.append("patient", String(data.patient));
-
-    // Conclusion
+    const formData = new FormData()
+    formData.append("visite", String(data.visite))
+    formData.append("is_completed", data.is_completed ? "true" : "false")
+    formData.append("patient", String(data.patient))
     if (data.conclusion) {
       Object.entries(data.conclusion).forEach(([key, value]) => {
         if (typeof value === "boolean") {
-          formData.append(`conclusion.${key}`, value ? "true" : "false");
+          formData.append(`conclusion.${key}`, value ? "true" : "false")
         } else if (value !== undefined && value !== null && typeof value !== "object") {
-          formData.append(`conclusion.${key}`, String(value));
+          formData.append(`conclusion.${key}`, String(value))
         }
-      });
+      })
     }
-
-    // Périmétrie
     if (data.perimetry) {
       Object.entries(data.perimetry).forEach(([key, value]) => {
         if (key === "image" && value instanceof File) {
-          formData.append("perimetry.image", value);
+          formData.append("perimetry.image", value)
         } else if (key === "images" && value instanceof File) {
-          formData.append("perimetry.images", value);
+          formData.append("perimetry.images", value)
         } else if (
           key !== "image" &&
           key !== "images" &&
@@ -278,110 +488,52 @@ export function ClinicalExam({
           value !== null &&
           typeof value !== "object"
         ) {
-          formData.append(`perimetry.${key}`, String(value));
+          formData.append(`perimetry.${key}`, String(value))
         }
-      });
+      })
     }
-
-    // bp_sup (examens complémentaires)
     if (data.bp_sup) {
       ["retinographie", "oct", "autres"].forEach((field) => {
-        const value = (data.bp_sup as any)[field];
+        const value = (data.bp_sup as any)[field]
         if (value instanceof File) {
-          formData.append(`bp_sup.${field}`, value);
+          formData.append(`bp_sup.${field}`, value)
         }
-        // NE RIEN ENVOYER si ce n'est pas un fichier
-      });
+      })
     }
-
-    // Pour od et og
     ["od", "og"].forEach((eye) => {
-      const eyeData = (data as any)[eye];
+      const eyeData = (data as any)[eye]
       if (eyeData) {
-        // plaintes
         if (eyeData.plaintes) {
           Object.entries(eyeData.plaintes).forEach(([key, value]) => {
             if (typeof value === "boolean") {
-              formData.append(`${eye}.plaintes.${key}`, value ? "true" : "false");
+              formData.append(`${eye}.plaintes.${key}`, value ? "true" : "false")
             } else if (value !== undefined && value !== null && typeof value !== "object") {
-              formData.append(`${eye}.plaintes.${key}`, String(value));
+              formData.append(`${eye}.plaintes.${key}`, String(value))
             }
-          });
+          })
         }
-        // bp_sg_anterieur
         if (eyeData.bp_sg_anterieur) {
           Object.entries(eyeData.bp_sg_anterieur).forEach(([key, value]) => {
             if (typeof value === "boolean") {
-              formData.append(`${eye}.bp_sg_anterieur.${key}`, value ? "true" : "false");
+              formData.append(`${eye}.bp_sg_anterieur.${key}`, value ? "true" : "false")
             } else if (value !== undefined && value !== null && typeof value !== "object") {
-              formData.append(`${eye}.bp_sg_anterieur.${key}`, String(value));
+              formData.append(`${eye}.bp_sg_anterieur.${key}`, String(value))
             }
-          });
+          })
         }
-        // bp_sg_posterieur
         if (eyeData.bp_sg_posterieur) {
           Object.entries(eyeData.bp_sg_posterieur).forEach(([key, value]) => {
             if (typeof value === "boolean") {
-              formData.append(`${eye}.bp_sg_posterieur.${key}`, value ? "true" : "false");
+              formData.append(`${eye}.bp_sg_posterieur.${key}`, value ? "true" : "false")
             } else if (value !== undefined && value !== null && typeof value !== "object") {
-              formData.append(`${eye}.bp_sg_posterieur.${key}`, String(value));
+              formData.append(`${eye}.bp_sg_posterieur.${key}`, String(value))
             }
-          });
+          })
         }
       }
-    });
-
-    return formData;
+    })
+    return formData
   }
-  // Pour l'affichage du texte RV
-  const rvValue = watch("conclusion.rv")
-  // Fonction pour rendre les onglets pour une section
-  const renderEyeTabs = (section: string, content: (eye: "od" | "og") => React.ReactNode) => (
-    <Tabs defaultValue="od" className="w-full">
-      <TabsList>
-        <TabsTrigger value="od">OD (œil droit)</TabsTrigger>
-        <TabsTrigger value="og">OG (œil gauche)</TabsTrigger>
-      </TabsList>
-      <TabsContent value="od">{content("od")}</TabsContent>
-      <TabsContent value="og">{content("og")}</TabsContent>
-    </Tabs>
-  )
-
-  // Fonction pour rendre un sélecteur avec options
-  const renderSelect = (
-    control: any,
-    name: string,
-    label: string,
-    options: { value: string; label: string }[],
-    isDisabled: boolean
-  ) => (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field }) => (
-        <div className="space-y-2">
-          <Label>{label}</Label>
-          <Select onValueChange={field.onChange} value={field.value ?? ""} disabled={isDisabled}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez..." />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {/* Affichage de l'erreur pour les selects */}
-          {getError(errors, name)?.message && (
-            <span className="text-red-500 text-xs">{getError(errors, name)?.message}</span>
-          )}
-        </div>
-      )}
-    />
-  )
-const api_url = import.meta.env.VITE_APP_API_URL
 
   return (
     <Card>
@@ -401,15 +553,7 @@ const api_url = import.meta.env.VITE_APP_API_URL
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit(
-  (data) => { 
-    console.log("SUBMIT OK", data); 
-    onSubmit(data); 
-  },
-  (errors) => {
-    console.log("SUBMIT ERRORS", errors);
-  }
-)} autoComplete="off">
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} autoComplete="off">
           {/* Plaintes */}
           <Card>
             <CardHeader>
@@ -425,7 +569,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.Symptomes,
                     isDisabled
                   )}
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Diplopie */}
                     <div className="flex items-start space-x-2">
@@ -460,7 +603,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
-                        {/* Erreur diplopie_type */}
                         {getError(errors, `${eye}.plaintes.diplopie_type`)?.message && (
                           <span className="text-red-500 text-xs">
                             {getError(errors, `${eye}.plaintes.diplopie_type`)?.message}
@@ -468,7 +610,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                         )}
                       </div>
                     </div>
-
                     {/* Strabisme */}
                     <div className="flex items-start space-x-2">
                       <Controller
@@ -503,7 +644,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
-                        {/* Erreur strabisme_eye */}
                         {getError(errors, `${eye}.plaintes.strabisme_eye`)?.message && (
                           <span className="text-red-500 text-xs">
                             {getError(errors, `${eye}.plaintes.strabisme_eye`)?.message}
@@ -511,7 +651,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                         )}
                       </div>
                     </div>
-
                     {/* Nystagmus */}
                     <div className="flex items-start space-x-2">
                       <Controller
@@ -546,7 +685,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
-                        {/* Erreur nystagmus_eye */}
                         {getError(errors, `${eye}.plaintes.nystagmus_eye`)?.message && (
                           <span className="text-red-500 text-xs">
                             {getError(errors, `${eye}.plaintes.nystagmus_eye`)?.message}
@@ -554,7 +692,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                         )}
                       </div>
                     </div>
-
                     {/* Ptosis */}
                     <div className="flex items-start space-x-2">
                       <Controller
@@ -589,7 +726,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                             )}
                           />
                         )}
-                        {/* Erreur ptosis_eye */}
                         {getError(errors, `${eye}.plaintes.ptosis_eye`)?.message && (
                           <span className="text-red-500 text-xs">
                             {getError(errors, `${eye}.plaintes.ptosis_eye`)?.message}
@@ -603,14 +739,14 @@ const api_url = import.meta.env.VITE_APP_API_URL
             </CardContent>
           </Card>
 
-          {/* Biomicroscopie (segment antérieur) */}
+         {/* Biomicroscopie (segment antérieur) */}
           <Card>
             <CardHeader>
               <CardTitle>Biomicroscopie (segment antérieur)</CardTitle>
             </CardHeader>
             <CardContent>
               {renderEyeTabs("biomicro_ant", (eye: "od" | "og") => {
-                const transparenceValue = watch(`${eye}.bp_sg_anterieur.transparence`);
+                const transparenceValue = watch(`${eye}.bp_sg_anterieur.transparence`)
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {renderSelect(
@@ -620,7 +756,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.SegmentChoices,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.cornee`,
@@ -628,7 +763,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.Cornee,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.transparence`,
@@ -645,7 +779,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                           choicesMap.TypeAnomalie,
                           isDisabled
                         )}
-
                         {renderSelect(
                           control,
                           `${eye}.bp_sg_anterieur.quantite_anomalie`,
@@ -662,7 +795,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.ChambreAnterieureProfondeur,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.iris`,
@@ -670,7 +802,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.Iris,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.cristallin`,
@@ -678,7 +809,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.Cristallin,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.position_cristallin`,
@@ -686,7 +816,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.PositionCristallin,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.pupille`,
@@ -694,7 +823,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.Pupille,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.axe_visuel`,
@@ -702,7 +830,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       choicesMap.AxeVisuel,
                       isDisabled
                     )}
-
                     {renderSelect(
                       control,
                       `${eye}.bp_sg_anterieur.rpm`,
@@ -715,7 +842,7 @@ const api_url = import.meta.env.VITE_APP_API_URL
               })}
             </CardContent>
           </Card>
-
+         
           {/* Biomicroscopie (segment postérieur) */}
           <Card>
             <CardHeader>
@@ -731,7 +858,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.SegmentChoices,
                     isDisabled
                   )}
-
                   {renderSelect(
                     control,
                     `${eye}.bp_sg_posterieur.vitre`,
@@ -739,21 +865,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.Vitre,
                     isDisabled
                   )}
-
-                  <div className="space-y-2">
-                    <Label>Rétine</Label>
-                    <Input
-                      type="number"
-                      {...register(`${eye}.bp_sg_posterieur.retine`)}
-                      disabled={isDisabled}
-                    />
-                    {getError(errors, `${eye}.bp_sg_posterieur.retine`)?.message && (
-                      <span className="text-red-500 text-xs">
-                        {getError(errors, `${eye}.bp_sg_posterieur.retine`)?.message}
-                      </span>
-                    )}
-                  </div>
-
                   {renderSelect(
                     control,
                     `${eye}.bp_sg_posterieur.papille`,
@@ -761,7 +872,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.Papille,
                     isDisabled
                   )}
-
                   {renderSelect(
                     control,
                     `${eye}.bp_sg_posterieur.macula`,
@@ -769,7 +879,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.Macula,
                     isDisabled
                   )}
-
                   {renderSelect(
                     control,
                     `${eye}.bp_sg_posterieur.retinien_peripherique`,
@@ -777,7 +886,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.ChampRetinienPeripherique,
                     isDisabled
                   )}
-
                   {renderSelect(
                     control,
                     `${eye}.bp_sg_posterieur.vaissaux`,
@@ -785,6 +893,52 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     choicesMap.Vaisseaux,
                     isDisabled
                   )}
+                  {/* CD OD */}
+                  <div className="space-y-2">
+                    <Label htmlFor={`${eye}_cd_od`}>C/D OD</Label>
+                    <Input
+                      id={`${eye}_cd_od`}
+                      type="number"
+                      step="0.1"
+                      {...register(`${eye}.bp_sg_posterieur.cd_od`)}
+                      disabled={isDisabled}
+                    />
+                    {getError(errors, `${eye}.bp_sg_posterieur.cd_od`)?.message && (
+                      <span className="text-red-500 text-xs">
+                        {getError(errors, `${eye}.bp_sg_posterieur.cd_od`)?.message}
+                      </span>
+                    )}
+                  </div>
+                  {/* CD OG */}
+                  <div className="space-y-2">
+                    <Label htmlFor={`${eye}_cd_og`}>C/D OG</Label>
+                    <Input
+                      id={`${eye}_cd_og`}
+                      type="number"
+                      step="0.1"
+                      {...register(`${eye}.bp_sg_posterieur.cd_og`)}
+                      disabled={isDisabled}
+                    />
+                    {getError(errors, `${eye}.bp_sg_posterieur.cd_og`)?.message && (
+                      <span className="text-red-500 text-xs">
+                        {getError(errors, `${eye}.bp_sg_posterieur.cd_og`)?.message}
+                      </span>
+                    )}
+                  </div>
+                  {/* Observation */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor={`${eye}_observation`}>Observation</Label>
+                    <Textarea
+                      id={`${eye}_observation`}
+                      {...register(`${eye}.bp_sg_posterieur.observation`)}
+                      disabled={isDisabled}
+                    />
+                    {getError(errors, `${eye}.bp_sg_posterieur.observation`)?.message && (
+                      <span className="text-red-500 text-xs">
+                        {getError(errors, `${eye}.bp_sg_posterieur.observation`)?.message}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </CardContent>
@@ -799,7 +953,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
               {["retinographie", "oct", "autres"].map((field) => (
                 <div className="space-y-2" key={field}>
                   <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
-                  {/* Aperçu si image locale uploadée */}
                   {preview[`bp_sup_${field}`] && (
                     <div className="flex items-center gap-2 mt-2">
                       <img
@@ -819,7 +972,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       </Button>
                     </div>
                   )}
-                  {/* Aperçu si image déjà enregistrée (URL) */}
                   {!preview[`bp_sup_${field}`] && watch(`bp_sup.${field}` as any) && typeof watch(`bp_sup.${field}` as any) === "string" && (
                     <div className="flex items-center gap-2 mt-2">
                       <img
@@ -847,7 +999,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                       )}
                     </div>
                   )}
-                  {/* Input file si pas d'image ou si on veut modifier */}
                   {(editMode && (!watch(`bp_sup.${field}` as any) || preview[`bp_sup_${field}`])) && (
                     <Input
                       id={field}
@@ -961,10 +1112,9 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   </span>
                 )}
               </div>
-               {/* Image périmétrie */}
+              {/* Image périmétrie */}
               <div className="space-y-2">
                 <Label htmlFor="perimetry_image">Image périmétrie</Label>
-                {/* Aperçu si image locale uploadée */}
                 {preview.perimetry_image && (
                   <div className="flex items-center gap-2">
                     <img
@@ -984,7 +1134,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     </Button>
                   </div>
                 )}
-                {/* Aperçu si image déjà enregistrée (URL) */}
                 {!preview.perimetry_image && typeof watch("perimetry.image") === "string" && watch("perimetry.image") && (
                   <div className="flex items-center gap-2">
                     <img
@@ -1012,7 +1161,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                     )}
                   </div>
                 )}
-                {/* Input file si pas d'image ou si on veut modifier */}
                 {(editMode && (!watch("perimetry.image") || preview.perimetry_image)) && (
                   <Input
                     id="perimetry_image"
@@ -1057,7 +1205,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   />
                 )}
               </div>
-           
             </CardContent>
           </Card>
 
@@ -1078,7 +1225,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                 ],
                 isDisabled
               )}
-
               <div className="space-y-2">
                 <Label htmlFor="cat">CAT</Label>
                 <Textarea
@@ -1092,7 +1238,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   </span>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="traitement">Traitement</Label>
                 <Textarea
@@ -1106,7 +1251,6 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   </span>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="observation">Observations</Label>
                 <Textarea
@@ -1120,7 +1264,19 @@ const api_url = import.meta.env.VITE_APP_API_URL
                   </span>
                 )}
               </div>
-
+              <div className="space-y-2">
+                <Label htmlFor="diagnostic_cim_10">Diagnostic CIM-10</Label>
+                <Input
+                  id="diagnostic_cim_10"
+                  {...register("conclusion.diagnostic_cim_10")}
+                  disabled={isDisabled}
+                />
+                {getError(errors, "conclusion.diagnostic_cim_10")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "conclusion.diagnostic_cim_10")?.message}
+                  </span>
+                )}
+              </div>
               <div className="space-y-2 flex items-center">
                 <Controller
                   name="conclusion.rv"
@@ -1137,9 +1293,9 @@ const api_url = import.meta.env.VITE_APP_API_URL
                 <Label htmlFor="rv" className="ml-2">
                   Rendez-vous:&nbsp;
                   <span className="text-lg font-semibold">
-                    {rvValue === true
+                    {watch("conclusion.rv") === true
                       ? "dans 6 mois"
-                      : rvValue === false
+                      : watch("conclusion.rv") === false
                         ? "moins de 6 mois"
                         : ""}
                   </span>
@@ -1177,6 +1333,7 @@ const api_url = import.meta.env.VITE_APP_API_URL
               </Button>
             )}
           </div>
+
         </form>
       </CardContent>
     </Card>

@@ -134,12 +134,7 @@ export const choicesMap = {
     { value: 'REMANIEMENT_TOTAL', label: 'REMANIEMENT TOTAL' },
   ],
 
-  DommageChoices: [
-    { value: 'CORPOREL', label: 'CORPOREL' },
-    { value: 'MATERIEL', label: 'MATERIEL' },
-  ],
-
-  DegatChoices: [
+  DommageChoices:[
     { value: 'IMPORTANT', label: 'IMPORTANT' },
     { value: 'MODERE', label: 'MODERE' },
     { value: 'LEGER', label: 'LEGER' },

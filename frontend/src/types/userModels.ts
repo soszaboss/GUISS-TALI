@@ -1,7 +1,7 @@
 import type { ID } from "./_models"
 import type { Response } from "./_models"
 
-export type UserRole = 'admin' | 'doctor' | 'technician' | 'assistant';
+export type UserRole = 'admin' |'employee'  | 'doctor' | 'technician';
 
 export type Gender = 1 | 2;
 
@@ -15,7 +15,7 @@ export interface Profile {
   gender?: Gender | null;
   address?: string | null;
   city?: string | null;
-  zip?: number | null;
+  zip?: string | null;
   created?: string; // ISO date string
   modified?: string; // ISO date string
 }
@@ -39,14 +39,14 @@ export type UsersQueryResponse = Response<Array<User>>
 export const initProfile: Profile = {
   id: null,
   user: null,
-  first_name: '',
-  last_name: '',
-  avatar: '',
+  first_name: null,
+  last_name: null,
+  avatar: null,
   birthday: null,
   gender: 1,
-  address: '',
-  city: '',
-  zip: null as number | null,
+  address: null,
+  city: null,
+  zip: null,
   created: '',
   modified: '',
 };
@@ -55,7 +55,7 @@ export const initUser: User = {
   id: null,
   email: '',
   phone_number: '',
-  role: 'assistant', // Default role
+  role: 'employee', // Default role
   is_staff: false,
   is_active: true,
   is_verified: true,

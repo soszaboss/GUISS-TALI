@@ -62,34 +62,6 @@ class LoginView(APIView):
             return Response(user_login(email, password), status=status.HTTP_200_OK)
 
 
-class LogoutView(GenericAPIView):
-    permission_classes = (IsAuthenticated,)
-
-    @extend_schema(
-        responses={
-            204: OpenApiResponse(description="Logout avec succès."),
-            400: OpenApiResponse(
-                description="Vous n'avez pas les autorisations pour vous déconnecter."),
-        },
-        description="Création d'un compte super utilisateur.",
-        parameters=[
-            OpenApiParameter(
-                name='Authorization',
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.HEADER,
-                description='JWT token format: Bearer <token>',
-                required=True
-            )
-        ]
-    )
-    def post(self, request, *args):
-        """ Deconnexion de l'utilisateur en lui retirant tous les tokens à sa disposition. """
-        sz = self.get_serializer(data=request.data)
-        sz.is_valid(raise_exception=True)
-        sz.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 class PasswordResetView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = PasswordResetSerializer
@@ -223,26 +195,26 @@ class PasswordResetVerifiedView(APIView):
 
 
 # class EmailChangeVerifyView(APIView):
-    permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
 
-    @extend_schema(
-        responses={
-            200: OpenApiResponse(description="Email changé avec succès"),
-            400: OpenApiResponse(description="Erreur en vérifiant votre code."),
-        },
-        description="Confirmation du changement de l'email.",
-        parameters=[
-            OpenApiParameter(name='code', type=OpenApiTypes.STR, required=True,
-                             description="Code de confirmation pour changer l'email"),
-        ]
-    )
-    def get(self, request, format=None):
-        code = request.GET.get('code', '')
-        try:
-            result = email_change_verify(code=code)
-            return Response(result, status=status.HTTP_200_OK)
-        except ValidationError as e:
-            return Response(e.detail, status=e.code)
+    # @extend_schema(
+    #     responses={
+    #         200: OpenApiResponse(description="Email changé avec succès"),
+    #         400: OpenApiResponse(description="Erreur en vérifiant votre code."),
+    #     },
+    #     description="Confirmation du changement de l'email.",
+    #     parameters=[
+    #         OpenApiParameter(name='code', type=OpenApiTypes.STR, required=True,
+    #                          description="Code de confirmation pour changer l'email"),
+    #     ]
+    # )
+    # def get(self, request, format=None):
+    #     code = request.GET.get('code', '')
+    #     try:
+    #         result = email_change_verify(code=code)
+    #         return Response(result, status=status.HTTP_200_OK)
+    #     except ValidationError as e:
+    #         return Response(e.detail, status=e.code)
 
 
 class PasswordChangeView(APIView):

@@ -19,6 +19,7 @@ import { QUERIES } from "@/helpers/crud-helper/consts"
 import { stringifyRequestQuery } from "@/helpers/crud-helper/helpers"
 import { useListView } from "@/hooks/_ListViewProvider"
 import { useAuth } from "@/hooks/auth/Auth"
+import { anonymizeName } from "@/helpers/AnonymaseFullName"
 
 export function PatientsList() {
   const navigate = useNavigate()
@@ -28,6 +29,8 @@ export function PatientsList() {
   const { currentUser } = useAuth()
   const { results = [], count = 0, next, previous } = usePatientQueryResponsePagination()
   const isLoading = usePatientQueryResponseLoading()
+  const role = currentUser?.role
+
   const mutation = useMutation({
     mutationFn: (id: ID) => deletePatient(id!.toString()),
     mutationKey: [QUERIES.PATIENTS_LIST, "deletePatient"],
@@ -95,22 +98,23 @@ export function PatientsList() {
     }
     updateState({ offset: newOffset })
   }
-  const role = currentUser?.role
+
+
   // Actions
   const handleViewPatient = (id: ID) => {
     if (id !== undefined) {
-      navigate(`/${role?.toLowerCase()}/patients/${id}`)
+      navigate(`/employee/patients/${id}`)
     }
   }
   const handleMediaclRecord = (id: ID) => {
     if (id !== undefined) {
-      navigate(`/${role?.toLowerCase()}/patients/medical-record/${id}`)
+      navigate(`/employee/patients/medical-record/${id}`)
     }
   }
   const handleEditPatient = (id: ID) => {
     if (id !== undefined) {
       setItemIdForUpdate(id)
-      navigate(`/${role?.toLowerCase()}/patients/edit`)
+      navigate(`/employee/patients/edit`)
     }
   }
   const handleDeleteClick = (patient: Conducteur) => {
@@ -126,13 +130,15 @@ export function PatientsList() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold">Gestion des Patients</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => {
-          setItemIdForUpdate(null)
-          navigate(`/${role?.toLowerCase()}/patients/new`)
-        }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouveau Patient
-        </Button>
+        { role === 'employee' || role === 'doctor'&& (
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => {
+            setItemIdForUpdate(null)
+            navigate(`/employee/patients/new`)
+          }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Patient
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -180,7 +186,8 @@ export function PatientsList() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
+                    <TableHead>N°</TableHead>
+                    <TableHead>Nom Complet</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Type de permis</TableHead>
@@ -193,9 +200,14 @@ export function PatientsList() {
                     results.map((patient) => (
                       <TableRow key={patient.id}>
                         <TableCell className="font-medium">
-                          {patient.first_name} {patient.last_name}
+                          {patient.numero_permis}
                         </TableCell>
-                        <TableCell>{patient.email}</TableCell>
+                        <TableCell >
+                          {anonymizeName(`${patient.first_name} ${patient.last_name}`)}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {patient.email ? patient.email : <span className="italic text-gray-400">Non renseigné</span>}
+                        </TableCell>
                         <TableCell>{patient.phone_number}</TableCell>
                         <TableCell>{patient.type_permis}</TableCell>
                         <TableCell>{patient.service}</TableCell>
@@ -207,22 +219,22 @@ export function PatientsList() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleViewPatient(patient.id)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                <span>Voir</span>
-                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleMediaclRecord(patient.id)}>
                                 <FileText className="mr-2 h-4 w-4" />
                                 <span>Cahier médical</span>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditPatient(patient.id)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                <span>Modifier</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDeleteClick(patient)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Supprimer</span>
-                              </DropdownMenuItem>
+                              { role === 'employee' || role === 'doctor' && (
+                                <><DropdownMenuItem onClick={() => handleViewPatient(patient.id)}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  <span>Voir</span>
+                                </DropdownMenuItem><DropdownMenuItem onClick={() => handleEditPatient(patient.id)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    <span>Modifier</span>
+                                  </DropdownMenuItem><DropdownMenuItem onClick={() => handleDeleteClick(patient)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Supprimer</span>
+                                  </DropdownMenuItem></>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

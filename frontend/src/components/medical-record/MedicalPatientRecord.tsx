@@ -2,15 +2,17 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { User, IdCard, Trash2, PlusCircle } from "lucide-react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { MedicalVisit } from "./MedicalVisit"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERIES } from "@/helpers/crud-helper/consts"
-import { getMedicalRecordByPatientId, syncHealthRecord } from "@/services/medicalRecord"
+import { getMedicalRecordByPatientId, setRiskyPatient, syncHealthRecord } from "@/services/medicalRecord"
 import { deleteExamen } from "@/services/examens"
 import { toast } from "sonner"
 import { Antecedent } from "./Antecedent"
 import { useAuth } from "@/hooks/auth/Auth"
+import { initialTechnicalExamen } from "@/types/examenTechniques"
+import { initialClinicalExamen } from "@/types/examensClinic"
 
 // Modal générique
 function ConfirmationModal({
@@ -61,8 +63,7 @@ function ConfirmationModal({
   )
 }
 
-// À remplacer par ton vrai contexte utilisateur
-const user = { role: "admin" } // ou "docteur", "secretaire", etc.
+
 
 export default function MedicalPatientRecord() {
   const { patientId } = useParams();
@@ -71,8 +72,10 @@ export default function MedicalPatientRecord() {
   const [addModal, setAddModal] = useState(false)
   const [selectedVisit, setSelectedVisit] = useState<number | null>(null)
   const { currentUser } = useAuth()
+  const navigate = useNavigate();
+  
   const role = currentUser?.role?.toLocaleLowerCase()
-  const canEditAntecedent = role === "doctor" || role === "admin"
+  const canEditAntecedent = role === "employee" || role === "doctor"
 
   const {
     data: medicalRecord,
@@ -105,7 +108,7 @@ export default function MedicalPatientRecord() {
   })
 
   const createVisit = useMutation({
-    mutationFn: ({ medicalRecordId, visite }: { medicalRecordId: number, visite: number }) => syncHealthRecord(medicalRecordId, visite),
+    mutationFn: ({ PatientId, visite }: { PatientId: number, visite: number }) => syncHealthRecord(PatientId, visite),
     onSuccess: () => {
       setAddModal(false)
       setSelectedVisit(null)
@@ -117,9 +120,29 @@ export default function MedicalPatientRecord() {
     },
     mutationKey: [QUERIES.EXAMENS_LIST, 'create', selectedVisit]
   })
+  
+const toggleRiskMutation = useMutation(
+  async () => {
+    if (medicalRecord?.patient?.id && typeof medicalRecord.patient.id === "number") {
+      return setRiskyPatient(medicalRecord.patient.id, !medicalRecord.risky_patient)
+    }
+    // Always return a Promise to satisfy MutationFunction signature
+    return Promise.reject(new Error("Patient ID is not available"));
+  },
+  {
+    mutationKey: [QUERIES.MEDICAL_RECORDS_LIST, 'toggleRisk', medicalRecord?.patient?.id],
+    onSuccess: () => {
+      refetch()
+      toast.success("Statut du patient mis à jour.")
+    },
+    onError: () => {
+      toast.error("Erreur lors de la mise à jour du statut à risque.")
+    }
+  }
+)
   // Gestion des droits
-  const canAddVisit = ["admin", "docteur"].includes(user.role)
-  const canDeleteVisit = ["admin", "docteur"].includes(user.role)
+  const canAddVisit = ["employee", "docteur"].includes(currentUser?.role ?? "")
+  const canDeleteVisit = ["employee", "docteur"].includes(currentUser?.role ?? "")
 
   // Suppression
   const handleDeleteVisit = (examenId: number, visiteNumber: number) => {
@@ -137,8 +160,13 @@ export default function MedicalPatientRecord() {
     setSelectedVisit(null)
   }
   const confirmAddVisit = () => {
-    if (selectedVisit && medicalRecord?.id) {
-      createVisit.mutate({ medicalRecordId: medicalRecord.id, visite: selectedVisit })
+    if (
+      selectedVisit &&
+      medicalRecord?.id &&
+      medicalRecord?.patient &&
+      typeof medicalRecord.patient.id === "number"
+    ) {
+      createVisit.mutate({ PatientId: medicalRecord.patient.id, visite: selectedVisit })
     }
   }
 
@@ -148,6 +176,15 @@ export default function MedicalPatientRecord() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto min-h-screen ">
+      {/* Bouton retour */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-6 flex items-center gap-2 text-blue-700 hover:underline font-semibold"
+      >
+        <svg width="20" height="20" fill="none"><path d="M15 10H5M10 15l-5-5 5-5" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Retour
+      </button>
+
       {/* Modal de suppression */}
       <ConfirmationModal
         isOpen={deleteModal.open}
@@ -209,11 +246,33 @@ export default function MedicalPatientRecord() {
             <CardHeader className="border-b-0 pb-0">
               <CardTitle className="text-2xl font-bold text-blue-900 flex items-center gap-3">
                 <User className="h-7 w-7 text-blue-600" />
-                Informations générales du patient
+                <p>Informations générales du patient</p>
+                {/* Badge patient à risque */}
+                {medicalRecord?.risky_patient && (
+                  <span className="inline-block mb-4 px-3 py-1 rounded-full bg-red-100 text-red-700 font-semibold text-sm">
+                    ⚠️ Patient à risque
+                  </span>
+                )}
+                {/* Bouton de (dé)catégorisation */}
+                {currentUser?.role === "employee" ||  currentUser?.role === "doctor" && (
+                  <button
+                    type="button"
+                    onClick={() => toggleRiskMutation.mutate()}
+                    className={`ml-3 px-3 py-1 rounded-full font-semibold text-xs transition
+                      ${medicalRecord?.risky_patient
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-red-100 text-red-700 hover:bg-red-200"}
+                    `}
+                    disabled={toggleRiskMutation.isLoading}
+                  >
+                    {medicalRecord?.risky_patient
+                      ? "Retirer des patients à risque"
+                      : "Catégoriser comme patient à risque"}
+                  </button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-10">
-
               <section>
                 <div className="flex flex-col md:flex-row items-start gap-8">
                   <div className="h-24 w-24 rounded-full  bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
@@ -377,14 +436,6 @@ export default function MedicalPatientRecord() {
                                   <span>{driverExprience.tranche_horaire || "N/A"}</span>
                                 </li>
                                 <li className="flex items-center gap-2">
-                                  <span className="text-blue-600 font-medium">🩹 Dommage :</span>
-                                  <span>{driverExprience.dommage || "N/A"}</span>
-                                </li>
-                                <li className="flex items-center gap-2">
-                                  <span className="text-blue-600 font-medium">🛠️ Dégât :</span>
-                                  <span>{driverExprience.degat || "N/A"}</span>
-                                </li>
-                                <li className="flex items-center gap-2">
                                   <span className="text-blue-600 font-medium">📅 Date :</span>
                                   <span>{driverExprience.date_visite || "N/A"}</span>
                                 </li>
@@ -415,8 +466,8 @@ export default function MedicalPatientRecord() {
                       <TabsContent value="details" className="p-0">
                         <MedicalVisit
                           driving_experience={driverExprience}
-                          technical_examen={examen.technical_examen}
-                          clinical_examen={examen.clinical_examen}
+                          technical_examen={examen.technical_examen || initialTechnicalExamen}
+                          clinical_examen={examen.clinical_examen || initialClinicalExamen}
                           antecedent={antecedents}
                           extra={{
                             visitID: examen.visite,

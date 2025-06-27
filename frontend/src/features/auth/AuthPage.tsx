@@ -3,7 +3,6 @@ import { EmailVerification } from './components/email-verification'
 import { TwoFactorVerification } from './components/two-factor-verification'
 import Error404 from '../errors/components/Error404'
 import { LoginForm } from './components/LoginForm'
-import { RegisterForm } from './components/RegisterForm'
 import { ForgotPasswordForm } from './components/ForgotPasswordForm'
 import { ResetPasswordForm } from './components/ResetPasswordForm'
 
@@ -15,10 +14,6 @@ export const authRoutes: RouteObject[] = [
   {
     path: 'login',
     element: <LoginForm />,
-  },
-  {
-    path: 'registration',
-    element: <RegisterForm />,
   },
   {
     path: 'forgot-password',
