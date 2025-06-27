@@ -1,94 +1,119 @@
-"use client"
-
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Calendar, Activity, AlertTriangle, Clock, CheckSquare } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts"
+import { adminDashboardAnalytics } from "@/services/analytics"
+import type { AdminDashboardApiResponse } from "@/types/analytics"
 
-export default function AdminKpiCards() {
-  // Ces données seraient normalement récupérées depuis une API
-  const kpiData = {
-    totalDrivers: 1245,
-    weeklyVisits: 87,
-    completedVisits: {
-      technicians: 42,
-      doctors: 38,
-    },
-    criticalCases: 5,
-    averageDelay: "1.2 jours",
-    completionRate: "94%",
-  }
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"]
+
+export default function AdminDashboardPage() {
+  const { data, isLoading, error } = useQuery<AdminDashboardApiResponse>({
+    queryKey: ["dashboard-admin"],
+    queryFn: adminDashboardAnalytics,
+    refetchOnWindowFocus: false,
+  })
+
+  if (isLoading) return <div>Chargement...</div>
+  if (error || !data) return <div>Erreur lors du chargement</div>
+
+  const kpis = data.kpis
+  const rolesData = data.roles_distribution.map(r => ({
+    name: r.role.charAt(0).toUpperCase() + r.role.slice(1),
+    value: r.count,
+  }))
+  const usersPerMonth = data.users_created_per_month.map(item => ({
+    month: item.month?.slice(0, 7) ?? "",
+    count: item.count,
+  }))
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Conducteurs enregistrés</CardTitle>
-          <Users className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">{kpiData.totalDrivers}</div>
-          <p className="text-xs text-muted-foreground">+12% par rapport au mois dernier</p>
-        </CardContent>
-      </Card>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold">Dashboard Administrateur</h1>
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <Card>
+          <CardHeader><CardTitle>Utilisateurs</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.total_users}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Admins</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.admins}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Médecins</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.doctors}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Techniciens</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.technicians}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Employés</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.employees}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Actifs</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.active_users}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Inactifs</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{kpis.inactive_users}</div></CardContent>
+        </Card>
+      </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Visites planifiées cette semaine</CardTitle>
-          <Calendar className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">{kpiData.weeklyVisits}</div>
-          <p className="text-xs text-muted-foreground">+4% par rapport à la semaine dernière</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Visites réalisées</CardTitle>
-          <Activity className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">
-            {kpiData.completedVisits.technicians + kpiData.completedVisits.doctors}
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>Techniciens: {kpiData.completedVisits.technicians}</span>
-            <span>Médecins: {kpiData.completedVisits.doctors}</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Cas critiques détectés</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">{kpiData.criticalCases}</div>
-          <p className="text-xs text-muted-foreground">-2 par rapport à la semaine dernière</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Délai moyen de validation</CardTitle>
-          <Clock className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">{kpiData.averageDelay}</div>
-          <p className="text-xs text-muted-foreground">-0.3 jour par rapport au mois dernier</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Taux de complétion global</CardTitle>
-          <CheckSquare className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent className="pt-2 pb-4">
-          <div className="text-2xl font-bold">{kpiData.completionRate}</div>
-          <p className="text-xs text-muted-foreground">+2% par rapport au mois dernier</p>
-        </CardContent>
-      </Card>
+      {/* Graphiques */}
+      <Tabs defaultValue="roles">
+        <TabsList>
+          <TabsTrigger value="roles">Répartition rôles</TabsTrigger>
+          <TabsTrigger value="evolution">Nouveaux utilisateurs</TabsTrigger>
+        </TabsList>
+        <TabsContent value="roles">
+          <Card>
+            <CardHeader><CardTitle>Répartition des rôles</CardTitle></CardHeader>
+            <CardContent className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={rolesData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {rolesData.map((_entry, idx) => (
+                      <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="evolution">
+          <Card>
+            <CardHeader><CardTitle>Utilisateurs créés par mois</CardTitle></CardHeader>
+            <CardContent className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={usersPerMonth}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#3b82f6" name="Nouveaux utilisateurs" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

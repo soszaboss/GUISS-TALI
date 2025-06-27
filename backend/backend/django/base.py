@@ -35,8 +35,7 @@ LOCAL_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.authemail.apps.AuthemailConfig',
     'apps.patients.apps.PatientsConfig',
-    'apps.appointment.apps.AppointmentConfig',
-    'apps.clinical_examen.apps.ClinicalExamenConfig',
+    'apps.examens.apps.ClinicalExamenConfig',
     'apps.health_record.apps.HealthRecordConfig',
 ]
 
@@ -181,6 +180,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'api.exception_handlers.drf_default_with_modifications_exception_handler',
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
+    ]
     }
 
 

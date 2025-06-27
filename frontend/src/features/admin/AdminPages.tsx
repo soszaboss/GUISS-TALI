@@ -67,47 +67,33 @@ export const adminPlatformRoutes: RouteObject[] = [
         ]
     },
     {
-        path: 'settings',
-        lazy: async () => {
-            const module = await import('./pages/settings/global/page');
-            return { Component: module.default };
-        }
-    },
-    {
-        path: 'logs',
-        lazy: async () => {
-            const module = await import('./pages/logs/page');
-            return { Component: module.default };
-        }
-    },
-    {
         path: 'patients',
         lazy: async () => {
             const module = await import('./pages/patients/page');
             return { Component: module.default };
         },
         children: [
-            {
+           {
                 index: true,
                 lazy: async () => {
-                    const module = await import('./components/patients/patients-list');
-                    return { Component: module.default };
+                    const module = await import('../../components/patients/PatientList');
+                    return { Component: module.PatientsList };
                 }
             },
             {
                 path: ':patientId',
                 lazy: async () => {
-                    const module = await import('./components/patients/patient-detail');
-                    return { Component: module.default };
+                    const module = await import('../../components/patients/PatientDetails');
+                    return { Component: module.PatientDetails };
+                }
+            },
+            {
+                path: 'medical-record/:patientId',
+                lazy: async () => {
+                    const module = await import('../../components/medical-record/MedicalPatientRecord');
+                    return { Component: module.default};
                 }
             }
         ]
     },
-    {
-        path: "medical-records/:patientId",
-        lazy: async () => {
-        const module = await import("./pages/medical-record/pages");
-        return { Component: module.default as React.ComponentType};
-        },
-  },
 ]

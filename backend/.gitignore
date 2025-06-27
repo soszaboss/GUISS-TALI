@@ -378,3 +378,10 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,python,django
 pytest.ini
+
+media/images/biomicroscopie/retinographie/
+media/images/biomicroscopie/oct/
+media/images/biomicroscopie/autres/
+media/images/biomicroscopie/biomicroscopie
+media/images/profiles/avatars/users
+media/images/profiles/avatars/conducteurs

@@ -35,7 +35,7 @@ export default function Error404() {
                   <div className="w-12 h-16 bg-amber-500 rounded-lg transform rotate-45 translate-x-2 translate-y-2"></div>
                 </div>
               </div>
-              <span>0</span>
+              <span>4</span>
             </div>
           </div>
         </div>

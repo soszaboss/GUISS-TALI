@@ -7,7 +7,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "react-hook-form": ["./node_modules/react-hook-form"],
+      "@hookform/resolvers/zod": ["./node_modules/@hookform/resolvers/zod"]
+    },
+    "skipLibCheck": true,
+    "moduleResolution": "node",
   }
 }

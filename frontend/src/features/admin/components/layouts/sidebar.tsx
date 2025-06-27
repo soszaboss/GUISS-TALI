@@ -3,10 +3,7 @@ import type React from "react"
 
 import {
   Users,
-  ClipboardList,
-  Settings,
   User,
-  FileCheck,
   Home,
   ChevronDown,
   ChevronRight,
@@ -52,8 +49,6 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
   const [usersSubmenuOpen, setUsersSubmenuOpen] = useState(false)
-  const [settingsSubmenuOpen, setSettingsSubmenuOpen] = useState(false)
-  const [patientsSubmenuOpen, setPatientsSubmenuOpen] = useState(false)
 
   return (
     <div
@@ -109,57 +104,6 @@ export default function AdminSidebar({ isOpen }: AdminSidebarProps) {
                 title="Rôles et permissions"
                 active={pathname === "/admin/users/roles"}
               /> */}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <SidebarItem
-            href="#"
-            icon={<FileCheck size={20} />}
-            title="Patients"
-            active={pathname.startsWith("/admin/patients")}
-            hasSubmenu={true}
-            isSubmenuOpen={patientsSubmenuOpen}
-            onClick={() => setPatientsSubmenuOpen(!patientsSubmenuOpen)}
-          />
-          {patientsSubmenuOpen && isOpen && (
-            <div className="ml-6 mt-1 space-y-1">
-              <SidebarItem
-                href="/admin/patients"
-                icon={<User size={16} />}
-                title="Liste des patients"
-                active={pathname === "/admin/patients"}
-              />
-            </div>
-          )}
-        </div>
-
-        <SidebarItem
-          href="/admin/logs"
-          icon={<ClipboardList size={20} />}
-          title="Journal d'activité"
-          active={pathname === "/admin/logs"}
-        />
-
-        <div>
-          <SidebarItem
-            href="#"
-            icon={<Settings size={20} />}
-            title="Paramètres"
-            active={pathname.startsWith("/admin/settings")}
-            hasSubmenu={true}
-            isSubmenuOpen={settingsSubmenuOpen}
-            onClick={() => setSettingsSubmenuOpen(!settingsSubmenuOpen)}
-          />
-          {settingsSubmenuOpen && isOpen && (
-            <div className="ml-6 mt-1 space-y-1">
-              <SidebarItem
-                href="/admin/settings"
-                icon={<Settings size={16} />}
-                title="Paramètres globaux"
-                active={pathname === "/admin/settings/global"}
-              />
             </div>
           )}
         </div>

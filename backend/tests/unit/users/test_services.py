@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from apps.users.models import User, Profile
 
 from services.users import user_create, user_update, profile_create
-from tests.unit.users.factories import UserFactory, ProfileFactory
+from factories.users import UserFactory, ProfileFactory
 
 from tests.unit.users.test_models import generer_numero_senegalais
 
@@ -19,7 +19,7 @@ class TestUserCreateService:
         user = user_create(
             email=email,
             password="securepass",
-            role=User.Role.DOCTOR,
+            role=User.Role.EMPLOYEE,
             phone_number=generer_numero_senegalais()
         )
         assert isinstance(user, User)

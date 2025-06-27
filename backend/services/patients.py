@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 
 from apps.patients.models import Conducteur, Vehicule
+from services.health_records import HealthRecordService
 
 @transaction.atomic
 def validate_conducteur_data(data: dict):
@@ -16,7 +17,6 @@ def validate_conducteur_data(data: dict):
             })
 
     # Vérifie que "autre_type_permis" est renseigné si le type est "Autres à préciser"
-    # print(f"autre permis: {data.get("autre_type_permis", None)}")
     if data.get("type_permis") == "Autres à préciser" and not data.get("autre_type_permis", None):
         raise ValidationError({
             'autre_type_permis': _("You must specify the license type if 'Other' is selected.")
@@ -25,7 +25,10 @@ def validate_conducteur_data(data: dict):
 @transaction.atomic
 def conducteur_create(**data) -> Conducteur:
     validate_conducteur_data(data)
-    return Conducteur.objects.create(**data)
+    patient = Conducteur.objects.create(**data)
+    if patient:
+        HealthRecordService.create_or_update_health_record(patient.id)
+    return patient
 
 @transaction.atomic
 def conducteur_update(conducteur: Conducteur, **data) -> Conducteur:

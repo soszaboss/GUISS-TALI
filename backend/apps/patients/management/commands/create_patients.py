@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
 
-from tests.unit.patients.factories import VehiculeFactory
+from factories.patients import VehiculeFactory
 
 
 class Command(BaseCommand):
@@ -26,4 +26,3 @@ class Command(BaseCommand):
         for i in range(count):
             patient = VehiculeFactory()
             patient.save()
-        print('Successfully created {} patients'.format(count))

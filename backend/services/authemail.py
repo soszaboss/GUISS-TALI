@@ -25,7 +25,6 @@ EXPIRY_PERIOD = getattr(settings, 'AUTH_EMAIL_EXPIRY_PERIOD')
 def _make_random_password(length=10, allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'):
         return ''.join(secrets.choice(allowed_chars) for i in range(length))
 
-
 def send_multi_format_email(template_prefix, template_ctxt, target_email):
     subject_file = 'email/authemail/%s_subject.txt' % template_prefix
     txt_file = 'email/authemail/%s.txt' % template_prefix
@@ -42,7 +41,7 @@ def send_multi_format_email(template_prefix, template_ctxt, target_email):
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
 
-    
+@transaction.atomic    
 def user_login(email:str, password:str):
     user = authenticate(email=email, password=password)
     if user:
@@ -60,7 +59,7 @@ def user_login(email:str, password:str):
         content = _('Email ou mot de passe incorrect.')
         raise ValidationError(content, code=401)
 
-
+@transaction.atomic
 def user_reset_password(email):
     from apps.authemail.models import PasswordResetCode
     try:
@@ -86,7 +85,7 @@ def user_reset_password(email):
     content = _('Reinitialisation non permis.')
     raise ValidationError(content, code=400)
 
-
+@transaction.atomic
 def user_reset_password_verify(code):
     from apps.authemail.models import PasswordResetCode
     password_reset_code = PasswordResetCode.objects.filter(code=code).first()
@@ -101,7 +100,7 @@ def user_reset_password_verify(code):
 
     return {'success': _('Adresse email vérifiée avec succès.')}
 
-
+@transaction.atomic
 def user_reset_password_verified(code, password):
     from apps.authemail.models import PasswordResetCode
     password_reset_code = PasswordResetCode.objects.filter(code=code).first()
@@ -147,43 +146,43 @@ def user_reset_password_verified(code, password):
 
 
 # def email_change_verify(*, code: str) -> dict:
-    from apps.authemail.models import EmailChangeCode
+    # from apps.authemail.models import EmailChangeCode
 
-    try:
-        code_obj = EmailChangeCode.objects.get(code=code)
-    except EmailChangeCode.DoesNotExist:
-        raise ValidationError({'detail': _("Code invalide ou expiré.")}, code=status.HTTP_400_BAD_REQUEST)
+    # try:
+    #     code_obj = EmailChangeCode.objects.get(code=code)
+    # except EmailChangeCode.DoesNotExist:
+    #     raise ValidationError({'detail': _("Code invalide ou expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
-    delta = date.today() - code_obj.created.date()
-    if delta.days > EmailChangeCode.objects.get_EXPIRY_PERIOD():
-        code_obj.delete()
-        raise ValidationError({'detail': _("Ce code a expiré.")}, code=status.HTTP_400_BAD_REQUEST)
+    # delta = date.today() - code_obj.created.date()
+    # if delta.days > EmailChangeCode.objects.get_EXPIRY_PERIOD():
+    #     code_obj.delete()
+    #     raise ValidationError({'detail': _("Ce code a expiré.")}, code=status.HTTP_400_BAD_REQUEST)
 
-    # Si email déjà utilisé par user vérifié, rejet
-    try:
-        user_with_email = get_user_model().objects.get(email=code_obj.email)
-        if user_with_email.is_verified:
-            code_obj.delete()
-            raise ValidationError({'detail': _('Email déjà pris.')}, code=status.HTTP_400_BAD_REQUEST)
-        else:
-            user_with_email.delete()
-    except get_user_model().DoesNotExist:
-        pass
+    # # Si email déjà utilisé par user vérifié, rejet
+    # try:
+    #     user_with_email = get_user_model().objects.get(email=code_obj.email)
+    #     if user_with_email.is_verified:
+    #         code_obj.delete()
+    #         raise ValidationError({'detail': _('Email déjà pris.')}, code=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         user_with_email.delete()
+    # except get_user_model().DoesNotExist:
+    #     pass
 
-    # Mise à jour de l'email
-    user = code_obj.user
-    user.email = code_obj.email
-    user.save()
-    code_obj.delete()
+    # # Mise à jour de l'email
+    # user = code_obj.user
+    # user.email = code_obj.email
+    # user.save()
+    # code_obj.delete()
 
-    return {'success': _('Adresse email changée avec succès.')}
+    # return {'success': _('Adresse email changée avec succès.')}
 
 
 def password_change(*, user, password: str) -> dict:
     try:
         password_validation.validate_password(password=password, user=user)
     except ValidationError as e:
-        raise ValidationError({'password': list(e.messages)}, code=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError({'password': list(e.messages)}, code=400)
 
     user.set_password(password)
     user.save()

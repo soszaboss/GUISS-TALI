@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import gettext_lazy as _
 
 
-from tests.unit.users.factories import ProfileFactory
+from factories.users import ProfileFactory
 
 
 class Command(BaseCommand):
@@ -26,4 +26,3 @@ class Command(BaseCommand):
         for i in range(count):
             user = ProfileFactory()
             user.save()
-        print('Successfully created {} users'.format(count))

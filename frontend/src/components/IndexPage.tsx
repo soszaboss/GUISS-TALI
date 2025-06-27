@@ -7,12 +7,12 @@ const redirectPage = (role: UserRole | undefined): string => {
   switch (role) {
     case "admin":
       return "/admin/dashboard"
-    case "assistant":
-      return "/assistant/dashboard"
-    case "technician":
-      return "/technician/welcome"
+    case "employee":
+      return "/employee/dashboard"
     case "doctor":
-      return "/doctor/welcome"
+      return "/employee/dashboard"
+    case "technician":
+      return "/employee/dashboard"
     default:
       return "/auth/login"
   }

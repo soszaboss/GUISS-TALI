@@ -84,10 +84,10 @@ class ProfileInline(admin.StackedInline):
 class EmailUserAdmin(UserAdmin):
     readonly_fields = ( 'created', 'modified')
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('email', 'password', 'role')}),
         # (_('Personal Info'), {'fields': ('first_name', 'last_name')}),
         (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
-                                       'groups', 'user_permissions')}),
+                                       'is_verified', 'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login',)}),
     )
     add_fieldsets = (

@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
 from django.utils.translation import gettext_lazy as _
 
+from apps.users.models import User
+
 
 class EmailUserCreationForm(forms.ModelForm):
     """
@@ -15,10 +17,13 @@ class EmailUserCreationForm(forms.ModelForm):
                                 widget=forms.PasswordInput,
                                 help_text=_('Enter the same password as '
                                 'above, for verification.'))
+    role = forms.ChoiceField(label=_('Role'),
+                             widget=forms.Select,
+                             choices=User.Role)
 
     class Meta:
         model = get_user_model()
-        fields = ('email',)
+        fields = ('email', 'role')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -39,6 +44,7 @@ class EmailUserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         user = super(EmailUserCreationForm, self).save(commit=False)
         user.set_password(self.cleaned_data['password1'])
+        user.is_verified = True
         if commit:
             user.save()
         return user

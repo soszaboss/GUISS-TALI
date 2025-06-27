@@ -8,7 +8,7 @@ from serializers.patients import VehiculeSerializer, ConducteurSerializer
 class VehiculeViewSet(viewsets.ModelViewSet):
     queryset = Vehicule.objects.select_related('conducteur').all().order_by('-created')
     serializer_class = VehiculeSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     filterset_fields = ['conducteur']
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = [
@@ -22,7 +22,7 @@ class VehiculeViewSet(viewsets.ModelViewSet):
 class ConducteurViewSet(viewsets.ModelViewSet):
     queryset = Conducteur.objects.all().order_by('-created')
     serializer_class = ConducteurSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     # Ajout des filtres
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]

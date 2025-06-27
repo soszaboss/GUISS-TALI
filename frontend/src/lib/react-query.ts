@@ -17,7 +17,7 @@ export const queryClient = new QueryClient({
         await queryClient.invalidateQueries();
       },
       retry: 1,
-      useErrorBoundary: true,
+      // useErrorBoundary: true,
     }
   }
 });

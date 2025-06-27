@@ -69,7 +69,7 @@ class UserManager(BaseUserManager):
             password,
             **extra_fields
     )-> 'User':
-        extra_fields.setdefault('role', User.Role.ADMIN)
+        extra_fields.setdefault('role', User.Role.SUPER_USER)
         return self._create_user(
             email,
             password,
@@ -82,10 +82,11 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class Role(models.TextChoices):
+        SUPER_USER = 'superuser', _('Superuser')
         ADMIN = 'admin', _('Administrator')
+        EMPLOYEE = 'employee', _('Employee')
         DOCTOR = 'doctor', _('Doctor')
-        TECHNICAL = 'technician', _('Technician')
-        ASSIST = 'assistant', _('Assistant')
+        TECHNICIAN = 'technician', _('Technician')
 
     email = models.EmailField(
         _('email address'),

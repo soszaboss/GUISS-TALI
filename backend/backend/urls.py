@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 
 router = DefaultRouter()
@@ -19,19 +18,6 @@ urlpatterns = [
 
     # routes pour la gestion des utilisateurs et profiles
     path('users/', include('apps.users.urls'), name='users'),
-
-    # routes pour l'obtention d'un access et refresh token
-    path(
-        'api/token/refresh/',
-        TokenRefreshView.as_view(),
-        name='token_refresh'
-    ),
-    # routes pour la gestion de la liste noire des tokens
-    path(
-        'api/token/blacklist/',
-        TokenBlacklistView.as_view(),
-            name='token_blacklist'
-    ),
 
     # routes pour la documentation de l'api
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -48,6 +34,15 @@ urlpatterns = [
 
     # routes pour les patients
     path('patients/', include('apps.patients.urls'), name='patients'),
+
+    # routes pour les examens cliniques
+    path('examens/', include('apps.examens.urls'), name='examens'),
+
+    # routes pour les cahiers medicaux
+    path('health-records/', include('apps.health_record.urls'), name='health-records')
+
+    # routes pour les statistiques
+    , path('analytics/', include('apps.analytics.urls'), name='analytics'),
 
 ]
 

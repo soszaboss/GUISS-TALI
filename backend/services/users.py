@@ -7,7 +7,7 @@ from apps.users.models import User, Profile
 
 @transaction.atomic
 def user_create(*, email: str, password: str, role: str, phone_number: str, profile:dict | Profile=None) -> User:
-    if role == User.Role.ADMIN:
+    if role == User.Role.SUPER_USER:
         user = User.objects.create_superuser(
                 email=email,
                 password=password,
