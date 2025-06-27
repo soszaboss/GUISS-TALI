@@ -76,7 +76,7 @@ function AtRiskPatients() {
   const handleViewMedicalRecord = (recordId: ID) => {
     if(!recordId) return
     // Rediriger vers la page du dossier médical du patient
-    navigate(`/${role}/patients/medical-records/${recordId}`)
+    navigate(`/${role}/patients/medical-record/${recordId}`)
   }
 
   return (

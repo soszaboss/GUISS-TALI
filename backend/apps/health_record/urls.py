@@ -12,7 +12,7 @@ health_record_list = HealthRecordViewSet.as_view({'get': 'list'})
 health_record_patient = HealthRecordViewSet.as_view({'get': 'patient'})
 sync_health_record = HealthRecordViewSet.as_view({'get': 'sync_health_record'})
 create_driver_experience = DriverExperienceViewSet.as_view({'post': 'create_or_update_for_patient'})
-
+set_risky_patient_state = HealthRecordViewSet.as_view({'post': 'set_risky_patient'})
 # antecedent_list = AntecedentViewSet.as_view({'post': 'create'})
 antecedent_detail = AntecedentViewSet.as_view({'patch': 'partial_update'})
 create_antecedent = AntecedentViewSet.as_view({'post': 'create_or_update_for_patient'})
@@ -23,6 +23,7 @@ driver_exp_detail = DriverExperienceViewSet.as_view({'patch': 'partial_update'})
 urlpatterns = [
     # Health Records
     path('', health_record_list, name='health-record-list'),
+    path('set-risky-patient/', set_risky_patient_state, name='set-risky-patient'),
     # path('<int:pk>/history/', health_record_history, name='health-record-history'),
     path('patient/<int:patient_id>/', health_record_patient, name='health-record-patient'),
     path(

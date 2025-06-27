@@ -102,7 +102,7 @@ const categoriesPermis = data?.distribution_permis
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mt-4">
-                  {isLoading ? "..." : data?.age_moyen} ans
+                  {isLoading ? "..." : data?.age_moyen.toFixed(2)} ans
                 </div>
               </CardContent>
             </Card>
@@ -124,7 +124,7 @@ const categoriesPermis = data?.distribution_permis
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? "..." : data?.duree_moyenne_conduite} ans
+                  {isLoading ? "..." : data?.duree_moyenne_conduite.toFixed(2)} ans
                 </div>
               </CardContent>
             </Card>

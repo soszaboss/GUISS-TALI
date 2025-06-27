@@ -70,6 +70,7 @@ const AuthProvider: FC<WithChildren> = ({children}) => {
     onSuccess: () => {
       saveAuth(undefined)
       setCurrentUser(undefined)
+      window.location.href = '/auth/login'
     },
     onError: () => {
       saveAuth(undefined)

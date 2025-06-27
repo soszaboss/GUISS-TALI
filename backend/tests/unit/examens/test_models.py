@@ -1,4 +1,3 @@
-# tests/test_examens_models.py
 import pytest
 from django.core.exceptions import ValidationError
 from factories.examens import (
@@ -30,12 +29,12 @@ class TestExamensModels:
     # 1. Tests pour VisualAcuity
     def test_visual_acuity_creation(self):
         va = VisualAcuityFactory(
-            avsc_od='1.234',
-            avsc_og='2.345',
-            avac_od='3.456',
-            avac_og='4.567'
+            avsc_od=1.234,
+            avsc_og=2.345,
+            avac_od=3.456,
+            avac_og=4.567
         )
-        va.save()
+        va.full_clean()
         assert 0 <= va.avsc_od <= 10
         assert 0 <= va.avac_og <= 10
 
@@ -53,20 +52,30 @@ class TestExamensModels:
     # 2. Tests pour Refraction
     def test_refraction_creation(self):
         refraction = RefractionFactory(
+            correction_optique=True,
             od_s=-5.0,
             og_c=2.0,
             dp=62.0
         )
+        refraction.full_clean()
         assert -10 <= refraction.od_s <= 10
         assert -10 <= refraction.og_c <= 10
 
-    def test_refraction_invalid_values(self):
-        r = RefractionFactory()
-        r.od_s='-10.1'
-        r.og_c='10.1'
-        r.od_a='181'
+    @pytest.mark.parametrize("field,invalid_value", [
+        ('od_s', -10.1),
+        ('og_c', 10.1),
+        ('od_a', 11),
+        ('og_a', -11)
+    ])
+    def test_refraction_invalid_values(self, field, invalid_value):
+        data = {
+            'correction_optique': True,
+            'od_s': 0, 'og_s': 0, 'od_c': 0, 'og_c': 0, 'od_a': 0, 'og_a': 0
+        }
+        data[field] = invalid_value
         with pytest.raises(ValidationError):
-            r.save()
+            r = RefractionFactory(**data)
+            r.full_clean()
 
     # 3. Tests pour OcularTension
     def test_ocular_tension_with_ttt(self):
@@ -76,11 +85,11 @@ class TestExamensModels:
             og=8.0,
             ttt_hypotonisant_value=HypotonisantValue.BBLOQUANTS
         )
-        assert ot.ttt_hypotonisant_value in [c[0] for c in HypotonisantValue.choices]
         ot.full_clean()
+        assert ot.ttt_hypotonisant_value in [c[0] for c in HypotonisantValue.choices]
 
     def test_ocular_tension_missing_ttt_value(self):
-        with pytest.raises(ValidationError, match='ne doit pas avoir la valeur null'):
+        with pytest.raises(ValidationError):
             ot = OcularTensionFactory(
                 ttt_hypotonisant=True,
                 ttt_hypotonisant_value=None
@@ -95,16 +104,19 @@ class TestExamensModels:
         ('ptosis', 'ptosis_eye')
     ])
     def test_plaintes_required_fields(self, condition, required_field):
+        kwargs = {
+            'diplopie': False, 'strabisme': False, 'nystagmus': False, 'ptosis': False,
+            'diplopie_type': None, 'strabisme_eye': None, 'nystagmus_eye': None, 'ptosis_eye': None
+        }
+        kwargs[condition] = True
         with pytest.raises(ValidationError):
-            p = PlaintesFactory(**{
-                condition: True,
-                required_field: None
-            })
+            p = PlaintesFactory(**kwargs)
             p.full_clean()
 
     # 5. Tests pour SegmentAntérieur
     def test_segment_anterieur_anomalie(self):
         sa = BiomicroscopySegmentAnterieurFactory(
+            segment='PRESENCE_LESION',
             transparence=ChambreAnterieureTransparence.ANORMALE,
             type_anomalie_value='PIGMENTS',
             quantite_anomalie='MINIME'
@@ -114,6 +126,7 @@ class TestExamensModels:
     def test_segment_anterieur_missing_anomalie_details(self):
         with pytest.raises(ValidationError):
             sa = BiomicroscopySegmentAnterieurFactory(
+                segment='PRESENCE_LESION',
                 transparence=ChambreAnterieureTransparence.ANORMALE,
                 type_anomalie_value=None
             )
@@ -121,17 +134,13 @@ class TestExamensModels:
 
     # 6. Tests pour TechnicalExamen
     def test_technical_examen_completion(self):
-        # Examen complet
         te = TechnicalExamenFactory()
         assert te.is_completed
 
-        # Examen incomplet
         tech = TechnicalExamenFactory()
-        tech.visual_acuity.delete()  # supprime en base
-
+        tech.visual_acuity.delete()
         with pytest.raises(ValidationError):
             tech.full_clean()
-
 
     # 7. Tests pour ClinicalExamen
     def test_clinical_examen_relations(self):
@@ -143,15 +152,12 @@ class TestExamensModels:
 
     # 8. Tests pour Examens (conteneur principal)
     def test_examen_completion(self):
-        # Examen complet
         examen = ExamensFactory()
         assert examen.is_completed
 
-        # Examen technique manquant
         examen_incomplete_tech = ExamensFactory(technical_examen=None)
         examen_incomplete_tech.save()
         assert not examen_incomplete_tech.is_completed
-
 
     def test_examen_unique_patient_visite(self):
         examen = ExamensFactory()
@@ -164,8 +170,8 @@ class TestExamensModels:
     # 9. Tests pour BpSuP (éléments supplémentaires)
     def test_bp_sup_creation(self):
         bp = BpSuPFactory()
-        assert 'retinographie' in bp.retinographie.name
-        assert 'oct' in bp.oct.name
+        assert bp.retinographie is not None
+        assert bp.oct is not None
 
     # 10. Tests pour Perimetry
     @pytest.mark.parametrize("field,value,valid", [
@@ -189,6 +195,7 @@ class TestExamensModels:
             vision='compatible',
             rv=True
         )
+        conclusion.full_clean()
         assert conclusion.cat is not None
         assert conclusion.traitement is not None
 

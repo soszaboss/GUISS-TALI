@@ -7,18 +7,24 @@ from services.examens import ClinicalExamenService, ExamenService, TechnicalExam
 
 class DriverExperienceService:
     """Service pour l'expérience de conduite"""
-    
+
     @staticmethod
     @transaction.atomic
     def create_or_update_driver_experience(patient_id, visite, data):
         patient = Conducteur.objects.get(pk=patient_id)
-        defaults:DriverExperience = {
+        defaults = {
+            'etat_conducteur': data.get('etat_conducteur'),
+            'deces_cause': data.get('deces_cause'),
+            'inactif_cause': data.get('inactif_cause'),
             'km_parcourus': data.get('km_parcourus'),
             'nombre_accidents': data.get('nombre_accidents', 0),
-            'tranche_horaire': data.get('tranche_horaire', None),
-            'dommage': data.get('dommage'),
-            'degat': data.get('degat'),
-            'date_visite': data.get('date_visite', None) if data.get('date_visite') and data.get('date_visite') != '' else None
+            'tranche_horaire': data.get('tranche_horaire'),
+            'corporel_dommage': data.get('corporel_dommage', False),
+            'corporel_dommage_type': data.get('corporel_dommage_type'),
+            'materiel_dommage': data.get('materiel_dommage', False),
+            'materiel_dommage_type': data.get('materiel_dommage_type'),
+            'date_visite': data.get('date_visite') if data.get('date_visite') else None,
+            'date_dernier_accident': data.get('date_dernier_accident') if data.get('date_dernier_accident') else None,
         }
         driver_exp, created = DriverExperience.objects.update_or_create(
             patient=patient,
@@ -33,16 +39,10 @@ class DriverExperienceService:
         if visite:
             return queryset.filter(visite=visite).first()
         return queryset.order_by('-visite').first()
-    
+
     @staticmethod
     @transaction.atomic
     def delete_driver_experience(patient_id, visite=None):
-        """
-        Supprime une ou plusieurs expériences de conduite selon les paramètres.
-        
-        :param patient_id: ID du conducteur concerné
-        :param visite: Si précisé, supprime uniquement l'expérience pour cette visite
-        """
         queryset = DriverExperience.objects.filter(patient_id=patient_id)
         if visite is not None:
             experience = queryset.filter(visite=visite).first()
@@ -51,32 +51,40 @@ class DriverExperienceService:
                 return True
             return False
         else:
-            # Supprime toutes les expériences du patient
             deleted, _ = queryset.delete()
             return deleted > 0
 
 
 class AntecedentService:
     """Service pour les antécédents médicaux"""
-    
+
     @staticmethod
     @transaction.atomic
     def create_or_update_antecedent(patient_id, data):
         patient = Conducteur.objects.get(pk=patient_id)
+        # On s'assure que les champs multi-choix sont bien des listes
+        type_addiction = data.get('type_addiction') or []
+        familial = data.get('familial') or []
+        # Si jamais on reçoit une string (ex: depuis un formulaire simple), on convertit en liste
+        if isinstance(type_addiction, str):
+            type_addiction = [type_addiction]
+        if isinstance(familial, str):
+            familial = [familial]
         antecedent_data = {
             'antecedents_medico_chirurgicaux': data.get('antecedents_medico_chirurgicaux', ''),
             'pathologie_ophtalmologique': data.get('pathologie_ophtalmologique', ''),
             'addiction': data.get('addiction', False),
-            'type_addiction': data.get('type_addiction'),
+            'type_addiction': type_addiction,
             'autre_addiction_detail': data.get('autre_addiction_detail', ''),
             'tabagisme_detail': data.get('tabagisme_detail', ''),
-            'familial': data.get('familial'),
-            'autre_familial_detail': data.get('autre_familial_detail', '')
+            'familial': familial,
+            'autre_familial_detail': data.get('autre_familial_detail', ''),
         }
         antecedent, created = Antecedent.objects.update_or_create(
             patient=patient,
             defaults=antecedent_data
         )
+        print(f"Antecedent {'created' if created else 'updated'} for patient {patient_id}")
         return antecedent
 
     @staticmethod
@@ -86,25 +94,26 @@ class AntecedentService:
         except ObjectDoesNotExist:
             return None
 
+
 class HealthRecordService:
     """Service pour les dossiers médicaux"""
-    
+
     @staticmethod
     @transaction.atomic
     def create_or_update_health_record(patient_id, antecedent_id=None, driver_exp_ids=None, examen_ids=None):
         patient = Conducteur.objects.get(pk=patient_id)
         antecedent = Antecedent.objects.filter(pk=antecedent_id).first() if antecedent_id else None
-        
+
         if antecedent and antecedent.patient != patient:
             raise ValidationError("L'antécédent ne correspond pas au patient")
-        
+
         health_record, created = HealthRecord.objects.update_or_create(
             patient=patient,
             defaults={
                 'antecedant': antecedent,
             }
         )
-        
+
         if examen_ids:
             examens = Examens.objects.filter(pk__in=examen_ids, patient=patient)
             health_record.examens.add(*examens)
@@ -123,17 +132,8 @@ class HealthRecordService:
         - une expérience de conduite
         - un examen (et ses sous-examens)
         - lie les deux à un HealthRecord
-        
-        :param patient_id: ID du patient
-        :param visite: numéro de visite
-        :param driver_exp_data: données expérience de conduite
-        :param examen_data: {
-            "technical_examen": {...},
-            "clinical_examen": {...}
-        }
         """
         patient = Conducteur.objects.get(pk=patient_id)
-
         # Créer ou mettre à jour l'expérience de conduite
         driver_exp = None
         if driver_exp_data:
@@ -214,23 +214,3 @@ class HealthRecordService:
             raise ValidationError("L'examen ne correspond pas au patient")
         health_record.examens.add(examen)
         return health_record
-
-
-class MedicalHistoryService:
-    """Service pour l'historique médical complet"""
-    pass
-    # @staticmethod
-    # def get_complete_patient_history(patient_id):
-    #     health_record = HealthRecordService.get_full_health_record(patient_id)
-    #     if not health_record:
-    #         return None
-            
-    #     return {
-    #         'health_record': health_record,
-    #         'all_driver_experiences': DriverExperience.objects.filter(
-    #             patient_id=patient_id
-    #         ).order_by('visite'),
-    #         'all_examens': health_record.examens.all().order_by('visite'),
-    #         'antecedent': health_record.antecedant,
-    #         'current_driver_experience': health_record.driver_experience
-    #     }

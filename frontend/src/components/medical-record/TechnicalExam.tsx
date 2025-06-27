@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react"
 import { useForm, Controller } from "react-hook-form"
-import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -14,40 +13,75 @@ import { choicesMap } from "@/helpers/ChoicesMap"
 import { useMutation } from "@tanstack/react-query"
 import { createTechnicalExam, updateTechnicalExam } from "@/services/technicalExamen"
 import { toast } from "sonner"
+import { z } from "zod"
+import type { TechnicalExamen } from "@/types/examenTechniques"
 
-// Schéma Zod imbriqué selon les modèles
+// Schéma Zod complet avec toutes les contraintes métiers
 const technicalExamSchema = z.object({
   id: z.any().optional(),
   visual_acuity: z.object({
-    avsc_od: z.coerce.number(),
-    avsc_og: z.coerce.number(),
-    avsc_odg: z.coerce.number(),
-    avac_od: z.coerce.number(),
-    avac_og: z.coerce.number(),
-    avac_odg: z.coerce.number(),
-  }),
+    avsc_od: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+    avsc_og: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+    avsc_odg: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+    avac_od: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+    avac_og: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+    avac_odg: z.coerce.number().min(0, "Min 0").max(10, "Max 10").optional(),
+  }).optional(),
+
   refraction: z.object({
-    od_s: z.coerce.number(),
-    og_s: z.coerce.number(),
-    od_c: z.coerce.number(),
-    og_c: z.coerce.number(),
-    od_a: z.coerce.number(),
-    og_a: z.coerce.number(),
-    dp: z.coerce.number(),
-  }),
+    correction_optique: z.boolean().default(false),
+    od_s: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    og_s: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    od_c: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    og_c: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    od_a: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    og_a: z.coerce.number().min(-10, "Min -10").max(10, "Max 10").nullable().optional(),
+    avog: z.coerce.number().nullable().optional(),
+    avod: z.coerce.number().nullable().optional(),
+    dp: z.coerce.number().nullable().optional(),
+  }).refine(
+    (data) =>
+      !data.correction_optique ||
+      (
+        data.od_s !== null && data.od_s !== undefined &&
+        data.og_s !== null && data.og_s !== undefined &&
+        data.od_c !== null && data.od_c !== undefined &&
+        data.og_c !== null && data.og_c !== undefined &&
+        data.od_a !== null && data.od_a !== undefined &&
+        data.og_a !== null && data.og_a !== undefined
+      ),
+    {
+      message: "Tous les champs S, C, A doivent être renseignés si correction optique.",
+      path: ["correction_optique"],
+    }
+  ).optional(),
+
   ocular_tension: z.object({
-    od: z.coerce.number(),
-    og: z.coerce.number(),
-    ttt_hypotonisant: z.boolean(),
-    ttt_hypotonisant_value: z.string().optional(),
-  }),
+    od: z.coerce.number().nullable().optional(),
+    og: z.coerce.number().nullable().optional(),
+    ttt_hypotonisant: z.boolean().nullable().optional(),
+    ttt_hypotonisant_value: z.string().nullable().optional(),
+  }).refine(
+    (data) =>
+      !data.ttt_hypotonisant || !!data.ttt_hypotonisant_value,
+    {
+      message: "Préciser le traitement hypotonisant",
+      path: ["ttt_hypotonisant_value"],
+    }
+  ).optional(),
+
   pachymetry: z.object({
-    od: z.coerce.number(),
-    og: z.coerce.number(),
-  }),
+    cto_od: z.coerce.number().optional(),
+    cto_og: z.coerce.number().optional(),
+    od: z.coerce.number().optional(),
+    og: z.coerce.number().optional(),
+  }).optional(),
+
   visite: z.number().optional(),
   is_completed: z.boolean().optional(),
-  patient: z.number().optional(),
+  patient: z.number().optional().nullable(),
+  created: z.string().optional(),
+  modified: z.string().optional(),
 })
 
 // Helper pour accéder aux erreurs imbriquées
@@ -63,14 +97,13 @@ export function TechnicalExam({
   visiteID,
   patientID
 }: {
-  technicalData: any,
+  technicalData: TechnicalExamen,
   examenID?: number
   visiteID?: number
   patientID?: number
   canEditTechnical: boolean
   onSuccess?: (data: any) => void
 }) {
-  // Toujours lecture seule par défaut, même si l'utilisateur a le droit
   const [editMode, setEditMode] = React.useState(false)
   const {
     register,
@@ -79,37 +112,91 @@ export function TechnicalExam({
     watch,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm({
     defaultValues: technicalData,
-    resolver: zodResolver(
-      technicalExamSchema.refine(
-        (data) =>
-          !data.ocular_tension.ttt_hypotonisant ||
-          (data.ocular_tension.ttt_hypotonisant && !!data.ocular_tension.ttt_hypotonisant_value),
-        {
-          message: "Valeur requise",
-          path: ["ocular_tension", "ttt_hypotonisant_value"],
-        }
-      )
-    ),
+    resolver: zodResolver(technicalExamSchema),
     mode: "onBlur",
   })
 
   React.useEffect(() => {
     reset(technicalData)
-    setEditMode(false) // Toujours lecture seule au changement de données
+    setEditMode(false)
   }, [technicalData, reset])
+
+  // Champs conditionnels
+  const correctionOptique = watch("refraction.correction_optique")
+  const tttHypotonisant = watch("ocular_tension.ttt_hypotonisant")
+
+  // Nettoyage automatique des champs dépendants dans le formulaire (UX)
+  React.useEffect(() => {
+    if (!correctionOptique) {
+      setValue("refraction.od_s", null)
+      setValue("refraction.og_s", null)
+      setValue("refraction.od_c", null)
+      setValue("refraction.og_c", null)
+      setValue("refraction.od_a", null)
+      setValue("refraction.og_a", null)
+    }
+    if (!tttHypotonisant) {
+      setValue("ocular_tension.ttt_hypotonisant_value", null)
+    }
+    // eslint-disable-next-line
+  }, [correctionOptique, tttHypotonisant, setValue])
+
+  // Nettoyage avant soumission
+  const cleanTechnicalExam = (data: any) => {
+    const cleaned = { ...data }
+    if (!cleaned.refraction?.correction_optique) {
+      cleaned.refraction = {
+        ...cleaned.refraction,
+        od_s: null,
+        og_s: null,
+        od_c: null,
+        og_c: null,
+        od_a: null,
+        og_a: null,
+      }
+    }
+    if (!cleaned.ocular_tension?.ttt_hypotonisant) {
+      cleaned.ocular_tension = {
+        ...cleaned.ocular_tension,
+        ttt_hypotonisant_value: null,
+      }
+    }
+    return cleaned
+  }
+
+  // Toasts pour erreurs sur champs conditionnels cachés
+  const onInvalid = (errors: any) => {
+    if (!correctionOptique) {
+      if (
+        getError(errors, "refraction.od_s") ||
+        getError(errors, "refraction.og_s") ||
+        getError(errors, "refraction.od_c") ||
+        getError(errors, "refraction.og_c") ||
+        getError(errors, "refraction.od_a") ||
+        getError(errors, "refraction.og_a")
+      ) {
+        toast.error("Tous les champs S, C, A doivent être renseignés si correction optique.")
+      }
+    }
+    if (!tttHypotonisant && getError(errors, "ocular_tension.ttt_hypotonisant_value")) {
+      toast.error(getError(errors, "ocular_tension.ttt_hypotonisant_value")?.message)
+    }
+    if (Object.keys(errors).length > 0) {
+      toast.error("Merci de corriger les champs signalés avant de soumettre.")
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log("Submitting technical exam with data:", data, "and examenID:", examenID)
       if (data.id !== undefined && data.id !== null) {
         return await updateTechnicalExam(data)
       } else {
         if (typeof examenID === "undefined" || examenID === null) {
           throw new Error("examenID est requis pour créer un examen technique")
         }
-        console.log("Creating new technical exam with data:", data, "and examenID:", examenID)
         return await createTechnicalExam({
           ...data,
           visite: visiteID,
@@ -118,26 +205,23 @@ export function TechnicalExam({
       }
     },
     onSuccess: (data) => {
-        setEditMode(false)
-        if (onSuccess) {onSuccess(data)}
-        toast.success("Examen technique enregistré avec succès")
+      setEditMode(false)
+      if (onSuccess) { onSuccess(data) }
+      toast.success("Examen technique enregistré avec succès")
     },
     onError: () => {
       toast.error("Erreur lors de l'enregistrement")
     },
   })
 
-  const onSubmit = (data: any) => {
-    console.log("Form submitted with data:", data)
+  const onSubmit = (rawData: any) => {
+    const data = cleanTechnicalExam(rawData)
     mutation.mutate(data)
   }
 
-  const tttHypotonisant = watch("ocular_tension.ttt_hypotonisant")
-
   // Les champs sont désactivés si pas en mode édition
   const isDisabled = !editMode
-  console.log(`id de l'examen: ${examenID}`)
-  console.log("Données techniques:", technicalData)
+
   return (
     <Card>
       <CardHeader>
@@ -155,104 +239,36 @@ export function TechnicalExam({
             </p>
           </div>
         )}
-
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} autoComplete="off">
+        <div className="bg-yellow-50 p-4 rounded-md flex items-center text-yellow-800 mb-4">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            <p>
+                Les valeurs numériques ne doivent pas dépasser 3 chiffres après la virgule.
+            </p>
+          </div>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit, onInvalid)} autoComplete="off">
           {/* Acuité visuelle */}
           <Card>
             <CardHeader>
               <CardTitle>Acuité Visuelle</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="avsc_od">AVSC OD</Label>
-                <Input
-                  id="avsc_od"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avsc_od")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avsc_od")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avsc_od")?.message}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avac_od">AVAC OD</Label>
-                <Input
-                  id="avac_od"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avac_od")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avac_od")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avac_od")?.message}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avsc_og">AVSC OG</Label>
-                <Input
-                  id="avsc_og"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avsc_og")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avsc_og")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avsc_og")?.message}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avac_og">AVAC OG</Label>
-                <Input
-                  id="avac_og"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avac_og")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avac_og")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avac_og")?.message}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avsc_odg">AVSC DG</Label>
-                <Input
-                  id="avsc_odg"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avsc_odg")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avsc_odg")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avsc_odg")?.message}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="avac_odg">AVAC DG</Label>
-                <Input
-                  id="avac_odg"
-                  type="number"
-                  step="any"
-                  {...register("visual_acuity.avac_odg")}
-                  disabled={isDisabled}
-                />
-                {getError(errors, "visual_acuity.avac_odg")?.message && (
-                  <span className="text-red-500 text-xs">
-                    {getError(errors, "visual_acuity.avac_odg")?.message}
-                  </span>
-                )}
-              </div>
+              {["avsc_od", "avsc_og", "avsc_odg", "avac_od", "avac_og", "avac_odg"].map((field) => (
+                <div className="space-y-2" key={field}>
+                  <Label htmlFor={field}>{field.replace(/_/g, " ").toUpperCase()}</Label>
+                  <Input
+                    id={field}
+                    type="number"
+                    step="any"
+                    {...register(`visual_acuity.${field}` as any)}
+                    disabled={isDisabled}
+                  />
+                  {getError(errors, `visual_acuity.${field}`)?.message && (
+                    <span className="text-red-500 text-xs">
+                      {getError(errors, `visual_acuity.${field}`)?.message}
+                    </span>
+                  )}
+                </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -262,113 +278,60 @@ export function TechnicalExam({
               <CardTitle>Réfraction</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="space-y-2">
-                  <Label htmlFor="od_s">OD S</Label>
-                  <Input
-                    id="od_s"
-                    type="number"
-                    step="any"
-                    {...register("refraction.od_s")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.od_s")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.od_s")?.message}
-                    </span>
+              <div className="flex items-center space-x-2 mb-4">
+                <Controller
+                  name="refraction.correction_optique"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="correction_optique"
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isDisabled}
+                    />
                   )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="og_c">OG C</Label>
-                  <Input
-                    id="og_c"
-                    type="number"
-                    step="any"
-                    {...register("refraction.og_c")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.og_c")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.og_c")?.message}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="og_a">OG A</Label>
-                  <Input
-                    id="og_a"
-                    type="number"
-                    step="any"
-                    {...register("refraction.og_a")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.og_a")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.og_a")?.message}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="og_s">OG S</Label>
-                  <Input
-                    id="og_s"
-                    type="number"
-                    step="any"
-                    {...register("refraction.og_s")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.og_s")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.og_s")?.message}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="od_c">OD C</Label>
-                  <Input
-                    id="od_c"
-                    type="number"
-                    step="any"
-                    {...register("refraction.od_c")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.od_c")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.od_c")?.message}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="od_a">OD A</Label>
-                  <Input
-                    id="od_a"
-                    type="number"
-                    step="any"
-                    {...register("refraction.od_a")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.od_a")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.od_a")?.message}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dp">DP</Label>
-                  <Input
-                    id="dp"
-                    type="number"
-                    step="any"
-                    {...register("refraction.dp")}
-                    disabled={isDisabled}
-                  />
-                  {getError(errors, "refraction.dp")?.message && (
-                    <span className="text-red-500 text-xs">
-                      {getError(errors, "refraction.dp")?.message}
-                    </span>
-                  )}
-                </div>
+                />
+                <Label htmlFor="correction_optique">Correction optique</Label>
               </div>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {[
+                  { id: "od_s", label: "OD S" },
+                  { id: "og_s", label: "OG S" },
+                  { id: "od_c", label: "OD C" },
+                  { id: "og_c", label: "OG C" },
+                  { id: "od_a", label: "OD A" },
+                  { id: "og_a", label: "OG A" },
+                  { id: "avog", label: "AVOG" },
+                  { id: "avod", label: "AVOD" },
+                  { id: "dp", label: "DP" },
+                ].map(({ id, label }) => (
+                  // Affichage conditionnel intelligent
+                  (["od_s", "og_s", "od_c", "og_c", "od_a", "og_a"].includes(id) ?
+                    (correctionOptique || getError(errors, `refraction.${id}`)) : true
+                  ) && (
+                    <div className="space-y-2" key={id}>
+                      <Label htmlFor={id}>{label}</Label>
+                      <Input
+                        id={id}
+                        type="number"
+                        step="any"
+                        {...register(`refraction.${id}` as any)}
+                        disabled={isDisabled || (["od_s", "og_s", "od_c", "og_c", "od_a", "og_a"].includes(id) && !correctionOptique)}
+                      />
+                      {getError(errors, `refraction.${id}`)?.message && (
+                        <span className="text-red-500 text-xs">
+                          {getError(errors, `refraction.${id}`)?.message}
+                        </span>
+                      )}
+                    </div>
+                  )
+                ))}
+              </div>
+              {getError(errors, "refraction.correction_optique")?.message && (
+                <span className="text-red-500 text-xs">
+                  {getError(errors, "refraction.correction_optique")?.message}
+                </span>
+              )}
             </CardContent>
           </Card>
 
@@ -424,7 +387,7 @@ export function TechnicalExam({
                   />
                   <Label htmlFor="ttt_hypotonisant">Traitement hypotonisant</Label>
                 </div>
-                {tttHypotonisant && (
+                {(tttHypotonisant || getError(errors, "ocular_tension.ttt_hypotonisant_value")) && (
                   <div className="mt-2">
                     <Controller
                       name="ocular_tension.ttt_hypotonisant_value"
@@ -434,7 +397,7 @@ export function TechnicalExam({
                           label="Préciser le traitement"
                           name="ttt_hypotonisant_value"
                           options={choicesMap.HypotonisantValue}
-                          value={field.value}
+                          value={field.value ?? ""}
                           onChange={field.onChange}
                           multiple={false}
                           disabled={isDisabled}
@@ -459,24 +422,24 @@ export function TechnicalExam({
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="pachy_od">OD</Label>
+                <Label htmlFor="od">OD</Label>
                 <Input
-                  id="pachy_od"
+                  id="od"
                   type="number"
                   step="any"
                   {...register("pachymetry.od")}
                   disabled={isDisabled}
                 />
-                {getError(errors, "pachymetry.od")?.message && (
+                {getError(errors, "od")?.message && (
                   <span className="text-red-500 text-xs">
-                    {getError(errors, "pachymetry.od")?.message}
+                    {getError(errors, "od")?.message}
                   </span>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pachy_og">OG</Label>
+                <Label htmlFor="og">OG</Label>
                 <Input
-                  id="pachy_og"
+                  id="og"
                   type="number"
                   step="any"
                   {...register("pachymetry.og")}
@@ -488,12 +451,41 @@ export function TechnicalExam({
                   </span>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cto_od">CTO OD</Label>
+                <Input
+                  id="cto_od"
+                  type="number"
+                  step="any"
+                  {...register("pachymetry.cto_od")}
+                  disabled={isDisabled}
+                />
+                {getError(errors, "pachymetry.cto_od")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "pachymetry.cto_od")?.message}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cto_og">CTO OG</Label>
+                <Input
+                  id="cto_og"
+                  type="number"
+                  step="any"
+                  {...register("pachymetry.cto_og")}
+                  disabled={isDisabled}
+                />
+                {getError(errors, "pachymetry.cto_og")?.message && (
+                  <span className="text-red-500 text-xs">
+                    {getError(errors, "pachymetry.cto_og")?.message}
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Boutons */}
           <div className="flex justify-between items-center mt-6">
-            {/* Si l'utilisateur a le droit ET n'est pas en mode édition, afficher le bouton modifier */}
             {canEditTechnical && !editMode && (
               <Button
                 type="button"
@@ -505,7 +497,6 @@ export function TechnicalExam({
                 Modifier
               </Button>
             )}
-            {/* Si l'utilisateur a le droit ET est en mode édition, afficher le bouton enregistrer */}
             {canEditTechnical && editMode && (
               <Button
                 type="submit"

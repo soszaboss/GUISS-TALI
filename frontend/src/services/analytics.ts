@@ -1,4 +1,4 @@
-import type { DashboardApiResponse } from "@/types/analytics";
+import type { AdminDashboardApiResponse, DashboardApiResponse } from "@/types/analytics";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_APP_API_URL;
@@ -10,4 +10,9 @@ function employeeAnalytics(): Promise<DashboardApiResponse> {
   return axios.get(url + "analytics/employee/").then(res => res.data);
 }
 
-export { employeeAnalytics };
+function adminDashboardAnalytics(): Promise<AdminDashboardApiResponse> {
+  const url = API_URL && API_URL.endsWith("/") ? API_URL : (API_URL || "") + "/"
+  return axios.get(url + "analytics/admin/").then(res => res.data)
+}
+
+export { employeeAnalytics, adminDashboardAnalytics };

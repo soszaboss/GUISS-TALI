@@ -138,14 +138,10 @@ class SegmentChoices(models.TextChoices):
 
 
 class DommageChoices(models.TextChoices):
-    CORPOREL = "CORPOREL", _("CORPOREL")
-    MATERIEL = "MATERIEL", _("MATERIEL")
-
-
-class DegatChoices(models.TextChoices):
     IMPORTANT = "IMPORTANT", _("IMPORTANT")
     MODERE = "MODERE", _("MODERE")
     LEGER = "LEGER", _("LEGER")
+
 
 
 class AddictionTypeChoices(models.TextChoices):
@@ -153,6 +149,7 @@ class AddictionTypeChoices(models.TextChoices):
     ALCOOL = "ALCOOL", _("ALCOOL")
     TELEPHONE = "TELEPHONE", _("TELEPHONE")
     OTHER = "OTHER", _("OTHER")
+    SANS_PARTICULARITE = "SANS_PARTICULARITE", _("SANS_PARTICULARITE")
 
 
 class FamilialChoices(models.TextChoices):
@@ -179,3 +176,20 @@ class Symptomes(models.TextChoices):
     NYSTAGMUS = "NYSTAGMUS", _("NYSTAGMUS")
     PTOSIS = "PTOSIS", _("PTOSIS")
     AUTRES = "AUTRES", _("AUTRES")
+
+class EtatConducteurChoices(models.TextChoices):
+        DCD = 'DECEDE', _('DECEDE')
+        PERTE_DE_VUE = 'PERTE_DE_VUE', _('PERTE_DE_VUE')
+        ACTIF = 'ACTIF', _('ACTIF')
+        INACTIF = 'INACTIF', _('INACTIF')
+
+class ArretCauseChoices(models.TextChoices):
+    MALADIE = 'MALADIE', _('MALADIE')
+    ACCIDENT = 'ACCIDENT', _('ACCIDENT')
+    AUTRE = 'AUTRE', _('AUTRE')
+    CHOMAGE = 'CHOMAGE', _('CHOMAGE')
+
+class DECESCauseChoices(models.TextChoices):
+    MORT_NATUREL = 'MORT_NATUREL', _('MORT_NATUREL')
+    ACCIDENT = 'ACCIDENT', _('ACCIDENT')
+    NON_PRECESEE = 'NON_PRECESEE', _('NON_PRECESEE')

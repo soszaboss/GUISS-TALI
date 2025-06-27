@@ -27,13 +27,13 @@ const profileSchema = z.object({
   gender: z.union([z.literal(1), z.literal(2)]).optional().nullable(),
   address: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
-  zip: z.number().optional().nullable()
+  zip: z.string().optional().nullable()
 })
 
 const userSchema = z.object({
   email: z.string().email({ message: "Email invalide" }),
   phone_number: z.string().min(8, "Numéro requis"),
-  role: z.enum(['admin', 'employee']),
+  role: z.enum(['admin', 'employee', 'doctor', 'technician', 'super_user']),
   profile: profileSchema,
 })
 
@@ -97,8 +97,8 @@ export default function AdminUserForm() {
   const mutation = useMutation({
     mutationFn: (data: UserFormType) =>
       itemIdForUpdate
-        ? updateUser({ ...data, id: itemIdForUpdate })
-        : createUser(data),
+        ? updateUser({ ...data, id: itemIdForUpdate, role: data.role as UserRole })
+        : createUser({ ...data, role: data.role as UserRole }),
     mutationKey: [QUERIES.USERS_LIST, itemIdForUpdate ? 'updateUser' : 'createUser'],
     onSuccess: () => {
       reset()
@@ -200,6 +200,9 @@ export default function AdminUserForm() {
                         <SelectContent>
                           <SelectItem value="admin">Administrateur</SelectItem>
                           <SelectItem value="employee">Employé</SelectItem>
+                          <SelectItem value="doctor">Médecin</SelectItem>
+                          <SelectItem value="technician">Technicien</SelectItem>
+                          <SelectItem value="super_user">Super Utilisateur</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.role && <span className="text-red-500 text-xs">{errors.role.message}</span>}

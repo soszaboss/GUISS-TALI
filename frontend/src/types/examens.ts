@@ -4,9 +4,9 @@ import type { TechnicalExamen } from "./examenTechniques"
 
 export interface Examens {
   id: ID
-  technical_examen?: TechnicalExamen
-  clinical_examen?: ClinicalExamen
-  patient?: number
+  technical_examen?: TechnicalExamen | null
+  clinical_examen?: ClinicalExamen | null
+  patient?: ID
   visite?: number
   is_completed?: boolean
 }
@@ -19,3 +19,4 @@ export const initialExamens: Examens = {
   visite: 0,
   is_completed: false,
 }
+

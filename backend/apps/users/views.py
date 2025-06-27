@@ -13,7 +13,7 @@ from serializers.users import UserSerializer, ProfileSerializer
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.select_related('profile').all()
     serializer_class = UserSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ['role']
     search_fields = [
@@ -45,13 +45,14 @@ class UserViewSet(viewsets.ModelViewSet):
         """Endpoint personnalisé pour accéder à l'utilisateur courant"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+    
 
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.select_related('user').all()
     serializer_class = ProfileSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
         if self.action in ['retrieve', 'update', 'partial_update']:

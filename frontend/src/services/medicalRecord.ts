@@ -73,6 +73,13 @@ const syncHealthRecord = (
     .then((response: AxiosResponse<HealthRecord | undefined>) => response.data)
 }
 
+const setRiskyPatient = (patientId: ID, isRisky: boolean): Promise<void> => {
+  return axios.post(`${MEDICAL_RECORD_URL}set-risky-patient/`, {
+    patient_id: patientId,
+    risky_patient: isRisky
+  }).then(() => {});
+}
+
 export {
   getMedicalRecords,
   getMedicalRecordById,
@@ -85,5 +92,6 @@ export {
   updateDriverExperience,
   createAntecedent,
   updateAntecedent,
-  syncHealthRecord
+  syncHealthRecord,
+  setRiskyPatient
 }

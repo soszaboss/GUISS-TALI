@@ -9,6 +9,10 @@ const redirectPage = (role: UserRole | undefined): string => {
       return "/admin/dashboard"
     case "employee":
       return "/employee/dashboard"
+    case "doctor":
+      return "/employee/dashboard"
+    case "technician":
+      return "/employee/dashboard"
     default:
       return "/auth/login"
   }

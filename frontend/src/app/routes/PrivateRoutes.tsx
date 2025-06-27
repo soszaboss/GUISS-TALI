@@ -12,7 +12,7 @@ export const privateRoutes = [
   },
   {
     path: 'employee/',
-    element: <RoleGuard allowedRoles={['employee']} />,
+    element: <RoleGuard allowedRoles={['employee', 'doctor', 'technician']} />,
     children: EmployeeRoutes,
   },
   {

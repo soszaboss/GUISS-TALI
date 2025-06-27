@@ -31,3 +31,30 @@ export type DashboardApiResponse = {
   patients_risque_dossier: number
   evolution_visites: EvolutionVisites
 }
+
+
+export type AdminKpis = {
+  total_users: number
+  admins: number
+  doctors: number
+  technicians: number
+  employees: number
+  active_users: number
+  inactive_users: number
+}
+
+export type RoleDistribution = {
+  role: string
+  count: number
+}
+
+export type UsersCreatedPerMonth = {
+  month: string // format ISO ou YYYY-MM
+  count: number
+}
+
+export type AdminDashboardApiResponse = {
+  kpis: AdminKpis
+  roles_distribution: RoleDistribution[]
+  users_created_per_month: UsersCreatedPerMonth[]
+}
